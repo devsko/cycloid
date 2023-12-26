@@ -13,7 +13,7 @@ public class Strava
 {
     private static readonly Uri LoginUri = new("https://www.strava.com/login");
     private static readonly Uri DashboardUri = new("https://www.strava.com/dashboard");
-    private static readonly Uri CookieUri = new("strava.com");
+    private static readonly Uri CookieUri = new("https://strava.com");
 
     private Page Page => (Page)((Frame)Window.Current.Content).Content;
 

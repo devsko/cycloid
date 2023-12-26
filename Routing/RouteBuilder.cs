@@ -46,7 +46,7 @@ public class RouteBuilder
 
     private void StartCalculation(RouteSection section)
     {
-        _ = CalculateAsync();
+        CalculateAsync().FireAndForget();
 
         async Task CalculateAsync()
         {
@@ -69,7 +69,7 @@ public class RouteBuilder
 
                 await TaskScheduler.Default;
 
-                GeoJSON.Text.Feature.Feature feature = await Client.GetRouteAsync(section.Start, section.End, NoGoAreas, Profile, ClientRetry, cancellationToken).ConfigureAwait(false);
+                GeoJSON.Text.Feature.Feature feature = await Client.GetRouteAsync(section.Start, section.End, NoGoAreas, Profile, RetryCallback, cancellationToken).ConfigureAwait(false);
 
                 if (feature is not null)
                 {
@@ -99,9 +99,9 @@ public class RouteBuilder
 
             return default;
 
-            void ClientRetry()
+            void RetryCallback()
             {
-                _ = RetryAsync();
+                RetryAsync().FireAndForget();
 
                 async Task RetryAsync()
                 {

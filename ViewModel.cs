@@ -47,31 +47,4 @@ public partial class ViewModel : DependencyObject
     {
         await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => CurrentPoint = point).AsTask().ConfigureAwait(false);
     }
-
-    public void StartAnimation()
-    {
-        _ = Task.Run((Func<Task>)(async () =>
-        {
-            try
-            {
-                float latitude = 46.46039124618558f;
-                float longitude = 10.089039490153148f;
-                float grade = 5;
-                for (int i = 0; i < 10000; i++)
-                {
-                    await SetCurrentPointAsync(new() { Latitude = latitude, Longitude = longitude, Gradient = grade }).ConfigureAwait(false);
-                    await Task.Delay(TimeSpan.FromSeconds(1f / 60)).ConfigureAwait(false);
-
-                    latitude += .0001f;
-                    longitude += .0001f;
-                    if (i % 30 == 0)
-                    {
-                        grade = -grade;
-                    }
-                }
-            }
-            catch
-            { }
-        }));
-    }
 }

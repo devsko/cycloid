@@ -55,17 +55,14 @@ public sealed partial class Map : UserControl
         _routePointsLayer = (MapElementsLayer)MapControl.Resources["RoutePointsLayer"];
         MapControl.Layers.Add(_routePointsLayer);
 
-        _ = Async();
+        InitializeHeatmapAsync().FireAndForget();
 
-        async Task Async()
+        async Task InitializeHeatmapAsync()
         {
             (bool success, string uriFormat, HttpCookie[] cookies) = await new Strava().InitializeHeatmapAsync();
             if (success)
             {
-                // Wird nicht verwendet!
-                //heatmapSource.AdditionalRequestHeaders.Add("Cookie", cookies);
-
-                // stattdessen:
+                // That's the way to add cookies to a map tile datasource
                 HttpBaseProtocolFilter filter = new();
                 foreach (HttpCookie cookie in cookies)
                 {
