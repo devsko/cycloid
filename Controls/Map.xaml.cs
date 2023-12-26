@@ -1,20 +1,19 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Toolkit.Uwp.UI;
+using Microsoft.VisualStudio.Threading;
 using Windows.Devices.Geolocation;
+using Windows.Storage.Streams;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Maps;
-using Windows.Web.Http.Filters;
-using Windows.Web.Http;
-using System;
-using map;
-using System.Linq;
-using Windows.UI;
-using System.Diagnostics;
-using System.Collections.Specialized;
-using Windows.Storage.Streams;
-using Microsoft.Toolkit.Uwp.UI;
-using Windows.Services.Maps;
 using Windows.UI.Xaml.Media;
+using Windows.Web.Http;
+using Windows.Web.Http.Filters;
 
 
 namespace cycloid.Controls;
@@ -60,9 +59,6 @@ public sealed partial class Map : UserControl
 
         async Task Async()
         {
-            MapService.ServiceToken = "h2SdNrCncYPsgAfOlITE~4Yo41G6AvCkvigXhUwChig~AmjpNLnULNqoAMPx1H7BpgopNheySzWQC0aXrpBONC87WXgIfNSPaHBu32g1aQ8A";
-            var result = await MapLocationFinder.FindLocationsAtAsync(new Geopoint(ViewModel.CurrentPoint.Value));
-
             (bool success, string uriFormat, HttpCookie[] cookies) = await new Strava().InitializeHeatmapAsync();
             if (success)
             {
@@ -83,7 +79,7 @@ public sealed partial class Map : UserControl
 
 
         //******************
-        RouteBuilder builder = new();
+        Routing.RouteBuilder builder = new();
         builder.CalculationFinished += (section, result) =>
         {
             if (result.IsValid)

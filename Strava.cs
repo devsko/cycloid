@@ -1,12 +1,11 @@
-using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml;
 using System;
-using Windows.Web.Http.Filters;
-using Windows.Web.Http;
-using System.Linq;
-using Microsoft.VisualStudio.Threading;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using cycloid.Controls;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.Web.Http;
 
 namespace cycloid;
 
@@ -14,7 +13,7 @@ public class Strava
 {
     private static readonly Uri LoginUri = new("https://www.strava.com/login");
     private static readonly Uri DashboardUri = new("https://www.strava.com/dashboard");
-    private static readonly Uri CookieUri = new("https://strava.com");
+    private static readonly Uri CookieUri = new("strava.com");
 
     private Page Page => (Page)((Frame)Window.Current.Content).Content;
 
@@ -46,15 +45,6 @@ public class Strava
                 CookieUri,
                 cookie => cookie.Name.StartsWith("CloudFront", StringComparison.OrdinalIgnoreCase)))
                 .ToArray();
-
-            //HttpBaseProtocolFilter filter = new();
-            //foreach (HttpCookie cookie in cookies)
-            //{
-            //    filter.CookieManager.SetCookie(cookie);
-            //}
-            //HttpClient client = new(filter);
-            //HttpRequestMessage request = new(HttpMethod.Get, new Uri(baseUrl, "/tiles-auth/ride/hot/15/5448/12688.png"));
-            //HttpResponseMessage response = await client.SendRequestAsync(request);
 
             return (true, new Uri(baseUrl, "/tiles-auth/ride/hot/{zoomlevel}/{x}/{y}.png").ToString(), cookies);
         }

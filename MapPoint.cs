@@ -1,7 +1,6 @@
-using System;
 using Windows.Devices.Geolocation;
 
-namespace map;
+namespace cycloid;
 
 public interface IMapPoint
 {

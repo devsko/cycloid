@@ -2,11 +2,12 @@
     x:Class="cycloid.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:cycloid"
+    xmlns:cycloid="using:cycloid" 
+    xmlns:controls="using:cycloid.Controls"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <local:ViewModel x:Name="ViewModel" />
+        <cycloid:ViewModel x:Name="ViewModel" />
     </Page.Resources>
     
     <Grid>
@@ -16,15 +17,13 @@
         </Grid.ColumnDefinitions>
         <Grid
             Grid.Column="1">
-            <local:Map />
+            <controls:Map />
             <StackPanel
                 Orientation="Vertical"
                 Spacing="10"
                 Margin="10"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top">
-                <local:Compass
-                    HorizontalAlignment="Left" />
+                HorizontalAlignment="Left">
+                <controls:Compass />
             </StackPanel>
         </Grid>
     </Grid>

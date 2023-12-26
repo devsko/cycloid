@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace map;
+namespace cycloid;
 
 public static class GeoCalculation
 {
