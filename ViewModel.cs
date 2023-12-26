@@ -18,10 +18,16 @@ public partial class ViewModel : ObservableObject
 
 
     [ObservableProperty]
-    private Track _track = new();
+    private Track _track;
 
     [ObservableProperty]
     private TrackPoint? _currentPoint;
+
+    [ObservableProperty]
+    private bool _trackVisible = true;
+
+    [ObservableProperty]
+    private bool _poisVisible = true;
 
     public string OsmUri => "https://tile.openstreetmap.org/{zoomlevel}/{x}/{y}.png";
 
