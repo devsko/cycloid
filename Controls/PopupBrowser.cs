@@ -153,7 +153,6 @@ public class PopupBrowser : Control, IDisposable
             {
                 Close();
             }
-
         }
         _lastNavigation = default;
     }

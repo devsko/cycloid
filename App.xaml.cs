@@ -26,6 +26,8 @@ sealed partial class App : Application
 
     public ViewModel ViewModel => (ViewModel)Resources[nameof(ViewModel)];
 
+    public Strava Strava { get; } = new();
+
     protected override void OnLaunched(LaunchActivatedEventArgs e)
     {
         _dispatcher = Window.Current.Dispatcher;

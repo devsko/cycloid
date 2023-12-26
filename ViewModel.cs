@@ -1,9 +1,13 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.VisualStudio.Threading;
 using Windows.Devices.Geolocation;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
+using Windows.Web.Http;
+using Windows.Web.Http.Filters;
 
 namespace cycloid;
 
@@ -16,20 +20,48 @@ public readonly record struct TrackPoint(float Latitude, float Longitude, float 
     };
 }
 
-[ObservableObject]
-public partial class ViewModel : DependencyObject
+public partial class ViewModel : ObservableObject
 {
-    [ObservableProperty]
+    private readonly SynchronizationContext _synchronizationContext;
+
+    public ViewModel()
+    {
+        _synchronizationContext = SynchronizationContext.Current;
+    }
+
     private bool _heatmapVisible;
+    public bool HeatmapVisible 
+    {
+        get => _heatmapVisible;
+        private set => SetProperty(ref _heatmapVisible, value);
+    }
+
+    public string HeatmapUri => App.Current.Strava.HeatmapUri;
 
     [ObservableProperty]
     private Track _track = new();
 
     [ObservableProperty]
-    private TrackPoint? _currentPoint = new() { Latitude = 46.46039124618558f, Longitude = 10.089039490153148f, Gradient = 5f, Heading = 195 };
+    private TrackPoint? _currentPoint;
+
+    [RelayCommand]
+    public async Task ToggleHeatmapVisibleAsync()
+    {
+        if (HeatmapVisible)
+        {
+            HeatmapVisible = false;
+        }
+        else
+        {
+            HeatmapVisible = await App.Current.Strava.InitializeHeatmapAsync();
+            // Notify property changed again to convinvce the toggle button
+            OnPropertyChanged(nameof(HeatmapVisible));
+        }
+    }
 
     public async Task SetCurrentPointAsync(TrackPoint point)
     {
-        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => CurrentPoint = point).AsTask().ConfigureAwait(false);
+        await _synchronizationContext;
+        CurrentPoint = point;
     }
 }

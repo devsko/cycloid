@@ -2,9 +2,7 @@
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI;
-using Microsoft.VisualStudio.Threading;
 using Windows.Devices.Geolocation;
 using Windows.Storage.Streams;
 using Windows.UI;
@@ -12,8 +10,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Maps;
 using Windows.UI.Xaml.Media;
-using Windows.Web.Http;
-using Windows.Web.Http.Filters;
 
 
 namespace cycloid.Controls;
@@ -22,6 +18,7 @@ public sealed partial class Map : UserControl
 {
     private static readonly RandomAccessStreamReference _routePointImage = RandomAccessStreamReference.CreateFromUri(new Uri("ms-appx:///Assets/RoutePoint.png"));
 
+    private readonly ClickPanel _clickPanel;
     private MapTileSource _heatmap;
     private MapElementsLayer _trackLayer;
     private MapElementsLayer _routePointsLayer;
@@ -55,24 +52,8 @@ public sealed partial class Map : UserControl
         _routePointsLayer = (MapElementsLayer)MapControl.Resources["RoutePointsLayer"];
         MapControl.Layers.Add(_routePointsLayer);
 
-        InitializeHeatmapAsync().FireAndForget();
+        ViewModel.ToggleHeatmapVisibleAsync().FireAndForget();
 
-        async Task InitializeHeatmapAsync()
-        {
-            (bool success, string uriFormat, HttpCookie[] cookies) = await new Strava().InitializeHeatmapAsync();
-            if (success)
-            {
-                // That's the way to add cookies to a map tile datasource
-                HttpBaseProtocolFilter filter = new();
-                foreach (HttpCookie cookie in cookies)
-                {
-                    filter.CookieManager.SetCookie(cookie);
-                }
-
-                ((HttpMapTileDataSource)_heatmap.DataSource).UriFormatString = uriFormat;
-                ViewModel.HeatmapVisible = true;
-            }
-        }
 
 
         //******************
@@ -132,8 +113,6 @@ public sealed partial class Map : UserControl
         builder.AddLastPoint(new MapPoint(47.77284f, 15.317575f));
 
     }
-
-    private ClickPanel _clickPanel;
 
     private class ClickPanel : Panel
     {

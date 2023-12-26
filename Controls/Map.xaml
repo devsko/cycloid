@@ -19,7 +19,8 @@
                 IsFadingEnabled="False"
                 Visible="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
                 <maps:MapTileSource.DataSource>
-                    <maps:HttpMapTileDataSource />
+                    <maps:HttpMapTileDataSource 
+                        UriFormatString="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapUri}"/>
                 </maps:MapTileSource.DataSource>
             </maps:MapTileSource>
             <maps:MapElementsLayer
