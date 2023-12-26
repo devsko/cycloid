@@ -20,6 +20,7 @@ public sealed partial class Map : UserControl
 
     private readonly ClickPanel _clickPanel;
     private MapTileSource _heatmap;
+    private MapTileSource _osm;
     private MapElementsLayer _trackLayer;
     private MapElementsLayer _routePointsLayer;
 
@@ -43,7 +44,7 @@ public sealed partial class Map : UserControl
 
     private ViewModel ViewModel => (ViewModel)this.FindResource(nameof(ViewModel));
 
-    private async void MapControl_Loaded(object sender, RoutedEventArgs e)
+    private void MapControl_Loaded(object sender, RoutedEventArgs e)
     {
         MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
         MapControl.ZoomLevel = 7;
@@ -52,6 +53,11 @@ public sealed partial class Map : UserControl
         _heatmap = (MapTileSource)MapControl.Resources["Heatmap"];
         MapControl.Resources.Remove("Heatmap");
         MapControl.TileSources.Add(_heatmap);
+
+        // Osm
+        _osm = (MapTileSource)MapControl.Resources["Osm"];
+        MapControl.Resources.Remove("Osm");
+        MapControl.TileSources.Add(_osm);
 
         // TrackLayer
         _trackLayer = (MapElementsLayer)MapControl.Resources["TrackLayer"];
@@ -66,7 +72,7 @@ public sealed partial class Map : UserControl
 
 
         //******************
-        await ViewModel.SetCurrentPointAsync(new() { Latitude = 46.46039124618558f, Longitude = 10.089039490153148f, Gradient = 5f, Heading = 195 });
+        ViewModel.SetCurrentPointAsync(new() { Latitude = 46.46039124618558f, Longitude = 10.089039490153148f, Gradient = 5f, Heading = 195 }).FireAndForget();
 
         Routing.RouteBuilder builder = new();
         builder.CalculationFinished += (section, result) =>

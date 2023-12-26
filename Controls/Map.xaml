@@ -7,8 +7,9 @@
 
     <maps:MapControl
         x:Name="MapControl"
-        Style="AerialWithRoads" 
         MapServiceToken="h2SdNrCncYPsgAfOlITE~4Yo41G6AvCkvigXhUwChig~AmjpNLnULNqoAMPx1H7BpgopNheySzWQC0aXrpBONC87WXgIfNSPaHBu32g1aQ8A"
+        Style="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Style}"
+        ColorScheme="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Color}"
         Loaded="MapControl_Loaded"
         MapTapped="MapControl_MapTapped"
         MapRightTapped="MapControl_MapRightTapped">
@@ -20,7 +21,17 @@
                 Visible="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
                 <maps:MapTileSource.DataSource>
                     <maps:HttpMapTileDataSource 
-                        UriFormatString="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapUri}"/>
+                        UriFormatString="{x:Bind Mode=OneTime, Path=ViewModel.HeatmapUri}" />
+                </maps:MapTileSource.DataSource>
+            </maps:MapTileSource>
+            <maps:MapTileSource
+                x:Name="Osm"
+                IsFadingEnabled="false"
+                Visible="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Osm}"
+                Layer="BackgroundReplacement">
+                <maps:MapTileSource.DataSource>
+                    <maps:HttpMapTileDataSource
+                        UriFormatString="{x:Bind Mode=OneTime, Path=ViewModel.OsmUri}" />
                 </maps:MapTileSource.DataSource>
             </maps:MapTileSource>
             <maps:MapElementsLayer

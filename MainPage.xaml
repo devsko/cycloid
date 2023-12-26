@@ -10,17 +10,69 @@
         <cycloid:ViewModel x:Name="ViewModel" />
     </Page.Resources>
     
-    <Grid>
+    <Grid
+        RowSpacing="3"
+        ColumnSpacing="3">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="4*" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="210" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <ToggleButton 
-            Grid.Column="0" 
-            Content="Heatmap" 
-            IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}" 
-            Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}" />
+
         <Grid
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.RowSpan="2"
+            RowSpacing="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <StackPanel
+                Grid.Row="0"
+                Orientation="Horizontal">
+                <AppBarButton
+                    Icon="OpenLocal"
+                    Label="Open"
+                    Command="{x:Bind ViewModel.OpenTrackCommand}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="O" Modifiers="Control"/>
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
+                    Icon="NewFolder"
+                    Label="New"
+                    Command="{x:Bind ViewModel.NewTrackCommand}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="N" Modifiers="Control"/>
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+            </StackPanel>
+
+            <ComboBox 
+                Grid.Row="1"
+                Width="210"
+                ItemsSource="{x:Bind Mode=OneTime, Path=cycloid:ViewModel.MapStyleAndColors}"
+                DisplayMemberPath="Name"
+                SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.MapStyleAndColor}" />
+
+            
+            
+            <ToggleButton 
+                Grid.Row="3" 
+                Content="Heatmap" 
+                IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}" 
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}" />
+        </Grid>
+
+        <Grid
+            Grid.Row="0"
             Grid.Column="1">
             <controls:Map 
                 CurrentPoint="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoint}"/>
@@ -32,6 +84,9 @@
                 <controls:Compass />
             </StackPanel>
         </Grid>
+        
+        <!-- TrackControl Grid.Row=1 Grid.Column=1 -->
+        
     </Grid>
 
 </Page>
