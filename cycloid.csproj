@@ -66,7 +66,9 @@
     <Compile Include="Strava.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Track.cs" />
+    <Compile Include="Convert.cs" />
     <Compile Include="ViewModel.cs" />
+    <Compile Include="Format.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
