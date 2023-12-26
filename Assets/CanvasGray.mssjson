@@ -1,0 +1,493 @@
+﻿{
+  "version":"1.*",
+  "settings":
+  {
+    "atmosphereVisible": false,
+    "fogColor": "#FFFFFFFF",
+    "glowColor": "#FFFFFFFF",
+    "imageFamily": "Palette",
+    "landColor": { "value":"#FFEAEAEA", "ignoreTransform":true },
+    "logosVisible": true,
+    "officialColorVisible": true,
+    "shadedReliefVisible": false,
+    "spaceColor": "#FFFFFFFF",
+    "useDefaultImageColors": false
+  },
+  "elements":
+  {
+    "mapElement":
+    {
+      "fontFamily": "SegoeBing",
+      "labelVisible": true,
+      "visible": true
+    },
+    "area":
+    {
+      "fillColor": "#FFD8D0C1",
+      "labelColor": "#FF464655",
+      "labelOutlineColor": "#66FFFFFF",
+      "labelVisible": true,
+      "visible": false
+    },
+    "airport":
+    {
+      "fillColor": "#FFE5E4E2",
+      "labelColor": "#FF806C62",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "areaOfInterest":
+    {
+      "fontWeight": "SemiBold",
+      "labelVisible": false,
+      "visible": false
+    },
+    "cemetery":
+    {
+      "fillColor": "#FFD7E2DA",
+      "labelColor": "#FF666666",
+      "labelOutlineColor": "#FFFFFFFF",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "education":
+    {
+      "fillColor": "#FFE7ECCB",
+      "labelColor": "#FF806C62",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "indigenousPeoplesReserve":
+    {
+      "fillColor": "#FFEBE6DF",
+      "labelColor": "#FF7D705D",
+      "labelOutlineColor": "#FFFFFFFF",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "medical":
+    {
+      "fillColor": "#FFF0E4DD",
+      "labelColor": "#FF806C62",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "military":
+    {
+      "fillColor": "#FFECECEC",
+      "labelColor": "#FF737373",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "nautical":
+    {
+      "fillColor": "#FFF8F4F2",
+      "labelColor": "#FF806C62",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "neighborhood":
+    {
+      "fontWeight": "Bold",
+      "labelColor": "#FF777777",
+      "labelOutlineColor": "#66FFFFFF",
+      "labelScale": 1,
+      "visible": false
+    },
+    "runway":
+    {
+      "fillColor": "#FFD3C7C1",
+      "labelColor": "#FF806C62",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "sand":
+    {
+      "fillColor": "#FFF7EBDA",
+      "labelColor": "#FF756A56",
+      "labelOutlineColor": "#FFFFFFFF",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "shoppingCenter":
+    {
+      "fillColor": "#FFF8F4F2",
+      "labelColor": "#FF806C62",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "underground":
+    {
+      "fillColor": "#24E05A5D",
+      "labelVisible": false,
+      "visible": false
+    },
+    "vegetation":
+    {
+      "fillColor": { "value":"#FFE4EBD6", "ignoreTransform":true },
+      "labelColor": "#FF486E46",
+      "labelOutlineColor": "#FFFFFFFF",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "golfCourse":
+    {
+      "fillColor": "#FFD2E5C8",
+      "labelColor": "#FF3F633E",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelVisible": false,
+      "visible": false
+    },
+    "park":
+    {
+      "fillColor": { "value":"#FFE4EBD6", "ignoreTransform":true },
+      "labelColor": "#FF486E46",
+      "labelOutlineColor": "#FFFFFFFF",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "reserve":
+    {
+      "fillColor": { "value":"#FFE4EBD6", "ignoreTransform":true },
+      "labelColor": "#FF486E46",
+      "labelOutlineColor": "#FFFFFFFF",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "frozenWater":
+    {
+      "labelVisible": false,
+      "visible": false
+    },
+    "point":
+    {
+      "fillColor": "#FFFFFFFF",
+      "labelVisible": false,
+      "scale": 0,
+      "strokeColor": "#FFFFFFFF",
+      "visible": false
+    },
+    "peak":
+    {
+      "iconColor": "#FF737373",
+      "labelColor": "#FF5E5E5E",
+      "labelOutlineColor": "#FFFFFFFF",
+      "labelScale": 1,
+      "scale": 1
+    },
+    "volcanicPeak":
+    {
+      "iconColor": "#FFFE5555",
+      "labelColor": "#FF804D4D",
+      "labelOutlineColor": "#FFFFFFFF",
+      "labelScale": 1,
+      "scale": 1
+    },
+    "waterPoint":
+    {
+      "iconColor": "#FF4C6CBA",
+      "labelColor": "#FF4C6CBA",
+      "labelOutlineColor": "#FFFFFFFF",
+      "labelScale": 1,
+      "scale": 1
+    },
+    "pointOfInterest":
+    {
+      "iconColor": "#FF9C9C9C",
+      "labelColor": "#FF787878",
+      "labelOutlineColor": "#FFFFFFFF",
+      "labelScale": 1,
+      "scale": 1
+    },
+    "business":
+    {
+      "shadowVisible": true,
+      "shape": { "background": "Circle" }
+    },
+    "populatedPlace":
+    {
+      "iconColor": "#FFA6A6A6",
+      "labelColor": "#FF777777",
+      "labelOutlineColor": "#66FFFFFF",
+      "labelScale": 1,
+      "labelVisible": true,
+      "scale": 1,
+      "strokeColor": "#FFF7F4F2",
+      "visible": true
+    },
+    "capital":
+    {
+      "iconColor": "#FFA6A6A6",
+      "labelScale": 1,
+      "scale": 1,
+      "strokeColor": "#FFF7F4F2"
+    },
+    "roadExit":
+    {
+      "fillColor": "#FFE7D8EE",
+      "iconColor": "#FF262626",
+      "labelColor": "#FF464646",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1,
+      "scale": 1,
+      "strokeColor": "#FFA77D91"
+    },
+    "roadShield":
+    {
+      "fillColor": "#FFF4F4F4",
+      "iconColor": "#FF4A4A4A",
+      "labelColor": "#FFFFFFFF",
+      "scale": 1,
+      "strokeColor": "#FFA6A6A6"
+    },
+    "transit":
+    {
+      "fillColor": "#FF3B8BDB",
+      "iconColor": "#FFFFFFFF",
+      "labelColor": "#FF436B7F",
+      "labelOutlineColor": "#FFFFFFFF",
+      "labelScale": 1,
+      "scale": 1,
+      "strokeColor": "#66FAF9F7"
+    },
+    "political":
+    {
+      "borderOutlineColor": "#FFFFFFFF",
+      "borderStrokeColor": "#FFFFFFFF",
+      "borderVisible": true,
+      "borderWidthScale": 0,
+      "visible": false
+    },
+    "adminDistrict":
+    {
+      "borderOutlineColor": "#073D3D3D",
+      "borderStrokeColor": "#FFB8B4AE",
+      "borderWidthScale": 1,
+      "labelColor": "#FF737373",
+      "labelOutlineColor": "#66FFFFFF"
+    },
+    "countryRegion":
+    {
+      "borderOutlineColor": "#0A000000",
+      "borderStrokeColor": "#FFBFBBBB",
+      "borderWidthScale": 1,
+      "labelColor": "#FF8C8C8C",
+      "labelOutlineColor": "#66FFFFFF"
+    },
+    "district":
+    {
+      "borderStrokeColor": "#00979799",
+      "borderWidthScale": 1,
+      "labelColor": "#FF80726B",
+      "labelOutlineColor": "#66FFFFFF",
+      "labelVisible": false
+    },
+    "structure":
+    {
+      "fillColor": "#FFF8F4F2",
+      "labelColor": "#FF806C62",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1,
+      "labelVisible": false,
+      "visible": false
+    },
+    "building":
+    {
+      "fillColor": "#FFE2DCD4",
+      "labelColor": "#FF806C62",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1
+    },
+    "educationBuilding":
+    {
+      "fillColor": "#FFD8D5D5",
+      "labelColor": "#FF806C62",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1
+    },
+    "medicalBuilding":
+    {
+      "fillColor": "#FFE4D5D2",
+      "labelColor": "#FF806C62",
+      "labelOutlineColor": "#FFF7F4F2",
+      "labelScale": 1
+    },
+    "transitBuilding":
+    {
+      "fillColor": "#FFD2D2D2",
+      "labelColor": "#FF806C62",
+      "visible": true
+    },
+    "transportation":
+    {
+      "fillColor": "#FFFFFFFF",
+      "overwriteColor": false,
+      "strokeWidthScale": 0
+    },
+    "railway":
+    {
+      "fillColor": { "value":"#C1FFFFFF", "ignoreTransform":true },
+      "labelColor": "#FF333333",
+      "labelOutlineColor": "#FFEAE7E0",
+      "overwriteColor": false,
+      "strokeColor": "#FFC8C8C8",
+      "strokeWidthScale": 1
+    },
+    "road":
+    {
+      "fillColor": "#FFFFFFFF",
+      "labelColor": "#FFFFFFFF",
+      "labelOutlineColor": "#66FFFFFF",
+      "overwriteColor": false
+    },
+    "arterialRoad":
+    {
+      "fillColor": { "value":"#FFFFFFFF", "ignoreTransform":true },
+      "labelColor": "#FF888888",
+      "labelOutlineColor": "#66FFFFFF",
+      "labelScale": 1,
+      "overwriteColor": false,
+      "strokeColor": { "value":"#FFC8C8C8", "ignoreTransform":true },
+      "strokeWidthScale": 1
+    },
+    "controlledAccessHighway":
+    {
+      "fillColor": { "value":"#FFFFFFFF", "ignoreTransform":true },
+      "labelColor": "#FFA6A6A6",
+      "labelOutlineColor": "#66FFFFFF",
+      "labelScale": 1,
+      "overwriteColor": false,
+      "strokeColor": { "value":"#00FFFFFF", "ignoreTransform":true },
+      "strokeWidthScale": 1
+    },
+    "highway":
+    {
+      "fillColor": { "value":"#FFFFFFFF", "ignoreTransform":true },
+      "labelColor": "#FFA6A6A6",
+      "labelOutlineColor": "#66FFFFFF",
+      "labelScale": 1,
+      "overwriteColor": false,
+      "strokeColor": { "value":"#00FFFFFF", "ignoreTransform":true },
+      "strokeWidthScale": 1
+    },
+    "majorRoad":
+    {
+      "fillColor": { "value":"#FFFFFFFF", "ignoreTransform":true },
+      "labelColor": "#FF888888",
+      "labelOutlineColor": "#66FFFFFF",
+      "labelScale": 1,
+      "overwriteColor": false,
+      "strokeColor": { "value":"#00FFFFFF", "ignoreTransform":true },
+      "strokeWidthScale": 1
+    },
+    "street":
+    {
+      "fillColor": { "value":"#FFFFFFFF", "ignoreTransform":true },
+      "labelColor": { "value":"#FF888888", "ignoreTransform":true },
+      "labelOutlineColor": "#66FFFFFF",
+      "labelScale": 1,
+      "overwriteColor": false,
+      "strokeColor": "#FFE9E9E9",
+      "strokeWidthScale": 1
+    },
+    "unpavedStreet":
+    {
+      "fillColor": { "value":"#FFE3E3E3", "ignoreTransform":true },
+      "labelOutlineColor": "#FFF0EADD",
+      "strokeColor": { "value":"#FFD0D0D0", "ignoreTransform":true },
+      "strokeWidthScale": 1
+    },
+    "tollRoad":
+    {
+      "fillColor": { "value":"#FFFFFFFF", "ignoreTransform":true },
+      "labelColor": "#FF888888",
+      "labelOutlineColor": "#66FFFFFF",
+      "labelScale": 1,
+      "overwriteColor": false,
+      "strokeColor": { "value":"#00FFFFFF", "ignoreTransform":true },
+      "strokeWidthScale": 1
+    },
+    "trail":
+    {
+      "labelColor": "#FF4A4A4E",
+      "labelOutlineColor": "#66FFFFFF",
+      "labelScale": 1,
+      "strokeColor": "#1B373333",
+      "strokeWidthScale": 1
+    },
+    "waterRoute":
+    {
+      "labelColor": "#FF777777",
+      "labelOutlineColor": "#33FFFFFF",
+      "strokeColor": "#FFF4F4F4",
+      "strokeWidthScale": 1
+    },
+    "water":
+    {
+      "fillColor": { "value":"#FFC8C8C8", "ignoreTransform":true },
+      "labelColor": "#FF777777",
+      "labelOutlineColor": "#4CFFFFFF",
+      "labelVisible": true
+    },
+    "river":
+    {
+      "labelColor": "#FF4C6CBA",
+      "labelScale": 1,
+      "strokeWidthScale": 1
+    },
+    "userMapElement":
+    {
+      "fillColor": "#FFFAF9F7",
+      "strokeColor": "#FFFF6000"
+    },
+    "userArea":
+    {
+      "fillColor": "#FF0000FF",
+      "strokeColor": "#FF0000FF"
+    },
+    "userBillboard":
+    {
+      "stemColor": "#FF888888",
+      "stemOutlineColor": "#66FFFFFF"
+    },
+    "userLine":
+    {
+      "fillColor": "#FF0000FF",
+      "strokeColor": "#FF0000FF"
+    },
+    "userPoint":
+    {
+      "stemColor": "#FF666666",
+      "stemOutlineColor": "#66FFFFFF",
+      "fillColor": "#FFF7630C",
+      "iconColor": "#FFFFFFFF",
+      "labelColor": "#FF444444",
+      "labelOutlineColor": "#FFFFFFFF",
+      "strokeColor": "#FFFFFFFF"
+    },
+    "countryRegionCapital":
+    {
+      "iconColor": "#FF333333"
+    }
+  }
+}

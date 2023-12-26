@@ -1,0 +1,59 @@
+﻿<UserControl
+    x:Class="cycloid.Controls.Map"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cycloid="using:cycloid"
+    xmlns:maps="using:Windows.UI.Xaml.Controls.Maps">
+
+    <maps:MapControl
+        x:Name="MapControl"
+        Style="AerialWithRoads" 
+        MapServiceToken="h2SdNrCncYPsgAfOlITE~4Yo41G6AvCkvigXhUwChig~AmjpNLnULNqoAMPx1H7BpgopNheySzWQC0aXrpBONC87WXgIfNSPaHBu32g1aQ8A"
+        Loaded="MapControl_Loaded"
+        MapTapped="MapControl_MapTapped"
+        MapRightTapped="MapControl_MapRightTapped">
+
+        <maps:MapControl.Resources>
+            <maps:MapTileSource
+                x:Name="Heatmap"
+                IsFadingEnabled="False"
+                Visible="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
+                <maps:MapTileSource.DataSource>
+                    <maps:HttpMapTileDataSource />
+                </maps:MapTileSource.DataSource>
+            </maps:MapTileSource>
+            <maps:MapElementsLayer
+                x:Name="TrackLayer"
+                MapElementClick="TrackLayer_MapElementClick"
+                MapElementPointerEntered="TrackLayer_MapElementPointerEntered"
+                MapElementPointerExited="TrackLayer_MapElementPointerExited" />
+            <maps:MapElementsLayer
+                x:Name="RoutePointsLayer"
+                MapElementClick="RoutePointsLayer_MapElementClick"
+                MapElementPointerEntered="RoutePointsLayer_MapElementPointerEntered"
+                MapElementPointerExited="RoutePointsLayer_MapElementPointerExited" />
+        </maps:MapControl.Resources>
+
+        <Border 
+            maps:MapControl.NormalizedAnchorPoint=".5 .5"
+            maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:ViewModel.ToGeopoint(ViewModel.CurrentPoint)}"
+            Visibility="{x:Bind Mode=OneWay, Path=cycloid:ViewModel.VisibleIfNotNull(ViewModel.CurrentPoint)}">
+            <Grid>
+                <Ellipse 
+                    Width="15" 
+                    Height="15" 
+                    Fill="Black" />
+                <Ellipse 
+                    Width="12" 
+                    Height="12" 
+                    Fill="White" />
+                <Ellipse 
+                    Width="8" 
+                    Height="8"
+                    Fill="{x:Bind Mode=OneWay, Path=cycloid:ViewModel.GradientToBrush(ViewModel.CurrentPoint.Value.Gradient)}"/>
+            </Grid>
+        </Border>
+        
+    </maps:MapControl>
+
+</UserControl>
