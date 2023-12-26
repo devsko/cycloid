@@ -23,6 +23,15 @@ public sealed partial class Map : UserControl
     private MapElementsLayer _trackLayer;
     private MapElementsLayer _routePointsLayer;
 
+    public TrackPoint? CurrentPoint
+    {
+        get => (TrackPoint?)GetValue(CurrentPointProperty);
+        set => SetValue(CurrentPointProperty, value);
+    }
+
+    public static readonly DependencyProperty CurrentPointProperty =
+        DependencyProperty.Register(nameof(CurrentPoint), typeof(TrackPoint?), typeof(Map), new PropertyMetadata(null));
+
     public Map()
     {
         InitializeComponent();
@@ -34,7 +43,7 @@ public sealed partial class Map : UserControl
 
     private ViewModel ViewModel => (ViewModel)this.FindResource(nameof(ViewModel));
 
-    private void MapControl_Loaded(object sender, RoutedEventArgs e)
+    private async void MapControl_Loaded(object sender, RoutedEventArgs e)
     {
         MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
         MapControl.ZoomLevel = 7;
@@ -57,6 +66,8 @@ public sealed partial class Map : UserControl
 
 
         //******************
+        await ViewModel.SetCurrentPointAsync(new() { Latitude = 46.46039124618558f, Longitude = 10.089039490153148f, Gradient = 5f, Heading = 195 });
+
         Routing.RouteBuilder builder = new();
         builder.CalculationFinished += (section, result) =>
         {

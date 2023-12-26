@@ -15,10 +15,15 @@
             <ColumnDefinition Width="210" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <ToggleButton Grid.Column="0" Content="Heatmap" IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}" Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}" />
+        <ToggleButton 
+            Grid.Column="0" 
+            Content="Heatmap" 
+            IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}" 
+            Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}" />
         <Grid
             Grid.Column="1">
-            <controls:Map />
+            <controls:Map 
+                CurrentPoint="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoint}"/>
             <StackPanel
                 Orientation="Vertical"
                 Spacing="10"

@@ -5,9 +5,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.VisualStudio.Threading;
 using Windows.Devices.Geolocation;
-using Windows.UI.Xaml;
-using Windows.Web.Http;
-using Windows.Web.Http.Filters;
 
 namespace cycloid;
 

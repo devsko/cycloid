@@ -37,8 +37,8 @@
 
         <Border 
             maps:MapControl.NormalizedAnchorPoint=".5 .5"
-            maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.CurrentPoint)}"
-            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(ViewModel.CurrentPoint)}">
+            maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(CurrentPoint)}"
+            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(CurrentPoint)}">
             <Grid>
                 <Ellipse 
                     Width="15" 
@@ -51,7 +51,7 @@
                 <Ellipse 
                     Width="8" 
                     Height="8"
-                    Fill="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(ViewModel.CurrentPoint.Value.Gradient)}"/>
+                    Fill="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(CurrentPoint.Value.Gradient)}"/>
             </Grid>
         </Border>
         
