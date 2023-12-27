@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using cycloid.Controls;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.Web.Http;
 using Windows.Web.Http.Filters;
 
@@ -58,7 +56,7 @@ public class Strava
                         CookieUri,
                         cookie => cookie.Name.StartsWith("CloudFront", StringComparison.OrdinalIgnoreCase));
 
-                // That's the way to add cookies to be used by a map tile datasource
+                // That's the way to add cookies needed by a map tile datasource
                 foreach (HttpCookie cookie in cookies)
                 {
                     filter.CookieManager.SetCookie(cookie);
