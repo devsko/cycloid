@@ -7,12 +7,12 @@
 
     <maps:MapControl
         x:Name="MapControl"
-        MapServiceToken="h2SdNrCncYPsgAfOlITE~4Yo41G6AvCkvigXhUwChig~AmjpNLnULNqoAMPx1H7BpgopNheySzWQC0aXrpBONC87WXgIfNSPaHBu32g1aQ8A"
-        Style="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Style}"
         ColorScheme="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Color}"
         Loaded="MapControl_Loaded"
+        MapRightTapped="MapControl_MapRightTapped"
+        MapServiceToken="h2SdNrCncYPsgAfOlITE~4Yo41G6AvCkvigXhUwChig~AmjpNLnULNqoAMPx1H7BpgopNheySzWQC0aXrpBONC87WXgIfNSPaHBu32g1aQ8A"
         MapTapped="MapControl_MapTapped"
-        MapRightTapped="MapControl_MapRightTapped">
+        Style="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Style}">
 
         <maps:MapControl.Resources>
             <maps:MapTileSource
@@ -20,18 +20,16 @@
                 IsFadingEnabled="False"
                 Visible="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
                 <maps:MapTileSource.DataSource>
-                    <maps:HttpMapTileDataSource 
-                        UriFormatString="{x:Bind Mode=OneTime, Path=ViewModel.HeatmapUri}" />
+                    <maps:HttpMapTileDataSource UriFormatString="{x:Bind Mode=OneTime, Path=ViewModel.HeatmapUri}" />
                 </maps:MapTileSource.DataSource>
             </maps:MapTileSource>
             <maps:MapTileSource
                 x:Name="Osm"
                 IsFadingEnabled="false"
-                Visible="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Osm}"
-                Layer="BackgroundReplacement">
+                Layer="BackgroundReplacement"
+                Visible="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Osm}">
                 <maps:MapTileSource.DataSource>
-                    <maps:HttpMapTileDataSource
-                        UriFormatString="{x:Bind Mode=OneTime, Path=ViewModel.OsmUri}" />
+                    <maps:HttpMapTileDataSource UriFormatString="{x:Bind Mode=OneTime, Path=ViewModel.OsmUri}" />
                 </maps:MapTileSource.DataSource>
             </maps:MapTileSource>
             <maps:MapElementsLayer
@@ -46,26 +44,26 @@
                 MapElementPointerExited="RoutePointsLayer_MapElementPointerExited" />
         </maps:MapControl.Resources>
 
-        <Border 
-            maps:MapControl.NormalizedAnchorPoint=".5 .5"
+        <Border
             maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(CurrentPoint)}"
+            maps:MapControl.NormalizedAnchorPoint=".5 .5"
             Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(CurrentPoint)}">
             <Grid>
-                <Ellipse 
-                    Width="15" 
-                    Height="15" 
+                <Ellipse
+                    Width="15"
+                    Height="15"
                     Fill="Black" />
-                <Ellipse 
-                    Width="12" 
-                    Height="12" 
+                <Ellipse
+                    Width="12"
+                    Height="12"
                     Fill="White" />
-                <Ellipse 
-                    Width="8" 
+                <Ellipse
+                    Width="8"
                     Height="8"
-                    Fill="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(CurrentPoint.Value.Gradient)}"/>
+                    Fill="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(CurrentPoint.Value.Gradient)}" />
             </Grid>
         </Border>
-        
+
     </maps:MapControl>
 
 </UserControl>

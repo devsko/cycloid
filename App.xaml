@@ -2,7 +2,7 @@
     x:Class="cycloid.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:cycloid="using:cycloid" 
+    xmlns:cycloid="using:cycloid"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls">
 
     <Application.Resources>
@@ -12,24 +12,52 @@
                     <ResourceDictionary.ThemeDictionaries>
                         <ResourceDictionary x:Key="Dark">
                             <StaticResource x:Key="TrackGraphOutline" ResourceKey="TextFillColorPrimaryBrush" />
-                            <SolidColorBrush x:Key="TrackGraphFill" Color="{StaticResource TextFillColorSecondary}" Opacity="0.4" />
-                            <SolidColorBrush x:Key="SectionGraphFill" Color="{StaticResource SystemAccentColorDark2}" Opacity="0.3" />
+                            <SolidColorBrush
+                                x:Key="TrackGraphFill"
+                                Opacity="0.4"
+                                Color="{StaticResource TextFillColorSecondary}" />
+                            <SolidColorBrush
+                                x:Key="SectionGraphFill"
+                                Opacity="0.3"
+                                Color="{StaticResource SystemAccentColorDark2}" />
                             <StaticResource x:Key="TrackSelectionGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
-                            <SolidColorBrush x:Key="TrackHoverGraphOutline" Color="{StaticResource TextFillColorPrimary}" Opacity="0.7"/>
-                            <AcrylicBrush x:Key="MapOverlayBackgroundBrush" BackgroundSource="Backdrop" TintOpacity="0.2" TintColor="#ff000000" FallbackColor="#ff008000"/>
+                            <SolidColorBrush
+                                x:Key="TrackHoverGraphOutline"
+                                Opacity="0.7"
+                                Color="{StaticResource TextFillColorPrimary}" />
+                            <AcrylicBrush
+                                x:Key="MapOverlayBackgroundBrush"
+                                BackgroundSource="Backdrop"
+                                FallbackColor="#ff008000"
+                                TintColor="#ff000000"
+                                TintOpacity="0.2" />
                         </ResourceDictionary>
                         <ResourceDictionary x:Key="Light">
                             <StaticResource x:Key="TrackGraphOutline" ResourceKey="TextFillColorPrimaryBrush" />
-                            <SolidColorBrush x:Key="TrackGraphFill" Color="{StaticResource TextFillColorSecondary}" Opacity="0.4" />
-                            <SolidColorBrush x:Key="SectionGraphFill" Color="{StaticResource SystemAccentColorDark2}" Opacity="0.3" />
+                            <SolidColorBrush
+                                x:Key="TrackGraphFill"
+                                Opacity="0.4"
+                                Color="{StaticResource TextFillColorSecondary}" />
+                            <SolidColorBrush
+                                x:Key="SectionGraphFill"
+                                Opacity="0.3"
+                                Color="{StaticResource SystemAccentColorDark2}" />
                             <StaticResource x:Key="TrackSelectionGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
-                            <SolidColorBrush x:Key="TrackHoverGraphOutline" Color="{StaticResource TextFillColorPrimary}" Opacity="0.7"/>
-                            <AcrylicBrush x:Key="MapOverlayBackgroundBrush" BackgroundSource="Backdrop" TintOpacity="0.2" TintColor="#ff000000" FallbackColor="#ff008000"/>
+                            <SolidColorBrush
+                                x:Key="TrackHoverGraphOutline"
+                                Opacity="0.7"
+                                Color="{StaticResource TextFillColorPrimary}" />
+                            <AcrylicBrush
+                                x:Key="MapOverlayBackgroundBrush"
+                                BackgroundSource="Backdrop"
+                                FallbackColor="#ff008000"
+                                TintColor="#ff000000"
+                                TintOpacity="0.2" />
                         </ResourceDictionary>
                     </ResourceDictionary.ThemeDictionaries>
                 </ResourceDictionary>
             </mux:XamlControlsResources.MergedDictionaries>
         </mux:XamlControlsResources>
     </Application.Resources>
-    
+
 </Application>

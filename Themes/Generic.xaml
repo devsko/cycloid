@@ -1,58 +1,50 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:cycloid.Controls" 
-    xmlns:mux="using:Microsoft.UI.Xaml.Controls" 
-    xmlns:ui="using:CommunityToolkit.WinUI" 
-    xmlns:media="using:CommunityToolkit.WinUI.Media">
+    xmlns:controls="using:cycloid.Controls"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI">
 
     <Style TargetType="controls:PopupBrowser">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:PopupBrowser">
                     <Popup x:Name="Popup">
-                        <Border
-                            x:Name="Border"
-                            Background="{StaticResource SystemControlTransientBackgroundBrush}">
+                        <Border x:Name="Border" Background="{StaticResource SystemControlTransientBackgroundBrush}">
                             <Border>
                                 <ui:Effects.Shadow>
-                                    <media:AttachedCardShadow Color="#60000000" Offset="2,8"/>
+                                    <media:AttachedCardShadow Offset="2,8" Color="#60000000" />
                                 </ui:Effects.Shadow>
-                                <Border 
-                                    Background="{StaticResource ApplicationPageBackgroundThemeBrush}"
+                                <Border
                                     Padding="15"
+                                    Background="{StaticResource ApplicationPageBackgroundThemeBrush}"
                                     CornerRadius="5">
                                     <Grid RowSpacing="10">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition />
                                         </Grid.RowDefinitions>
-                                        <Grid
-                                            Grid.Row="0"
-                                            ColumnSpacing="5">
+                                        <Grid Grid.Row="0" ColumnSpacing="5">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <Border 
-                                                Grid.Column="0" 
+                                            <Border
+                                                Grid.Column="0"
+                                                Padding="5"
                                                 BorderBrush="{StaticResource TextBoxDisabledBorderThemeBrush}"
                                                 BorderThickness="1"
-                                                CornerRadius="3"
-                                                Padding="5" >
+                                                CornerRadius="3">
                                                 <TextBlock x:Name="TextBlock" />
                                             </Border>
-                                            <Button 
-                                                Grid.Column="1"
-                                                x:Name="CloseButton">
+                                            <Button x:Name="CloseButton" Grid.Column="1">
                                                 <Button.Content>
                                                     <SymbolIcon Symbol="Cancel" />
                                                 </Button.Content>
                                             </Button>
                                         </Grid>
-                                        <mux:WebView2  
-                                            Grid.Row="1"
-                                            x:Name="WebView" />
+                                        <mux:WebView2 x:Name="WebView" Grid.Row="1" />
                                     </Grid>
                                 </Border>
                             </Border>

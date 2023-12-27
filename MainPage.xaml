@@ -2,18 +2,16 @@
     x:Class="cycloid.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:cycloid="using:cycloid" 
-    xmlns:controls="using:cycloid.Controls" 
+    xmlns:controls="using:cycloid.Controls"
+    xmlns:cycloid="using:cycloid"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <cycloid:ViewModel x:Name="ViewModel" />
     </Page.Resources>
-    
-    <Grid
-        RowSpacing="3"
-        ColumnSpacing="3">
+
+    <Grid ColumnSpacing="3" RowSpacing="3">
         <Grid.RowDefinitions>
             <RowDefinition Height="4*" />
             <RowDefinition />
@@ -25,10 +23,10 @@
 
         <Grid
             Grid.Row="0"
-            Grid.Column="0"
             Grid.RowSpan="2"
-            RowSpacing="10"
-            Margin="5">
+            Grid.Column="0"
+            Margin="5"
+            RowSpacing="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -36,66 +34,55 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
-            <StackPanel
-                Grid.Row="0"
-                Orientation="Horizontal">
+            <StackPanel Grid.Row="0" Orientation="Horizontal">
                 <AppBarButton
+                    Command="{x:Bind ViewModel.OpenTrackCommand}"
                     Icon="OpenLocal"
-                    Label="Open"
-                    Command="{x:Bind ViewModel.OpenTrackCommand}">
+                    Label="Open">
                     <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="O" Modifiers="Control"/>
+                        <KeyboardAccelerator Key="O" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <AppBarButton
+                    Command="{x:Bind ViewModel.NewTrackCommand}"
                     Icon="NewFolder"
-                    Label="New"
-                    Command="{x:Bind ViewModel.NewTrackCommand}">
+                    Label="New">
                     <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="N" Modifiers="Control"/>
+                        <KeyboardAccelerator Key="N" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
-                <AppBarButton
-                    Icon="CellPhone"
-                    Label="Wahoo">
-                </AppBarButton>
+                <AppBarButton Icon="CellPhone" Label="Wahoo" />
             </StackPanel>
 
-            <ComboBox 
+            <ComboBox
                 Grid.Row="1"
                 Width="210"
-                ItemsSource="{x:Bind Mode=OneTime, Path=cycloid:ViewModel.MapStyleAndColors}"
                 DisplayMemberPath="Name"
+                ItemsSource="{x:Bind Mode=OneTime, Path=cycloid:ViewModel.MapStyleAndColors}"
                 SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.MapStyleAndColor}" />
 
             <StackPanel
                 Grid.Row="2"
                 Orientation="Horizontal"
                 Spacing="5">
-                <ToggleButton 
-                    IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}" 
-                    Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}">
+                <ToggleButton Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}" IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
                     <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="H" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
                     <Border Width="20" Height="20">
-                        <PathIcon 
-                            Data="M 6.426 0.7 L 0.63 11.9 L 4.046 11.9 L 6.426 7.433 L 8.792 11.9 L 12.18 11.9 L 6.426 0.7 Z M 12.18 11.9 L 10.5 15.252 L 8.792 11.9 L 6.202 11.9 L 10.5 20.3 L 14.77 11.9 L 12.18 11.9 Z" 
-                            Foreground="{ThemeResource ToggleButtonForeground}" 
-                            HorizontalAlignment="Center"/>
+                        <PathIcon
+                            HorizontalAlignment="Center"
+                            Data="M 6.426 0.7 L 0.63 11.9 L 4.046 11.9 L 6.426 7.433 L 8.792 11.9 L 12.18 11.9 L 6.426 0.7 Z M 12.18 11.9 L 10.5 15.252 L 8.792 11.9 L 6.202 11.9 L 10.5 20.3 L 14.77 11.9 L 12.18 11.9 Z"
+                            Foreground="{ThemeResource ToggleButtonForeground}" />
                     </Border>
                 </ToggleButton>
-                <ToggleButton
-                    IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.TrueIfNotNull(ViewModel.Track)}"
-                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}">
+                <ToggleButton IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}" IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.TrueIfNotNull(ViewModel.Track)}">
                     <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="T" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
                     <SymbolIcon Symbol="Directions" />
                 </ToggleButton>
-                <ToggleButton 
-                    IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.TrueIfNotNull(ViewModel.Track)}"
-                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.PoisVisible}">
+                <ToggleButton IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.PoisVisible}" IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.TrueIfNotNull(ViewModel.Track)}">
                     <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="I" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
@@ -103,21 +90,17 @@
                 </ToggleButton>
             </StackPanel>
 
-            <mux:TabView 
+            <mux:TabView
                 Grid.Row="3"
-                Width="210" 
-                IsAddTabButtonVisible="False" 
+                Width="210"
+                IsAddTabButtonVisible="False"
                 TabWidthMode="Compact">
                 <mux:TabView.TabItems>
-                    <mux:TabViewItem 
-                        Header="Edit"
-                        IsClosable="false">
+                    <mux:TabViewItem Header="Edit" IsClosable="false">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="Edit" />
                         </mux:TabViewItem.IconSource>
-                        <Grid
-                            RowSpacing="5"
-                            ColumnSpacing="10">
+                        <Grid ColumnSpacing="10" RowSpacing="5">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
@@ -128,58 +111,65 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="2*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Row="0" Grid.Column="0" HorizontalTextAlignment="End" Text="Distance" />
-                            <TextBlock Grid.Row="1" Grid.Column="0" HorizontalTextAlignment="End" Text="Time" />
-                            <TextBlock Grid.Row="2" Grid.Column="0" HorizontalTextAlignment="End" Text="Ascent" />
-                            <TextBlock Grid.Row="3" Grid.Column="0" HorizontalTextAlignment="End" Text="Descent" />
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                HorizontalTextAlignment="End"
+                                Text="Distance" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                HorizontalTextAlignment="End"
+                                Text="Time" />
+                            <TextBlock
+                                Grid.Row="2"
+                                Grid.Column="0"
+                                HorizontalTextAlignment="End"
+                                Text="Ascent" />
+                            <TextBlock
+                                Grid.Row="3"
+                                Grid.Column="0"
+                                HorizontalTextAlignment="End"
+                                Text="Descent" />
                             <!--<TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(ViewModel.Track.Points.Total.Distance)}" />
                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.Track.Points.Total.Time)}" />
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Ascent)}" />
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Descent)}" />-->
                         </Grid>
                     </mux:TabViewItem>
-                    <mux:TabViewItem 
-                        Header="Sections" 
-                        IsClosable="false">
+                    <mux:TabViewItem Header="Sections" IsClosable="false">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="FullScreen" />
                         </mux:TabViewItem.IconSource>
                     </mux:TabViewItem>
-                    <mux:TabViewItem 
-                        Header="POI" 
-                        IsClosable="false">
+                    <mux:TabViewItem Header="POI" IsClosable="false">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="MapPin" />
                         </mux:TabViewItem.IconSource>
                     </mux:TabViewItem>
-                    <mux:TabViewItem 
-                        Header="Train" 
-                        IsClosable="false">
+                    <mux:TabViewItem Header="Train" IsClosable="false">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="Play" />
                         </mux:TabViewItem.IconSource>
                     </mux:TabViewItem>
                 </mux:TabView.TabItems>
             </mux:TabView>
-            
+
         </Grid>
 
-        <Grid
-            Grid.Row="0"
-            Grid.Column="1">
-            <controls:Map 
-                CurrentPoint="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoint}"/>
+        <Grid Grid.Row="0" Grid.Column="1">
+            <controls:Map CurrentPoint="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoint}" />
             <StackPanel
-                Orientation="Vertical"
-                Spacing="10"
                 Margin="10"
-                HorizontalAlignment="Left">
+                HorizontalAlignment="Left"
+                Orientation="Vertical"
+                Spacing="10">
                 <controls:Compass />
             </StackPanel>
         </Grid>
-        
-        <!-- TrackControl Grid.Row=1 Grid.Column=1 -->
-        
+
+        <!--  TrackControl Grid.Row=1 Grid.Column=1  -->
+
     </Grid>
 
 </Page>
