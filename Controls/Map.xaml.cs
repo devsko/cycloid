@@ -67,9 +67,6 @@ public sealed partial class Map : UserControl
         _routePointsLayer = (MapElementsLayer)MapControl.Resources["RoutePointsLayer"];
         MapControl.Layers.Add(_routePointsLayer);
 
-        ViewModel.ToggleHeatmapVisibleAsync().FireAndForget();
-
-
 
         //******************
         ViewModel.SetCurrentPointAsync(new() { Latitude = 46.46039124618558f, Longitude = 10.089039490153148f, Gradient = 5f, Heading = 195 }).FireAndForget();
