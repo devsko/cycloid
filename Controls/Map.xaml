@@ -10,7 +10,7 @@
         ColorScheme="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Color}"
         Loaded="MapControl_Loaded"
         MapRightTapped="MapControl_MapRightTapped"
-        MapServiceToken="h2SdNrCncYPsgAfOlITE~4Yo41G6AvCkvigXhUwChig~AmjpNLnULNqoAMPx1H7BpgopNheySzWQC0aXrpBONC87WXgIfNSPaHBu32g1aQ8A"
+        MapServiceToken="{cycloid:ConfigurationValue Key=Bing:ServiceApiKey}"
         MapTapped="MapControl_MapTapped"
         Style="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Style}">
 

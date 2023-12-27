@@ -1,4 +1,5 @@
 ﻿using cycloid.External;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Diagnostics;
 using System.Text;
@@ -12,15 +13,21 @@ namespace cycloid;
 
 sealed partial class App : Application
 {
+    public IConfigurationRoot Configuration { get; }
+
     private CoreDispatcher _dispatcher;
 
     public App()
     {
+        UnhandledException += (_, e) => ShowExceptionAsync(e.Exception?.ToString() ?? e.Message).FireAndForget();
+        
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-        InitializeComponent();
+        var builder = new ConfigurationBuilder();
+        builder.AddUserSecrets("not used");
+        Configuration = builder.Build();
 
-        UnhandledException += (_, e) => ShowExceptionAsync(e.Exception?.ToString() ?? e.Message).FireAndForget();
+        InitializeComponent();
     }
 
     public static new App Current => (App)Application.Current;
