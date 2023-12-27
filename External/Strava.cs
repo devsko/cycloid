@@ -8,15 +8,13 @@ using Windows.UI.Xaml.Controls;
 using Windows.Web.Http;
 using Windows.Web.Http.Filters;
 
-namespace cycloid;
+namespace cycloid.External;
 
 public class Strava
 {
     private static readonly Uri LoginUri = new("https://www.strava.com/login");
     private static readonly Uri DashboardUri = new("https://www.strava.com/dashboard");
     private static readonly Uri CookieUri = new("https://strava.com");
-
-    private Page Page => (Page)((Frame)Window.Current.Content).Content;
 
     public Uri BaseUri { get; }
 
@@ -30,7 +28,7 @@ public class Strava
 
     public async Task<HttpCookie[]> LoginAsync()
     {
-        using PopupBrowser browser = PopupBrowser.Create((Panel)Page.Content);
+        using PopupBrowser browser = new();
 
         (bool loggedIn, IEnumerable<HttpCookie> cookies) = await LoginAsync(browser);
 
@@ -47,14 +45,12 @@ public class Strava
         {
             return true;
         }
-        
-        using PopupBrowser browser = PopupBrowser.Create((Panel)Page.Content);
 
-        (bool loggedIn, _) = await LoginAsync(browser);
-        if (loggedIn)
+        using PopupBrowser browser = new();
+
+        if ((await LoginAsync(browser)).Success)
         {
-            await browser.StartAsync(new Uri("https://heatmap-external-a.strava.com/auth"));
-
+            await browser.StartAsync(new Uri(BaseUri, "auth"));
             if (await browser.GetHttpStatusAsync() == 200)
             {
                 IEnumerable<HttpCookie> cookies = await browser
@@ -86,26 +82,26 @@ public class Strava
     private async Task<(bool Success, IEnumerable<HttpCookie> Cookies)> LoginAsync(PopupBrowser browser)
     {
         var success = false;
-        
-        browser.BrowserNavigated += OnBrowserNavigated;
-        await browser.StartAsync(DashboardUri);
-        browser.BrowserNavigated -= OnBrowserNavigated;
 
-        IEnumerable<HttpCookie> cookies = !success ? null : await browser.GetCookiesAsync(CookieUri);
-
-        return (success, cookies);
-
-        void OnBrowserNavigated(Uri uri, bool isRedirect)
+        await browser.StartAsync(DashboardUri, (uri, isRedirect) =>
         {
+            if (uri.Equals(DashboardUri))
+            {
+                success = true;
+                browser.Close();
+                return true;
+            }
+
             if (isRedirect && uri.Equals(LoginUri))
             {
                 browser.Open();
             }
-            else if (uri.Equals(DashboardUri))
-            {
-                success = true;
-                browser.Close();
-            }
-        }
+            
+            return false;
+        });
+
+        IEnumerable<HttpCookie> cookies = !success ? null : await browser.GetCookiesAsync(CookieUri);
+
+        return (success, cookies);
     }
 }

@@ -15,40 +15,53 @@ namespace cycloid.Controls;
 
 public class PopupBrowser : Control, IDisposable
 {
-    public static PopupBrowser Create(Panel parent)
-    {
-        var popup = new PopupBrowser();
-        parent.Children.Add(popup);
-
-        return popup;
-    }
-
+    private readonly TaskCompletionSource<bool> _constructionTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Popup _popup;
     private Border _border;
     private TextBlock _textBlock;
     private Button _closeButton;
     private WebView2 _webView;
 
-    private string _startUri;
-    private (ulong Id, string Uri, bool IsRedirect) _lastNavigation;
-    private TaskCompletionSource<bool> _tcs;
-
-    public Action<Uri, bool> BrowserNavigated { get; set; }
+    private (ulong Id, Uri Uri, bool IsRedirect) _lastNavigation;
+    private TaskCompletionSource<bool> _navigationTcs;
+    private Func<Uri, bool, bool> _onNavigation;
 
     public PopupBrowser()
     {
         DefaultStyleKey = typeof(PopupBrowser);
+
+        _popup = new Popup()
+        {
+            Child = this,
+            PlacementTarget = (FrameworkElement)Window.Current.Content,
+            IsOpen = true,
+            Visibility = Visibility.Collapsed,
+        };
     }
 
-    public async Task StartAsync(Uri uri)
+    public async Task StartAsync(Uri navigateTo, Func<Uri, bool, bool> onNavigation = null)
     {
-        ApplyTemplate();
+        await _constructionTcs.Task;
 
-        _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _startUri = uri.ToString();
-        _webView.Source = uri;
+        _onNavigation = onNavigation ?? OnNavigation;
+        _navigationTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _webView.Source = navigateTo;
 
-        await _tcs.Task;
+        await _navigationTcs.Task;
+
+        _onNavigation = null;
+
+        bool OnNavigation(Uri uri, bool _) => uri == navigateTo;
+    }
+
+    public void Open()
+    {
+        _popup.Visibility = Visibility.Visible;
+    }
+
+    public void Close()
+    {
+        _popup.Visibility = Visibility.Collapsed;
     }
 
     public async Task<int> GetHttpStatusAsync()
@@ -59,17 +72,6 @@ public class PopupBrowser : Control, IDisposable
     public async Task<string> GetHtmlAsync()
     {
         return await _webView.CoreWebView2.ExecuteScriptAsync("document.body.outerHTML");
-    }
-
-    public void Open()
-    {
-        _popup.IsOpen = true;
-    }
-
-    public void Close()
-    {
-        _popup.IsOpen = false;
-        _tcs?.TrySetResult(true);
     }
 
     public async Task<IEnumerable<HttpCookie>> GetCookiesAsync(Uri uri, Func<CoreWebView2Cookie, bool> predicate = null)
@@ -99,21 +101,33 @@ public class PopupBrowser : Control, IDisposable
 
     public void Dispose()
     {
-        Window.Current.SizeChanged -= Window_SizeChanged;
-        _closeButton.Click -= CloseButton_Click;
-        _webView.CoreProcessFailed -= WebView_CoreProcessFailed;
-        _webView.CoreWebView2Initialized -= WebView_CoreWebView2Initialized;
-        _webView.CoreWebView2.ContentLoading -= WebView_ContentLoading;
-        _webView.NavigationStarting -= WebView_NavigationStarting;
-        _webView.NavigationCompleted -= WebView_NavigationCompleted;
-        _webView = null;
-        ((Panel)Parent).Children.Remove(this);
+        if (_webView is not null)
+        {
+            Window.Current.SizeChanged -= Window_SizeChanged;
+            _closeButton.Click -= CloseButton_Click;
+            _webView.CoreProcessFailed -= WebView_CoreProcessFailed;
+            _webView.CoreWebView2Initialized -= WebView_CoreWebView2Initialized;
+            _webView.NavigationStarting -= WebView_NavigationStarting;
+            _webView.NavigationCompleted -= WebView_NavigationCompleted;
+            if (_webView.CoreWebView2 is not null)
+            {
+                _webView.CoreWebView2.ContentLoading -= WebView_ContentLoading;
+            }
+            _webView = null;
+        }
+
+        if (_popup is not null)
+        {
+            _popup.IsOpen = false;
+            _popup = null;
+        }
     }
 
     protected override void OnApplyTemplate()
     {
+        _constructionTcs.TrySetResult(true);
+
         Window.Current.SizeChanged += Window_SizeChanged;
-        _popup = (Popup)GetTemplateChild("Popup");
         _border = (Border)GetTemplateChild("Border");
         _textBlock = (TextBlock)GetTemplateChild("TextBlock");
         _closeButton = (Button)GetTemplateChild("CloseButton");
@@ -126,7 +140,6 @@ public class PopupBrowser : Control, IDisposable
         _webView.NavigationCompleted += WebView_NavigationCompleted;
 
         SetSize();
-        base.OnApplyTemplate();
     }
 
     private void WebView_CoreProcessFailed(WebView2 sender, CoreWebView2ProcessFailedEventArgs args)
@@ -145,13 +158,9 @@ public class PopupBrowser : Control, IDisposable
     {
         if (args.NavigationId == _lastNavigation.Id)
         {
-            if (BrowserNavigated is not null)
+            if (_onNavigation(_lastNavigation.Uri, _lastNavigation.IsRedirect))
             {
-                BrowserNavigated?.Invoke(new Uri(_lastNavigation.Uri), _lastNavigation.IsRedirect);
-            }
-            else if (_lastNavigation.Uri == _startUri)
-            {
-                Close();
+                _navigationTcs?.TrySetResult(true);
             }
         }
         _lastNavigation = default;
@@ -159,7 +168,7 @@ public class PopupBrowser : Control, IDisposable
 
     private void WebView_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
     {
-        _lastNavigation = (args.NavigationId, args.Uri, args.IsRedirected);
+        _lastNavigation = (args.NavigationId, new Uri(args.Uri), args.IsRedirected);
         _textBlock.Text = args.Uri;
     }
 
@@ -171,6 +180,7 @@ public class PopupBrowser : Control, IDisposable
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         Close();
+        _navigationTcs?.TrySetResult(true);
     }
 
     private void SetSize()

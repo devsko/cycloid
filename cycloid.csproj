@@ -63,7 +63,7 @@
     <Compile Include="Routing\RoutePoint.cs" />
     <Compile Include="Routing\RouteResult.cs" />
     <Compile Include="Routing\RouteSection.cs" />
-    <Compile Include="Strava.cs" />
+    <Compile Include="External\Strava.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Track.cs" />
     <Compile Include="Convert.cs" />
