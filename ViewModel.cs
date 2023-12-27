@@ -14,6 +14,11 @@ public partial class ViewModel : ObservableObject
     public ViewModel()
     {
         _synchronizationContext = SynchronizationContext.Current;
+
+        if (_synchronizationContext is null)
+        {
+            throw new InvalidOperationException();
+        }
     }
 
 
@@ -34,13 +39,13 @@ public partial class ViewModel : ObservableObject
     [RelayCommand]
     public async Task OpenTrackAsync()
     {
-
+        await Task.Yield();
     }
 
     [RelayCommand]
     public async Task NewTrackAsync()
     {
-
+        await Task.Yield();
     }
 
     public async Task SetCurrentPointAsync(TrackPoint point)
