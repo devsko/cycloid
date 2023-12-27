@@ -69,7 +69,7 @@ public sealed partial class Map : UserControl
 
 
         //******************
-        ViewModel.SetCurrentPointAsync(new() { Latitude = 46.46039124618558f, Longitude = 10.089039490153148f, Gradient = 5f, Heading = 195 }).FireAndForget();
+        ViewModel.SetCurrentPointAsync(new(46.46039124618558f, 10.089039490153148f, gradient: 5f, heading: 195)).FireAndForget();
 
         Routing.RouteBuilder builder = new();
         builder.CalculationFinished += (section, result) =>
