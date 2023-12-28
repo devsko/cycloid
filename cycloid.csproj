@@ -52,16 +52,23 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Behaviors\DragableBehavior.cs" />
     <Compile Include="Controls\Bing.xaml.cs">
       <DependentUpon>Bing.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\Compass.xaml.cs">
       <DependentUpon>Compass.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\MapCurrentPointValues.xaml.cs">
+      <DependentUpon>MapCurrentPointValues.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\PointValuesBase.cs" />
     <Compile Include="Controls\MapControlBorder.cs" />
     <Compile Include="Controls\MapHoverPointValues.xaml.cs">
       <DependentUpon>MapHoverPointValues.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\StreetView.xaml.cs">
+      <DependentUpon>StreetView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Extensions\ConfigurationValue.cs" />
     <Compile Include="GeoCalculation.cs" />
@@ -122,7 +129,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\MapCurrentPointValues.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\MapHoverPointValues.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\StreetView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

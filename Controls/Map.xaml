@@ -67,6 +67,21 @@
         </Border>
 
         <!--  HoverPoint  -->
+        <Border
+            maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.HoverPoint)}"
+            maps:MapControl.NormalizedAnchorPoint=".5 .5"
+            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(ViewModel.HoverPoint)}">
+            <Grid>
+                <Ellipse
+                    Width="10"
+                    Height="10"
+                    Fill="Black" />
+                <Ellipse
+                    Width="7"
+                    Height="7"
+                    Fill="White" />
+            </Grid>
+        </Border>
 
         <!--  HoverPointValues  -->
         <controls:MapHoverPointValues

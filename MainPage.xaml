@@ -171,11 +171,11 @@
             Grid.Column="1"
             ui:UIElementExtensions.ClipToBounds="True">
 
-            <controls:Map 
-                Track="{x:Bind Mode=OneWay, Path=ViewModel.Track}"
-                CurrentPoint="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoint}" 
-                HoverPoint="{x:Bind Mode=TwoWay, Path=ViewModel.HoverPoint}" 
-                HoverPointValuesEnabled="{x:Bind Mode=OneWay, Path=ViewModel.MapHoverPointValuesEnabled}"/>
+            <controls:Map
+                CurrentPoint="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoint}"
+                HoverPoint="{x:Bind Mode=TwoWay, Path=ViewModel.HoverPoint}"
+                HoverPointValuesEnabled="{x:Bind Mode=OneWay, Path=ViewModel.MapHoverPointValuesEnabled}"
+                Track="{x:Bind Mode=OneWay, Path=ViewModel.Track}" />
 
             <StackPanel
                 Margin="10"
@@ -185,11 +185,21 @@
 
                 <controls:Compass Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}" />
 
-                <!--  TrackPointValues  -->
+                <controls:MapCurrentPointValues
+                    HorizontalAlignment="Left"
+                    Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}"
+                    Track="{x:Bind Mode=OneWay, Path=ViewModel.Track}" />
 
             </StackPanel>
 
-            <!--  StreetView  -->
+            <controls:StreetView
+                Margin="10"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                ImageHeight="320"
+                ImageWidth="480"
+                Location="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}"
+                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(ViewModel.Track)}" />
 
             <controls:Bing
                 Margin="10"
