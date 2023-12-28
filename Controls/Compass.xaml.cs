@@ -17,7 +17,7 @@ public sealed partial class Compass : UserControl
     }
 
     public static readonly DependencyProperty PointProperty =
-        DependencyProperty.Register(nameof(Point), typeof(TrackPoint?), typeof(Bing), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(Point), typeof(TrackPoint?), typeof(Compass), new PropertyMetadata(null));
 
     public Compass()
     {

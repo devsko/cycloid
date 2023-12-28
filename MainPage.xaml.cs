@@ -20,9 +20,14 @@ public sealed partial class MainPage : Page
 
         async Task SetCurrentAsync()
         {
+            ViewModel.Track = new();
+
             ViewModel.CurrentPoint = new(46.46039124618558f, 10.089039490153148f, gradient: 5f, heading: 195);
             await Task.Delay(500);
             ViewModel.CurrentPoint = new(47.76031819349117f, 12.216661197615972f, gradient: 5f, heading: 195);
+            
+            ViewModel.HoverPoint = new(46.46039124618558f, 10.089039490153148f, gradient: 5f, heading: 195);
+            ViewModel.MapHoverPointValuesEnabled = true;
         }
     }
 }

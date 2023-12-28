@@ -74,7 +74,9 @@ public static class Convert
 
     public static Geopoint ToGeopoint(TrackPoint? point) => point is TrackPoint p ? new Geopoint(p) : _emptyGeopoint;
 
+    public static Visibility VisibleIf(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+
     public static Visibility VisibleIfNotNull(object value) => value is null ? Visibility.Collapsed : Visibility.Visible;
 
-    public static bool TrueIfNotNull(object value) => value is not null;
+    public static bool IsNotNull(object value) => value is not null;
 }

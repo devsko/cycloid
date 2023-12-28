@@ -4,29 +4,20 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cycloid="using:cycloid"
-    xmlns:media="using:CommunityToolkit.WinUI.Media"
-    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:ui="using:CommunityToolkit.WinUI" 
+    xmlns:controls="using:cycloid.Controls"
     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(Address)}">
 
     <Grid>
- 
-        <Border>
-            <ui:Effects.Shadow>
-                <media:AttachedCardShadow Offset="2,8" Color="#60000000" />
-            </ui:Effects.Shadow>
 
-            <Border
-                Padding="5"
-                Background="{ThemeResource MapOverlayBackgroundBrush}"
-                CornerRadius="5">
+        <controls:MapControlBorder>
 
-                <TextBlock
+            <TextBlock
                     Margin="5"
                     FontSize="11"
                     Text="{x:Bind Mode=OneWay, Path=Address}" />
 
-            </Border>
-        </Border>
+        </controls:MapControlBorder>
 
         <Border
            x:Name="Flash"

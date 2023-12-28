@@ -24,6 +24,15 @@ public sealed partial class Map : UserControl
     private MapElementsLayer _trackLayer;
     private MapElementsLayer _routePointsLayer;
 
+    public Track Track
+    {
+        get => (Track)GetValue(TrackProperty);
+        set => SetValue(TrackProperty, value);
+    }
+
+    public static readonly DependencyProperty TrackProperty =
+        DependencyProperty.Register(nameof(Track), typeof(Track), typeof(Map), new PropertyMetadata(null));
+
     public TrackPoint? CurrentPoint
     {
         get => (TrackPoint?)GetValue(CurrentPointProperty);
@@ -32,6 +41,24 @@ public sealed partial class Map : UserControl
 
     public static readonly DependencyProperty CurrentPointProperty =
         DependencyProperty.Register(nameof(CurrentPoint), typeof(TrackPoint?), typeof(Map), new PropertyMetadata(null));
+
+    public TrackPoint? HoverPoint
+    {
+        get => (TrackPoint?)GetValue(HoverPointProperty);
+        set => SetValue(HoverPointProperty, value);
+    }
+
+    public static readonly DependencyProperty HoverPointProperty =
+        DependencyProperty.Register(nameof(HoverPoint), typeof(TrackPoint?), typeof(Map), new PropertyMetadata(null));
+
+    public bool HoverPointValuesEnabled
+    {
+        get => (bool)GetValue(HoverPointValuesPropertyEnabled);
+        set => SetValue(HoverPointValuesPropertyEnabled, value);
+    }
+
+    public static DependencyProperty HoverPointValuesPropertyEnabled =
+        DependencyProperty.Register(nameof(HoverPointValuesEnabled), typeof(bool), typeof(Map), new PropertyMetadata(false));
 
     public Map()
     {

@@ -84,7 +84,7 @@
                 <ToggleButton
                     Content="{ui:SymbolIcon Symbol=Directions}"
                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.TrueIfNotNull(ViewModel.Track)}">
+                    IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.IsNotNull(ViewModel.Track)}">
                     <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="T" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
@@ -92,7 +92,7 @@
                 <ToggleButton
                     Content="{ui:SymbolIcon Symbol=MapPin}"
                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.PoisVisible}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.TrueIfNotNull(ViewModel.Track)}">
+                    IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.IsNotNull(ViewModel.Track)}">
                     <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="I" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
@@ -171,7 +171,11 @@
             Grid.Column="1"
             ui:UIElementExtensions.ClipToBounds="True">
 
-            <controls:Map CurrentPoint="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoint}" />
+            <controls:Map 
+                Track="{x:Bind Mode=OneWay, Path=ViewModel.Track}"
+                CurrentPoint="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoint}" 
+                HoverPoint="{x:Bind Mode=TwoWay, Path=ViewModel.HoverPoint}" 
+                HoverPointValuesEnabled="{x:Bind Mode=OneWay, Path=ViewModel.MapHoverPointValuesEnabled}"/>
 
             <StackPanel
                 Margin="10"

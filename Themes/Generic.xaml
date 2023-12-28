@@ -15,6 +15,7 @@
                             <ui:Effects.Shadow>
                                 <media:AttachedCardShadow Offset="2,8" Color="#60000000" />
                             </ui:Effects.Shadow>
+
                             <Border
                                 Padding="15"
                                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
@@ -45,7 +46,38 @@
                                     <mux:WebView2 x:Name="WebView" Grid.Row="1" />
                                 </Grid>
                             </Border>
+
                         </Border>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="controls:MapControlBorder">
+        <Setter Property="Background" Value="{ThemeResource MapOverlayBackgroundBrush}" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:MapControlBorder">
+                    <Border>
+                        <ui:Effects.Shadow>
+                            <media:AttachedCardShadow Offset="2,8" Color="#60000000" />
+                        </ui:Effects.Shadow>
+
+                        <Border
+                            Padding="5"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="5"
+                            UseLayoutRounding="False">
+                            <ContentPresenter
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}" />
+                        </Border>
+
                     </Border>
                 </ControlTemplate>
             </Setter.Value>

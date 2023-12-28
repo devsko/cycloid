@@ -2,6 +2,7 @@
     x:Class="cycloid.Controls.Map"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
     xmlns:maps="using:Windows.UI.Xaml.Controls.Maps">
 
@@ -44,10 +45,11 @@
                 MapElementPointerExited="RoutePointsLayer_MapElementPointerExited" />
         </maps:MapControl.Resources>
 
+        <!--  CurrentPoint  -->
         <Border
-            maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(CurrentPoint)}"
+            maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.CurrentPoint)}"
             maps:MapControl.NormalizedAnchorPoint=".5 .5"
-            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(CurrentPoint)}">
+            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(ViewModel.CurrentPoint)}">
             <Grid>
                 <Ellipse
                     Width="15"
@@ -60,9 +62,17 @@
                 <Ellipse
                     Width="8"
                     Height="8"
-                    Fill="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(CurrentPoint.Value.Gradient)}" />
+                    Fill="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(ViewModel.CurrentPoint.Value.Gradient)}" />
             </Grid>
         </Border>
+
+        <!--  HoverPoint  -->
+
+        <!--  HoverPointValues  -->
+        <controls:MapHoverPointValues
+            Enabled="{x:Bind Mode=OneWay, Path=ViewModel.MapHoverPointValuesEnabled}"
+            Point="{x:Bind Mode=OneWay, Path=ViewModel.HoverPoint}"
+            Track="{x:Bind Mode=OneWay, Path=ViewModel.Track}" />
 
     </maps:MapControl>
 

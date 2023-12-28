@@ -18,6 +18,13 @@ public partial class ViewModel : ObservableObject
     private TrackPoint? _currentPoint;
 
     [ObservableProperty]
+    private TrackPoint? _hoverPoint;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TrackHoverPointValuesEnabled))]
+    private bool _mapHoverPointValuesEnabled;
+
+    [ObservableProperty]
     private bool _trackVisible = true;
 
     [ObservableProperty]
@@ -31,6 +38,12 @@ public partial class ViewModel : ObservableObject
         {
             throw new InvalidOperationException();
         }
+    }
+
+    public bool TrackHoverPointValuesEnabled
+    {
+        get => !MapHoverPointValuesEnabled;
+        set => MapHoverPointValuesEnabled = !value;
     }
 
     public readonly string OsmUri = "https://tile.openstreetmap.org/{zoomlevel}/{x}/{y}.png";

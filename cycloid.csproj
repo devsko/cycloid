@@ -58,6 +58,11 @@
     <Compile Include="Controls\Compass.xaml.cs">
       <DependentUpon>Compass.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\PointValuesBase.cs" />
+    <Compile Include="Controls\MapControlBorder.cs" />
+    <Compile Include="Controls\MapHoverPointValues.xaml.cs">
+      <DependentUpon>MapHoverPointValues.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\ConfigurationValue.cs" />
     <Compile Include="GeoCalculation.cs" />
     <Compile Include="MapPoint.cs" />
@@ -114,6 +119,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\Compass.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\MapHoverPointValues.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
