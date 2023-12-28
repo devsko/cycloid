@@ -103,33 +103,33 @@ public static class GeoCalculation
                     sinLat)));
     }
 
-    //// https://stackoverflow.com/questions/32771458/distance-from-lat-lng-point-to-minor-arc-segment
-    //public static (float? Fraction, float Distance) CrossTrackDistance<T>(TrackPoint p1, TrackPoint p2, T p3) where T : IMapPoint
-    //{
-    //    (double dist12, double heading12) = (p2.Distance - p1.Distance, p1.Heading);
-    //    (double dist13, double heading13) = DistanceAndHeading(p1, p3);
+    // https://stackoverflow.com/questions/32771458/distance-from-lat-lng-point-to-minor-arc-segment
+    public static (float? Fraction, float Distance) CrossTrackDistance<T>(TrackPoint p1, TrackPoint p2, T p3) where T : IMapPoint
+    {
+        (double dist12, double heading12) = (p2.Distance - p1.Distance, p1.Heading);
+        (double dist13, double heading13) = DistanceAndHeading(p1, p3);
 
-    //    double diff = (heading13 - heading12 + 360) % 360;
-    //    if (diff > 180)
-    //    {
-    //        diff = 360 - diff;
-    //    }
+        double diff = (heading13 - heading12 + 360) % 360;
+        if (diff > 180)
+        {
+            diff = 360 - diff;
+        }
 
-    //    if (diff > 90)
-    //    {
-    //        return (0, (float)dist13);
-    //    }
+        if (diff > 90)
+        {
+            return (0, (float)dist13);
+        }
 
-    //    double dxt = Math.Asin(Math.Sin(dist13 / EarthRadius) * Math.Sin(ToRadians(diff))) * EarthRadius;
-    //    float dist14 = (float)(Math.Acos(Math.Cos(dist13 / EarthRadius) / Math.Cos(dxt / EarthRadius)) * EarthRadius);
+        double dxt = Math.Asin(Math.Sin(dist13 / EarthRadius) * Math.Sin(ToRadians(diff))) * EarthRadius;
+        float dist14 = (float)(Math.Acos(Math.Cos(dist13 / EarthRadius) / Math.Cos(dxt / EarthRadius)) * EarthRadius);
 
-    //    if (dist14 > dist12)
-    //    {
-    //        return (null, float.MaxValue);
-    //    }
+        if (dist14 > dist12)
+        {
+            return (null, float.MaxValue);
+        }
 
-    //    return ((float)(dist14 / dist12), (float)dxt);
-    //}
+        return ((float)(dist14 / dist12), (float)dxt);
+    }
 
     private static float ToRadians(float degrees) => degrees * MathF.PI / 180;
     private static double ToRadians(double degrees) => degrees * Math.PI / 180;

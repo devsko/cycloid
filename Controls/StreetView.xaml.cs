@@ -8,7 +8,7 @@ namespace cycloid.Controls;
 
 public sealed partial class StreetView : UserControl
 {
-    private static readonly DispatcherTimer _requestTimeout = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+    private static readonly DispatcherTimer _requestTimeout = new() { Interval = TimeSpan.FromSeconds(5) };
     private static readonly string _apiKey = App.Current.Configuration["Google:ServiceApiKey"];
 
     private bool _requestWaiting;
