@@ -10,14 +10,14 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:PopupBrowser">
-                    <Border x:Name="Border" Background="{StaticResource SystemControlTransientBackgroundBrush}">
+                    <Border x:Name="Border" Background="{ThemeResource SystemControlTransientBackgroundBrush}">
                         <Border>
                             <ui:Effects.Shadow>
                                 <media:AttachedCardShadow Offset="2,8" Color="#60000000" />
                             </ui:Effects.Shadow>
                             <Border
                                 Padding="15"
-                                Background="{StaticResource ApplicationPageBackgroundThemeBrush}"
+                                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                                 CornerRadius="5">
                                 <Grid RowSpacing="10">
                                     <Grid.RowDefinitions>
@@ -32,16 +32,15 @@
                                         <Border
                                             Grid.Column="0"
                                             Padding="5"
-                                            BorderBrush="{StaticResource TextBoxDisabledBorderThemeBrush}"
+                                            BorderBrush="{ThemeResource TextBoxDisabledBorderThemeBrush}"
                                             BorderThickness="1"
                                             CornerRadius="3">
                                             <TextBlock x:Name="TextBlock" />
                                         </Border>
-                                        <Button x:Name="CloseButton" Grid.Column="1">
-                                            <Button.Content>
-                                                <SymbolIcon Symbol="Cancel" />
-                                            </Button.Content>
-                                        </Button>
+                                        <Button
+                                            x:Name="CloseButton"
+                                            Grid.Column="1"
+                                            Content="{ui:SymbolIcon Symbol=Cancel}" />
                                     </Grid>
                                     <mux:WebView2 x:Name="WebView" Grid.Row="1" />
                                 </Grid>

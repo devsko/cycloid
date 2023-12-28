@@ -1,27 +1,35 @@
 ﻿using CommunityToolkit.WinUI;
 using Windows.UI.Composition;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace cycloid.Controls;
 
 public sealed partial class Compass : UserControl
 {
-    private readonly Visual _visual;
+    private readonly Visual _gridVisual;
     private int _rounds;
+
+    public TrackPoint? Point
+    {
+        get => (TrackPoint?)GetValue(PointProperty);
+        set => SetValue(PointProperty, value);
+    }
+
+    public static readonly DependencyProperty PointProperty =
+        DependencyProperty.Register(nameof(Point), typeof(TrackPoint?), typeof(Bing), new PropertyMetadata(null));
 
     public Compass()
     {
         InitializeComponent();
 
-        _visual = Grid.GetVisual();
+        _gridVisual = Grid.GetVisual();
     }
-
-    private ViewModel ViewModel => (ViewModel)this.FindResource(nameof(ViewModel));
 
     private double HeadingToRotationAngle(float heading)
     {
         double rotation = -heading + 360;
-        var current = _visual.RotationAngleInDegrees - _rounds * 360;
+        var current = _gridVisual.RotationAngleInDegrees - _rounds * 360;
         if (rotation is >= 270 and <= 360 && current is > 0 and <= 90)
         {
             _rounds--;

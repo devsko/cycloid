@@ -11,17 +11,6 @@ public partial class ViewModel : ObservableObject
 {
     private readonly SynchronizationContext _synchronizationContext;
 
-    public ViewModel()
-    {
-        _synchronizationContext = SynchronizationContext.Current;
-
-        if (_synchronizationContext is null)
-        {
-            throw new InvalidOperationException();
-        }
-    }
-
-
     [ObservableProperty]
     private Track _track;
 
@@ -34,7 +23,17 @@ public partial class ViewModel : ObservableObject
     [ObservableProperty]
     private bool _poisVisible = true;
 
-    public string OsmUri => "https://tile.openstreetmap.org/{zoomlevel}/{x}/{y}.png";
+    public ViewModel()
+    {
+        _synchronizationContext = SynchronizationContext.Current;
+
+        if (_synchronizationContext is null)
+        {
+            throw new InvalidOperationException();
+        }
+    }
+
+    public readonly string OsmUri = "https://tile.openstreetmap.org/{zoomlevel}/{x}/{y}.png";
 
     [RelayCommand]
     public async Task OpenTrackAsync()

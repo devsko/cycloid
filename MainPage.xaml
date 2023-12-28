@@ -5,11 +5,18 @@
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     Loaded="Page_Loaded">
 
     <Page.Resources>
-        <cycloid:ViewModel x:Name="ViewModel" />
+        <ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml">
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <cycloid:ViewModel x:Name="ViewModel" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Page.Resources>
 
     <Grid ColumnSpacing="3" RowSpacing="3">
@@ -26,7 +33,6 @@
             Grid.Row="0"
             Grid.RowSpan="2"
             Grid.Column="0"
-            Margin="5"
             RowSpacing="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -64,6 +70,7 @@
 
             <StackPanel
                 Grid.Row="2"
+                HorizontalAlignment="Center"
                 Orientation="Horizontal"
                 Spacing="5">
                 <ToggleButton Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}" IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
@@ -71,23 +78,24 @@
                         <KeyboardAccelerator Key="H" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
                     <Border Width="20" Height="20">
-                        <PathIcon
-                            HorizontalAlignment="Center"
-                            Data="M 6.426 0.7 L 0.63 11.9 L 4.046 11.9 L 6.426 7.433 L 8.792 11.9 L 12.18 11.9 L 6.426 0.7 Z M 12.18 11.9 L 10.5 15.252 L 8.792 11.9 L 6.202 11.9 L 10.5 20.3 L 14.77 11.9 L 12.18 11.9 Z"
-                            Foreground="{ThemeResource ToggleButtonForeground}" />
+                        <PathIcon HorizontalAlignment="Center" Data="M 6.426 0.7 L 0.63 11.9 L 4.046 11.9 L 6.426 7.433 L 8.792 11.9 L 12.18 11.9 L 6.426 0.7 Z M 12.18 11.9 L 10.5 15.252 L 8.792 11.9 L 6.202 11.9 L 10.5 20.3 L 14.77 11.9 L 12.18 11.9 Z" />
                     </Border>
                 </ToggleButton>
-                <ToggleButton IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}" IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.TrueIfNotNull(ViewModel.Track)}">
+                <ToggleButton
+                    Content="{ui:SymbolIcon Symbol=Directions}"
+                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.TrueIfNotNull(ViewModel.Track)}">
                     <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="T" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
-                    <SymbolIcon Symbol="Directions" />
                 </ToggleButton>
-                <ToggleButton IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.PoisVisible}" IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.TrueIfNotNull(ViewModel.Track)}">
+                <ToggleButton
+                    Content="{ui:SymbolIcon Symbol=MapPin}"
+                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.PoisVisible}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.TrueIfNotNull(ViewModel.Track)}">
                     <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="I" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
-                    <SymbolIcon Symbol="MapPin" />
                 </ToggleButton>
             </StackPanel>
 
@@ -158,15 +166,33 @@
 
         </Grid>
 
-        <Grid Grid.Row="0" Grid.Column="1">
+        <Grid
+            Grid.Row="0"
+            Grid.Column="1"
+            ui:UIElementExtensions.ClipToBounds="True">
+
             <controls:Map CurrentPoint="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoint}" />
+
             <StackPanel
                 Margin="10"
                 HorizontalAlignment="Left"
                 Orientation="Vertical"
                 Spacing="10">
-                <controls:Compass />
+
+                <controls:Compass Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}" />
+
+                <!--  TrackPointValues  -->
+
             </StackPanel>
+
+            <!--  StreetView  -->
+
+            <controls:Bing
+                Margin="10"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Address="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPointAddress}" />
+
         </Grid>
 
         <!--  TrackControl Grid.Row=1 Grid.Column=1  -->

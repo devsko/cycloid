@@ -52,6 +52,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Bing.xaml.cs">
+      <DependentUpon>Bing.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Compass.xaml.cs">
       <DependentUpon>Compass.xaml</DependentUpon>
     </Compile>
@@ -74,10 +77,12 @@
     <Compile Include="Routing\RouteSection.cs" />
     <Compile Include="External\Strava.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
+    <Compile Include="Throttle.cs" />
     <Compile Include="Track.cs" />
     <Compile Include="Convert.cs" />
     <Compile Include="TrackPoint.cs" />
     <Compile Include="CommonValues.cs" />
+    <Compile Include="ViewModel.Bing.cs" />
     <Compile Include="ViewModel.cs" />
     <Compile Include="Format.cs" />
     <Compile Include="ViewModel.Heatmap.cs" />
@@ -104,6 +109,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Controls\Bing.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\Compass.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

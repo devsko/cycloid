@@ -69,7 +69,6 @@ public sealed partial class Map : UserControl
 
 
         //******************
-        ViewModel.SetCurrentPointAsync(new(46.46039124618558f, 10.089039490153148f, gradient: 5f, heading: 195)).FireAndForget();
 
         Routing.RouteBuilder builder = new();
         builder.CalculationFinished += (section, result) =>
@@ -125,6 +124,7 @@ public sealed partial class Map : UserControl
         builder.AddLastPoint(new MapPoint(47.825069f, 15.472469f));
         builder.AddLastPoint(new MapPoint(47.808607f, 15.368826f));
         builder.AddLastPoint(new MapPoint(47.77284f, 15.317575f));
+
 
     }
 

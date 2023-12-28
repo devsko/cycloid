@@ -6,7 +6,7 @@
     xmlns:cycloid="using:cycloid"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(ViewModel.CurrentPoint)}">
+    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(Point)}">
 
     <Border>
         <ui:Effects.Shadow>
@@ -22,7 +22,7 @@
                 <Grid
                     x:Name="Grid"
                     ui:VisualExtensions.CenterPoint="40,40,0"
-                    ui:VisualExtensions.RotationAngleInDegrees="{x:Bind Mode=OneWay, Path=HeadingToRotationAngle(ViewModel.CurrentPoint.Value.Heading)}">
+                    ui:VisualExtensions.RotationAngleInDegrees="{x:Bind Mode=OneWay, Path=HeadingToRotationAngle(Point.Value.Heading)}">
                     <animations:Implicit.Animations>
                         <animations:RotationInDegreesAnimation Duration="0:0:1" />
                     </animations:Implicit.Animations>
@@ -103,13 +103,13 @@
                     <Ellipse
                         Width="47"
                         Height="47"
-                        Stroke="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(ViewModel.CurrentPoint.Value.Gradient)}"
+                        Stroke="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(Point.Value.Gradient)}"
                         StrokeThickness="4" />
                     <TextBlock
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         FontSize="11"
-                        Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Gradient(ViewModel.CurrentPoint.Value.Gradient)}"
+                        Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Gradient(Point.Value.Gradient)}"
                         TextLineBounds="Tight" />
                 </Grid>
             </Grid>

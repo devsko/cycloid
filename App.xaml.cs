@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
+using Windows.Services.Maps;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -26,6 +27,8 @@ sealed partial class App : Application
         var builder = new ConfigurationBuilder();
         builder.AddUserSecrets("not used");
         Configuration = builder.Build();
+
+        MapService.ServiceToken = Configuration["Bing:ServiceApiKey"];
 
         InitializeComponent();
     }
