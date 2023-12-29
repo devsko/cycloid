@@ -68,6 +68,7 @@ sealed partial class App : Application
     {
         try
         {
+            Debug.WriteLine(message);
 #pragma warning disable VSTHRD101 // Avoid unsupported async delegates
             await _dispatcher.RunAsync(CoreDispatcherPriority.High, async () =>
 #pragma warning restore VSTHRD101 // Avoid unsupported async delegates
@@ -82,15 +83,15 @@ sealed partial class App : Application
                     };
                     await dialog.ShowAsync();
                 }
-                catch
+                catch (Exception ex)
                 {
-                    Debugger.Break();
+                    Debug.WriteLine($"Cannot show error dialog. {ex.Message}");
                 }
             });
         }
-        catch
+        catch (Exception ex)
         {
-            Debugger.Break();
+            Debug.WriteLine($"Cannot show error dialog. {ex.Message}");
         }
     }
 }

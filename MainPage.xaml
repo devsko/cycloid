@@ -183,7 +183,7 @@
                 Orientation="Vertical"
                 Spacing="10">
 
-                <controls:Compass Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}" />
+                <controls:Compass HorizontalAlignment="Left" Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}" />
 
                 <controls:MapCurrentPointValues
                     HorizontalAlignment="Left"

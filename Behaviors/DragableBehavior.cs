@@ -1,4 +1,5 @@
 using Microsoft.Xaml.Interactivity;
+using System;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
@@ -9,6 +10,8 @@ public class DragableBehavior : Behavior<FrameworkElement>
 {
     private Thickness _originalMargin;
     private Thickness _startMargin;
+
+    public event EventHandler DragCompleted;
 
     public bool IsEnabled
     {
@@ -24,6 +27,12 @@ public class DragableBehavior : Behavior<FrameworkElement>
         AssociatedObject.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
         AssociatedObject.ManipulationStarted += AssociatedObject_ManipulationStarted;
         AssociatedObject.ManipulationDelta += AssociatedObject_ManipulationDelta;
+        AssociatedObject.ManipulationCompleted += AssociatedObject_ManipulationCompleted;
+        AssociatedObject.Loaded += AssociatedObject_Loaded;
+    }
+
+    private void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
+    {
         // TODO Horizontal/Vertical alignment
         _originalMargin = AssociatedObject.Margin = new Thickness(
             -100_000, -100_000, AssociatedObject.Margin.Right, AssociatedObject.Margin.Bottom);
@@ -33,6 +42,13 @@ public class DragableBehavior : Behavior<FrameworkElement>
     {
         AssociatedObject.ManipulationStarted -= AssociatedObject_ManipulationStarted;
         AssociatedObject.ManipulationDelta -= AssociatedObject_ManipulationDelta;
+        AssociatedObject.ManipulationCompleted -= AssociatedObject_ManipulationCompleted;
+        AssociatedObject.Loaded -= AssociatedObject_Loaded;
+    }
+
+    public void Reset()
+    {
+        AssociatedObject.Margin = _originalMargin;
     }
 
     private void AssociatedObject_ManipulationStarted(object _1, ManipulationStartedRoutedEventArgs _2)
@@ -53,8 +69,8 @@ public class DragableBehavior : Behavior<FrameworkElement>
         }
     }
 
-    public void Reset()
+    private void AssociatedObject_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
     {
-        AssociatedObject.Margin = _originalMargin;
+        DragCompleted?.Invoke(this, EventArgs.Empty);
     }
 }

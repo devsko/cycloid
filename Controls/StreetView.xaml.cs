@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Globalization;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace cycloid.Controls;
 
 public sealed partial class StreetView : UserControl
 {
-    private static readonly DispatcherTimer _requestTimeout = new() { Interval = TimeSpan.FromSeconds(5) };
-    private static readonly string _apiKey = App.Current.Configuration["Google:ServiceApiKey"];
+    private readonly DispatcherTimer _requestTimeout;
+    private readonly string _apiKey = App.Current.Configuration["Google:ServiceApiKey"];
 
     private bool _requestWaiting;
-
-    public event EventHandler IsCollapsedChanged;
+    private Size _collapsedSize;
+    private Size _collapsedMargin;
 
     public double ImageWidth
     {
@@ -49,7 +48,7 @@ public sealed partial class StreetView : UserControl
     }
 
     public static readonly DependencyProperty HeadingOffsetProperty =
-        DependencyProperty.Register(nameof(HeadingOffset), typeof(double), typeof(StreetView), new PropertyMetadata(0d, (sender, _) => ((StreetView)sender).HeadingOffsetChanged()));
+        DependencyProperty.Register(nameof(HeadingOffset), typeof(double), typeof(StreetView), new PropertyMetadata(0d, (sender, _) => ((StreetView)sender).UpdateImageUri()));
 
     public TrackPoint? Location
     {
@@ -58,59 +57,29 @@ public sealed partial class StreetView : UserControl
     }
 
     public static readonly DependencyProperty LocationProperty =
-        DependencyProperty.Register(nameof(Location), typeof(TrackPoint?), typeof(StreetView), new PropertyMetadata(null, (sender, _) => ((StreetView)sender).LocationChanged()));
+        DependencyProperty.Register(nameof(Location), typeof(TrackPoint?), typeof(StreetView), new PropertyMetadata(null, (sender, _) => ((StreetView)sender).UpdateImageUri()));
 
     public StreetView()
     {
         InitializeComponent();
 
-        ApplicationViewStates.CurrentStateChanged += (_, _) =>
-        {
-            DragableBehavior.Reset();
-            DragableBehavior.IsEnabled = !IsCollapsed;
-
-            IsCollapsedChanged?.Invoke(this, EventArgs.Empty);
-            if (!IsCollapsed)
-                UpdateImageUri();
-        };
-
-        CollapseButton.Click += (sender, e) => VisualStateManager.GoToState(this, "CollapsedState", true);
-        ExpandButton.Click += (sender, e) => VisualStateManager.GoToState(this, "ExpandedState", true);
-
-        SizeChanged += (sender, args) =>
-        {
-            ExpandedScale.CenterX = ActualWidth / 2;
-            ExpandedScale.CenterY = ActualHeight / 2;
-        };
-
-        Image.ImageOpened += (_, _) => EndRequest();
-        Image.ImageFailed += (_, _) => EndRequest();
+        _requestTimeout = new() { Interval = TimeSpan.FromSeconds(5) };
         _requestTimeout.Tick += (_, _) => EndRequest();
 
-        bool transitioned = VisualStateManager.GoToState(this, "CollapsedState", false);
-        
-        void EndRequest()
-        {
-            _requestTimeout.Stop();
-            RequestPending = false;
-            if (_requestWaiting)
-            {
-                _requestWaiting = false;
-                UpdateImageUri();
-            }
-        }
+        VisualStateManager.GoToState(this, "CollapsedState", false);
     }
 
     public bool IsCollapsed => ApplicationViewStates.CurrentState?.Name == "CollapsedState";
 
-    private void HeadingOffsetChanged()
+    private void EndRequest()
     {
-        UpdateImageUri();
-    }
-
-    private void LocationChanged()
-    {
-        UpdateImageUri();
+        _requestTimeout.Stop();
+        RequestPending = false;
+        if (_requestWaiting)
+        {
+            _requestWaiting = false;
+            UpdateImageUri();
+        }
     }
 
     private void UpdateImageUri()
@@ -141,6 +110,44 @@ public sealed partial class StreetView : UserControl
             _requestWaiting = false;
             _requestTimeout.Start();
             ImageSource.UriSource = uri;
+        }
+    }
+
+    private void ExpandButton_Click(object sender, RoutedEventArgs e)
+    {
+        _collapsedSize = new Size(ActualWidth, ActualHeight);
+        _collapsedMargin = new Size(Margin.Right, Margin.Bottom);
+        VisualStateManager.GoToState(this, "ExpandedState", true);
+    }
+
+    private void CollapseButton_Click(object sender, RoutedEventArgs e)
+    {
+        TranslateXAnimation.To = ActualWidth + Margin.Right - (_collapsedSize.Width + _collapsedMargin.Width);
+        TranslateYAnimation.To = ActualHeight + Margin.Bottom - (_collapsedSize.Height + _collapsedMargin.Height);
+        ScaleXAnimation.To = _collapsedSize.Width / ActualWidth;
+        ScaleYAnimation.To = _collapsedSize.Height / ActualHeight;
+
+        VisualStateManager.GoToState(this, "CollapsedState", true);
+    }
+
+    private void Image_ImageOpened(object sender, RoutedEventArgs e)
+    {
+        EndRequest();
+    }
+
+    private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+    {
+        EndRequest();
+    }
+
+    private void ApplicationViewStates_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
+    {
+        DragableBehavior.Reset();
+        DragableBehavior.IsEnabled = !IsCollapsed;
+
+        if (!IsCollapsed)
+        {
+            UpdateImageUri();
         }
     }
 }
