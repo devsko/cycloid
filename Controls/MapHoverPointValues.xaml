@@ -8,11 +8,10 @@
     Margin="5"
     maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(Point)}"
     maps:MapControl.NormalizedAnchorPoint="0 1"
-    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(IsVisible)}"
-    >
+    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(IsVisible)}">
 
     <controls:MapControlBorder>
-        
+
         <Grid
             Width="105"
             ColumnSpacing="4"
@@ -57,7 +56,7 @@
                 Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Gradient(Point.Value.Gradient)}" />
 
         </Grid>
-        
+
     </controls:MapControlBorder>
 
 </controls:PointValuesBase>
