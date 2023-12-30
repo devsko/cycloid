@@ -50,8 +50,7 @@
   </Applications>
 
   <Capabilities>
-    <rescap:Capability Name="broadFileSystemAccess" />
+    <!--<rescap:Capability Name="broadFileSystemAccess" />-->
     <Capability Name="internetClient" />
-    <uap4:Capability Name="offlineMapsManagement"/>
   </Capabilities>
 </Package>
