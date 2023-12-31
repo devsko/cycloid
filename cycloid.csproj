@@ -71,6 +71,7 @@
       <DependentUpon>StreetView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Extensions\ConfigurationValue.cs" />
+    <Compile Include="External\Osm.cs" />
     <Compile Include="GeoCalculation.cs" />
     <Compile Include="MapPoint.cs" />
     <Compile Include="Routing\BrouterClient.cs" />
@@ -89,17 +90,22 @@
     <Compile Include="Routing\RouteSection.cs" />
     <Compile Include="External\Strava.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
+    <Compile Include="Serialization\Serializer.cs" />
+    <Compile Include="Serialization\TrackFile.cs" />
     <Compile Include="Throttle.cs" />
     <Compile Include="Track.cs" />
     <Compile Include="Convert.cs" />
+    <Compile Include="Track.PointCollection.cs" />
     <Compile Include="TrackPoint.cs" />
     <Compile Include="CommonValues.cs" />
     <Compile Include="ViewModel.Bing.cs" />
     <Compile Include="ViewModel.cs" />
     <Compile Include="Format.cs" />
     <Compile Include="ViewModel.Heatmap.cs" />
+    <Compile Include="ViewModel.IO.cs" />
     <Compile Include="ViewModel.MapStyleAndColor.cs" />
     <Compile Include="ViewModel.StyleSheet.cs" />
+    <Compile Include="WayPoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

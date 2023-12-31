@@ -1,15 +1,17 @@
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.VisualStudio.Threading;
+using cycloid.External;
 
 namespace cycloid;
 
 public partial class ViewModel : ObservableObject
 {
     private readonly SynchronizationContext _synchronizationContext;
+
+    public Strava Strava { get; } = new();
+
+    public Osm Osm { get; } = new();
 
     [ObservableProperty]
     private Track _track;
@@ -30,6 +32,8 @@ public partial class ViewModel : ObservableObject
     [ObservableProperty]
     private bool _poisVisible = true;
 
+    public event Action<Track, Track> TrackChanged;
+
     public ViewModel()
     {
         _synchronizationContext = SynchronizationContext.Current;
@@ -46,23 +50,11 @@ public partial class ViewModel : ObservableObject
         set => MapHoverPointValuesEnabled = !value;
     }
 
-    public readonly string OsmUri = "https://tile.openstreetmap.org/{zoomlevel}/{x}/{y}.png";
-
-    [RelayCommand]
-    public async Task OpenTrackAsync()
+    partial void OnTrackChanged(Track oldValue, Track newValue)
     {
-        await Task.Yield();
-    }
+        CurrentPoint = null;
+        HoverPoint = null;
 
-    [RelayCommand]
-    public async Task NewTrackAsync()
-    {
-        await Task.Yield();
-    }
-
-    public async Task SetCurrentPointAsync(TrackPoint point)
-    {
-        await _synchronizationContext;
-        CurrentPoint = point;
+        TrackChanged?.Invoke(oldValue, newValue);
     }
 }

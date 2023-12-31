@@ -12,8 +12,6 @@ partial class ViewModel
         private set => SetProperty(ref _heatmapVisible, value);
     }
 
-    public string HeatmapUri => App.Current.Strava.HeatmapUri;
-
     [RelayCommand]
     public async Task ToggleHeatmapVisibleAsync()
     {
@@ -23,7 +21,7 @@ partial class ViewModel
         }
         else
         {
-            HeatmapVisible = await App.Current.Strava.InitializeHeatmapAsync();
+            HeatmapVisible = await Strava.InitializeHeatmapAsync();
             // Notify property changed again to convinvce the toggle button
             OnPropertyChanged(nameof(HeatmapVisible));
         }

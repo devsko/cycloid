@@ -17,8 +17,7 @@ public partial class PointValuesBase : UserControl
     }
 
     public static readonly DependencyProperty TrackProperty =
-        DependencyProperty.Register(nameof(Track), typeof(Track), typeof(PointValuesBase), new PropertyMetadata(null));
-
+    DependencyProperty.Register(nameof(Track), typeof(Track), typeof(PointValuesBase), new PropertyMetadata(null));
     public TrackPoint? Point
     {
         get => (TrackPoint?)GetValue(PointProperty);
@@ -56,4 +55,15 @@ public partial class PointValuesBase : UserControl
     {
         PropertyChanged?.Invoke(this, _isVisibleChangedArgs);
     }
+
+    protected string FilePosition(TrackPoint point) => Track?.FilePosition(point);
+
+    protected string DistanceFromStart(TrackPoint point) => Track?.DistanceFromStart(point);
+
+    protected string TimeFromStart(TrackPoint point) => Track?.TimeFromStart(point);
+
+    protected string DistanceToEnd(TrackPoint point) => Track?.DistanceToEnd(point);
+
+    protected string TimeToEnd(TrackPoint point) => Track?.TimeToEnd(point);
+
 }

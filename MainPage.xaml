@@ -13,7 +13,7 @@
         <ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml">
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
-                    <cycloid:ViewModel x:Name="ViewModel" />
+                    <cycloid:ViewModel x:Name="ViewModel" TrackChanged="ViewModel_TrackChanged" />
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -171,11 +171,7 @@
             Grid.Column="1"
             ui:UIElementExtensions.ClipToBounds="True">
 
-            <controls:Map
-                CurrentPoint="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoint}"
-                HoverPoint="{x:Bind Mode=TwoWay, Path=ViewModel.HoverPoint}"
-                HoverPointValuesEnabled="{x:Bind Mode=OneWay, Path=ViewModel.MapHoverPointValuesEnabled}"
-                Track="{x:Bind Mode=OneWay, Path=ViewModel.Track}" />
+            <controls:Map />
 
             <StackPanel
                 Margin="10"

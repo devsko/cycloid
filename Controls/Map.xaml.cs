@@ -1,13 +1,15 @@
 ﻿using CommunityToolkit.WinUI;
-using System;
+using cycloid.Routing;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Devices.Geolocation;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Maps;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 
@@ -15,46 +17,24 @@ namespace cycloid.Controls;
 
 public sealed partial class Map : UserControl
 {
+    private class ClickPanel : Panel
+    {
+        public ClickPanel()
+        {
+            Background = new SolidColorBrush(Colors.Transparent);
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            return new Size(1e5, 1e5);
+        }
+    }
+
     private readonly ClickPanel _clickPanel;
     private MapTileSource _heatmap;
     private MapTileSource _osm;
     private MapElementsLayer _routingLayer;
 
-    public Track Track
-    {
-        get => (Track)GetValue(TrackProperty);
-        set => SetValue(TrackProperty, value);
-    }
-
-    public static readonly DependencyProperty TrackProperty =
-        DependencyProperty.Register(nameof(Track), typeof(Track), typeof(Map), new PropertyMetadata(null));
-
-    public TrackPoint? CurrentPoint
-    {
-        get => (TrackPoint?)GetValue(CurrentPointProperty);
-        set => SetValue(CurrentPointProperty, value);
-    }
-
-    public static readonly DependencyProperty CurrentPointProperty =
-        DependencyProperty.Register(nameof(CurrentPoint), typeof(TrackPoint?), typeof(Map), new PropertyMetadata(null));
-
-    public TrackPoint? HoverPoint
-    {
-        get => (TrackPoint?)GetValue(HoverPointProperty);
-        set => SetValue(HoverPointProperty, value);
-    }
-
-    public static readonly DependencyProperty HoverPointProperty =
-        DependencyProperty.Register(nameof(HoverPoint), typeof(TrackPoint?), typeof(Map), new PropertyMetadata(null));
-
-    public bool HoverPointValuesEnabled
-    {
-        get => (bool)GetValue(HoverPointValuesPropertyEnabled);
-        set => SetValue(HoverPointValuesPropertyEnabled, value);
-    }
-
-    public static DependencyProperty HoverPointValuesPropertyEnabled =
-        DependencyProperty.Register(nameof(HoverPointValuesEnabled), typeof(bool), typeof(Map), new PropertyMetadata(false));
 
     public Map()
     {
@@ -86,83 +66,16 @@ public sealed partial class Map : UserControl
         _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
         MapControl.Layers.Add(_routingLayer);
 
-        //******************
-
-        Routing.RouteBuilder builder = new();
-        builder.CalculationFinished += (section, result) =>
-        {
-            if (result.IsValid)
-            {
-                _routingLayer.MapElements.Add(new MapPolyline
-                {
-                    Path = new Geopath(result.Points.Select(point => new BasicGeoposition { Latitude = point.Latitude, Longitude = point.Longitude })),
-                    MapStyleSheetEntry = "Routing.Line",
-                });
-            }
-        };
-        builder.Points.CollectionChanged += (sender, args) =>
-        {
-            if (args.Action == NotifyCollectionChangedAction.Add)
-            {
-                _routingLayer.MapElements.Add(new MapIcon
-                {
-                    Location = new Geopoint((MapPoint)args.NewItems[0]),
-                    MapStyleSheetEntry = "Routing.Point",
-                });
-            }
-        };
-        builder.AddLastPoint(new MapPoint(48.187154f, 16.313179f));
-        builder.AddLastPoint(new MapPoint(48.199672f, 16.254162f));
-        builder.AddLastPoint(new MapPoint(48.201764f, 16.244299f));
-        builder.AddLastPoint(new MapPoint(48.182811f, 16.122369f));
-        builder.AddLastPoint(new MapPoint(48.108571f, 16.03775f));
-        builder.AddLastPoint(new MapPoint(48.026322f, 15.921589f));
-        builder.AddLastPoint(new MapPoint(47.961056f, 15.808882f));
-        builder.AddLastPoint(new MapPoint(47.878235f, 15.629786f));
-        builder.AddLastPoint(new MapPoint(47.871516f, 15.598135f));
-        builder.AddLastPoint(new MapPoint(47.864178f, 15.592255f));
-        builder.AddLastPoint(new MapPoint(47.862243f, 15.58887f));
-        builder.AddLastPoint(new MapPoint(47.860939f, 15.58313f));
-        builder.AddLastPoint(new MapPoint(47.857592f, 15.579903f));
-        builder.AddLastPoint(new MapPoint(47.853269f, 15.572645f));
-        builder.AddLastPoint(new MapPoint(47.852237f, 15.56537f));
-        builder.AddLastPoint(new MapPoint(47.847267f, 15.553873f));
-        builder.AddLastPoint(new MapPoint(47.841961f, 15.548225f));
-        builder.AddLastPoint(new MapPoint(47.830391f, 15.549156f));
-        builder.AddLastPoint(new MapPoint(47.816947f, 15.548799f));
-        builder.AddLastPoint(new MapPoint(47.815398f, 15.544413f));
-        builder.AddLastPoint(new MapPoint(47.817398f, 15.537541f));
-        builder.AddLastPoint(new MapPoint(47.819608f, 15.531802f));
-        builder.AddLastPoint(new MapPoint(47.820944f, 15.525935f));
-        builder.AddLastPoint(new MapPoint(47.822569f, 15.520184f));
-        builder.AddLastPoint(new MapPoint(47.829616f, 15.487246f));
-        builder.AddLastPoint(new MapPoint(47.825069f, 15.472469f));
-        builder.AddLastPoint(new MapPoint(47.808607f, 15.368826f));
-        builder.AddLastPoint(new MapPoint(47.77284f, 15.317575f));
-
-
-    }
-
-    private class ClickPanel : Panel
-    {
-        public ClickPanel()
-        {
-            Background = new SolidColorBrush(Colors.Transparent);
-        }
-
-        protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
-        {
-            return new Windows.Foundation.Size(1e5, 1e5);
-        }
+        ViewModel.TrackChanged += ViewModel_TrackChanged;
     }
 
     private void RoutingLayer_MapElementPointerExited(MapElementsLayer sender, MapElementsLayerPointerExitedEventArgs args)
     {
-        if (args.MapElement is MapIcon routePoint)
+        if (args.MapElement is MapIcon)
         {
             args.MapElement.MapStyleSheetEntryState = "";
         }
-        else if (args.MapElement is MapPolyline routeLine)
+        else if (args.MapElement is MapPolyline)
         {
             args.MapElement.MapStyleSheetEntry = "Routing.Line";
         }
@@ -170,11 +83,11 @@ public sealed partial class Map : UserControl
 
     private void RoutingLayer_MapElementPointerEntered(MapElementsLayer sender, MapElementsLayerPointerEnteredEventArgs args)
     {
-        if (args.MapElement is MapIcon routePoint)
+        if (args.MapElement is MapIcon)
         {
             args.MapElement.MapStyleSheetEntryState = "Routing.hover";
         }
-        else if (args.MapElement is MapPolyline routeLine)
+        else if (args.MapElement is MapPolyline)
         { 
             args.MapElement.MapStyleSheetEntry = "Routing.HoveredLine";
         }
@@ -185,13 +98,13 @@ public sealed partial class Map : UserControl
         MapControl.Children.Add(_clickPanel);
     }
 
-    private void ClickPanel_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+    private void ClickPanel_Tapped(object sender, TappedRoutedEventArgs e)
     {
         Debug.WriteLine("Panel_Tapped");
         MapControl.Children.Remove(_clickPanel);
     }
 
-    private void ClickPanel_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+    private void ClickPanel_PointerMoved(object sender, PointerRoutedEventArgs e)
     {
         Debug.WriteLine("Panel_PointerMoved");
     }
@@ -204,5 +117,107 @@ public sealed partial class Map : UserControl
     private void MapControl_MapRightTapped(MapControl sender, MapRightTappedEventArgs args)
     {
         Debug.WriteLine("MapControl_MapRightTapped");
+    }
+
+    private void ViewModel_TrackChanged(Track oldTrack, Track newTrack)
+    {
+        _routingLayer.MapElements.Clear();
+
+        if (oldTrack is not null)
+        {
+            oldTrack.RouteBuilder.Points.CollectionChanged -= RouteBuilderPoints_CollectionChanged;
+            oldTrack.RouteBuilder.SectionAdded -= RouteBuilder_SectionAdded;
+            oldTrack.RouteBuilder.SectionRemoved -= RouteBuilder_SectionRemoved;
+            oldTrack.RouteBuilder.CalculationStarting -= RouteBuilder_CalculationStarting;
+            oldTrack.RouteBuilder.CalculationRetry -= RouteBuilder_CalculationRetry;
+            oldTrack.RouteBuilder.CalculationFinished -= RouteBuilder_CalculationFinished;
+        }
+        if (newTrack is not null)
+        {
+            newTrack.RouteBuilder.Points.CollectionChanged += RouteBuilderPoints_CollectionChanged;
+            newTrack.RouteBuilder.SectionAdded += RouteBuilder_SectionAdded;
+            newTrack.RouteBuilder.SectionRemoved += RouteBuilder_SectionRemoved;
+            newTrack.RouteBuilder.CalculationStarting += RouteBuilder_CalculationStarting;
+            newTrack.RouteBuilder.CalculationRetry += RouteBuilder_CalculationRetry;
+            newTrack.RouteBuilder.CalculationFinished += RouteBuilder_CalculationFinished;
+        }
+
+        void RouteBuilderPoints_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    _routingLayer.MapElements.Add(new MapIcon
+                    {
+                        Location = new Geopoint((MapPoint)e.NewItems[0]),
+                        NormalizedAnchorPoint = new Point(.5, .5),
+                        MapStyleSheetEntry = "Routing.Point",
+                    });
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    _routingLayer.MapElements.Remove(GetRoutePoint((MapPoint)e.OldItems[0]));
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    {
+                        MapPoint oldPoint = (MapPoint)e.OldItems[0];
+                        MapPoint newPoint = (MapPoint)e.NewItems[0];
+                        MapIcon icon = GetRoutePoint(oldPoint);
+                        icon.Location = new Geopoint(new BasicGeoposition { Latitude = newPoint.Latitude, Longitude = newPoint.Longitude });
+                        icon.Tag = newPoint;
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    break;
+            }
+
+            MapIcon GetRoutePoint(MapPoint point) => _routingLayer.MapElements.OfType<MapIcon>().First(element => (MapPoint)element.Tag == point);
+        }
+
+        void RouteBuilder_SectionAdded(RouteSection section, int index)
+        {
+            MapPolyline sectionLine = new()
+            {
+                MapStyleSheetEntry = "Routing.NewLine",
+                Tag = section,
+                Path = new Geopath(new[] { new BasicGeoposition { Longitude = section.Start.Longitude, Latitude = section.Start.Latitude }, new BasicGeoposition { Longitude = section.End.Longitude, Latitude = section.End.Latitude } })
+            };
+            _routingLayer.MapElements.Add(sectionLine);
+        }
+
+        void RouteBuilder_SectionRemoved(RouteSection section, int index)
+        {
+            _routingLayer.MapElements.Remove(GetSectionLine(section));
+        }
+
+        void RouteBuilder_CalculationStarting(RouteSection section)
+        {
+            GetSectionLine(section).MapStyleSheetEntry = "Routing.CalculatingLine";
+        }
+
+        void RouteBuilder_CalculationRetry(RouteSection section)
+        {
+            GetSectionLine(section).MapStyleSheetEntry = "Routing.RetryLine";
+        }
+
+        void RouteBuilder_CalculationFinished(RouteSection section, RouteResult result)
+        {
+            if (!section.IsCanceled)
+            {
+                MapPolyline sectionLine = GetSectionLine(section);
+                if (result.IsValid)
+                {
+                    sectionLine.Path = new Geopath(result.Points.Select(p => new BasicGeoposition { Longitude = p.Longitude, Latitude = p.Latitude }));
+                    sectionLine.MapStyleSheetEntry = "Routing.Line";
+                }
+                else
+                {
+                    sectionLine.MapStyleSheetEntry = "Routing.ErrorLine";
+                }
+            }
+        }
+
+        MapPolyline GetSectionLine(RouteSection section) => _routingLayer.MapElements.OfType<MapPolyline>().First(line => line.Tag == section);
     }
 }

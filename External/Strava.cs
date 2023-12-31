@@ -16,12 +16,12 @@ public class Strava
 
     public Uri BaseUri { get; }
 
-    public string HeatmapUri { get; }
+    public string HeatmapTilesUri { get; }
 
     public Strava()
     {
         BaseUri = new Uri("https://heatmap-external-" + (char)('a' + new Random().Next(3)) + ".strava.com");
-        HeatmapUri = new Uri(BaseUri, "/tiles-auth/ride/hot/{zoomlevel}/{x}/{y}.png").ToString();
+        HeatmapTilesUri = new Uri(BaseUri, "/tiles-auth/ride/hot/{zoomlevel}/{x}/{y}.png").ToString();
     }
 
     public async Task<HttpCookie[]> LoginAsync()

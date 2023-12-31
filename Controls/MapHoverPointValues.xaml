@@ -37,7 +37,7 @@
                 Grid.ColumnSpan="3"
                 HorizontalAlignment="Stretch"
                 HorizontalTextAlignment="Center"
-                Text="{x:Bind Mode=OneWay, Path=Track.FilePosition(Point.Value)}" />
+                Text="{x:Bind Mode=OneWay, Path=FilePosition(Point.Value)}" />
 
             <Path
                 Grid.Row="1"

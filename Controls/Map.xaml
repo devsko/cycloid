@@ -20,7 +20,7 @@
                 IsFadingEnabled="False"
                 Visible="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
                 <maps:MapTileSource.DataSource>
-                    <maps:HttpMapTileDataSource UriFormatString="{x:Bind Mode=OneTime, Path=ViewModel.HeatmapUri}" />
+                    <maps:HttpMapTileDataSource UriFormatString="{x:Bind Mode=OneTime, Path=ViewModel.Strava.HeatmapTilesUri}" />
                 </maps:MapTileSource.DataSource>
             </maps:MapTileSource>
             <maps:MapTileSource
@@ -29,7 +29,7 @@
                 Layer="BackgroundReplacement"
                 Visible="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Osm}">
                 <maps:MapTileSource.DataSource>
-                    <maps:HttpMapTileDataSource UriFormatString="{x:Bind Mode=OneTime, Path=ViewModel.OsmUri}" />
+                    <maps:HttpMapTileDataSource UriFormatString="{x:Bind Mode=OneTime, Path=ViewModel.Osm.TilesUri}" />
                 </maps:MapTileSource.DataSource>
             </maps:MapTileSource>
             <maps:MapElementsLayer

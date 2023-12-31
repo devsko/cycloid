@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -15,19 +16,10 @@ public sealed partial class MainPage : Page
     {
         ViewModel.ToggleHeatmapVisibleAsync().FireAndForget();
 
-        //*********
-        SetCurrentAsync().FireAndForget();
+    }
 
-        async Task SetCurrentAsync()
-        {
-            ViewModel.Track = new();
-
-            ViewModel.CurrentPoint = new(46.46039124618558f, 10.089039490153148f, gradient: 5f, heading: 195);
-            await Task.Delay(500);
-            ViewModel.CurrentPoint = new(47.76031819349117f, 12.216661197615972f, gradient: 5f, heading: 195);
-
-            ViewModel.HoverPoint = new(46.46039124618558f, 10.089039490153148f, gradient: 5f, heading: 195);
-            ViewModel.MapHoverPointValuesEnabled = true;
-        }
+    private void ViewModel_TrackChanged(Track _, Track track)
+    {
+        ApplicationView.GetForCurrentView().Title = track is null ? string.Empty : track.Name;
     }
 }

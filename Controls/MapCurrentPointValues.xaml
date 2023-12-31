@@ -35,7 +35,7 @@
                 Grid.ColumnSpan="4"
                 HorizontalAlignment="Stretch"
                 HorizontalTextAlignment="Center"
-                Text="{x:Bind Mode=OneWay, Path=Track.FilePosition(Point.Value)}" />
+                Text="{x:Bind Mode=OneWay, Path=FilePosition(Point.Value)}" />
 
             <FontIcon
                 Grid.Row="1"
@@ -47,18 +47,18 @@
                 Grid.Row="1"
                 Grid.Column="1"
                 HorizontalTextAlignment="Left">
-                <Run Text="{x:Bind Mode=OneWay, Path=Track.DistanceFromStart(Point.Value)}" />
+                <Run Text="{x:Bind Mode=OneWay, Path=DistanceFromStart(Point.Value)}" />
                 <LineBreak />
-                <Run Text="{x:Bind Mode=OneWay, Path=Track.TimeFromStart(Point.Value)}" />
+                <Run Text="{x:Bind Mode=OneWay, Path=TimeFromStart(Point.Value)}" />
             </TextBlock>
 
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="2"
                 HorizontalTextAlignment="Right">
-                <Run Text="{x:Bind Mode=OneWay, Path=Track.DistanceToEnd(Point.Value)}" />
+                <Run Text="{x:Bind Mode=OneWay, Path=DistanceToEnd(Point.Value)}" />
                 <LineBreak />
-                <Run Text="{x:Bind Mode=OneWay, Path=Track.TimeToEnd(Point.Value)}" />
+                <Run Text="{x:Bind Mode=OneWay, Path=TimeToEnd(Point.Value)}" />
             </TextBlock>
             <FontIcon
                 Grid.Row="1"

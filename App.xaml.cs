@@ -1,5 +1,4 @@
-﻿using cycloid.External;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.Diagnostics;
 using System.Text;
@@ -34,10 +33,6 @@ sealed partial class App : Application
     }
 
     public static new App Current => (App)Application.Current;
-
-    public ViewModel ViewModel => (ViewModel)Resources[nameof(ViewModel)];
-
-    public Strava Strava { get; } = new();
 
     protected override void OnLaunched(LaunchActivatedEventArgs e)
     {
