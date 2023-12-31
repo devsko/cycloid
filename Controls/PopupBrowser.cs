@@ -43,15 +43,13 @@ public class PopupBrowser : Control, IDisposable
     {
         await _constructionTcs.Task;
 
-        _onNavigation = onNavigation ?? OnNavigation;
+        _onNavigation = onNavigation ?? ((uri, _) => uri == navigateTo);
         _navigationTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         _webView.Source = navigateTo;
 
         await _navigationTcs.Task;
 
         _onNavigation = null;
-
-        bool OnNavigation(Uri uri, bool _) => uri == navigateTo;
     }
 
     public void Open()

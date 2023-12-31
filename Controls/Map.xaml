@@ -8,12 +8,11 @@
 
     <maps:MapControl
         x:Name="MapControl"
-        ColorScheme="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Color}"
         Loaded="MapControl_Loaded"
         MapRightTapped="MapControl_MapRightTapped"
         MapServiceToken="{cycloid:ConfigurationValue Key=Bing:ServiceApiKey}"
         MapTapped="MapControl_MapTapped"
-        Style="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.Style}">
+        StyleSheet="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.StyleSheet}">
 
         <maps:MapControl.Resources>
             <maps:MapTileSource
@@ -34,21 +33,18 @@
                 </maps:MapTileSource.DataSource>
             </maps:MapTileSource>
             <maps:MapElementsLayer
-                x:Name="TrackLayer"
-                MapElementClick="TrackLayer_MapElementClick"
-                MapElementPointerEntered="TrackLayer_MapElementPointerEntered"
-                MapElementPointerExited="TrackLayer_MapElementPointerExited" />
-            <maps:MapElementsLayer
-                x:Name="RoutePointsLayer"
-                MapElementClick="RoutePointsLayer_MapElementClick"
-                MapElementPointerEntered="RoutePointsLayer_MapElementPointerEntered"
-                MapElementPointerExited="RoutePointsLayer_MapElementPointerExited" />
+                x:Name="RoutingLayer"
+                MapElementClick="RoutingLayer_MapElementClick"
+                MapElementPointerEntered="RoutingLayer_MapElementPointerEntered"
+                MapElementPointerExited="RoutingLayer_MapElementPointerExited" />
+            <maps:MapIcon x:Name="NewPoint" MapStyleSheetEntry="Routing.NewPoint" />
         </maps:MapControl.Resources>
 
         <!--  CurrentPoint  -->
         <Border
             maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.CurrentPoint)}"
             maps:MapControl.NormalizedAnchorPoint=".5 .5"
+            UseLayoutRounding="false"
             Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(ViewModel.CurrentPoint)}">
             <Grid>
                 <Ellipse
@@ -70,6 +66,7 @@
         <Border
             maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.HoverPoint)}"
             maps:MapControl.NormalizedAnchorPoint=".5 .5"
+            UseLayoutRounding="false"
             Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(ViewModel.HoverPoint)}">
             <Grid>
                 <Ellipse

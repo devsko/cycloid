@@ -4,7 +4,6 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Devices.Geolocation;
-using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -16,13 +15,10 @@ namespace cycloid.Controls;
 
 public sealed partial class Map : UserControl
 {
-    private static readonly RandomAccessStreamReference _routePointImage = RandomAccessStreamReference.CreateFromUri(new Uri("ms-appx:///Assets/RoutePoint.png"));
-
     private readonly ClickPanel _clickPanel;
     private MapTileSource _heatmap;
     private MapTileSource _osm;
-    private MapElementsLayer _trackLayer;
-    private MapElementsLayer _routePointsLayer;
+    private MapElementsLayer _routingLayer;
 
     public Track Track
     {
@@ -86,14 +82,9 @@ public sealed partial class Map : UserControl
         MapControl.Resources.Remove("Osm");
         MapControl.TileSources.Add(_osm);
 
-        // TrackLayer
-        _trackLayer = (MapElementsLayer)MapControl.Resources["TrackLayer"];
-        MapControl.Layers.Add(_trackLayer);
-
-        // RoutePointsLayer
-        _routePointsLayer = (MapElementsLayer)MapControl.Resources["RoutePointsLayer"];
-        MapControl.Layers.Add(_routePointsLayer);
-
+        // RoutingLayer
+        _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
+        MapControl.Layers.Add(_routingLayer);
 
         //******************
 
@@ -102,24 +93,21 @@ public sealed partial class Map : UserControl
         {
             if (result.IsValid)
             {
-                Geopath path = new(result.Points.Select(point => new BasicGeoposition { Latitude = point.Latitude, Longitude = point.Longitude }));
-                MapPolyline trackLine = new()
+                _routingLayer.MapElements.Add(new MapPolyline
                 {
-                    Path = path,
-                    StrokeColor = Colors.DeepPink,
-                    StrokeThickness = 4,
-                };
-                _trackLayer.MapElements.Add(trackLine);
+                    Path = new Geopath(result.Points.Select(point => new BasicGeoposition { Latitude = point.Latitude, Longitude = point.Longitude })),
+                    MapStyleSheetEntry = "Routing.Line",
+                });
             }
         };
         builder.Points.CollectionChanged += (sender, args) =>
         {
             if (args.Action == NotifyCollectionChangedAction.Add)
             {
-                _routePointsLayer.MapElements.Add(new MapIcon
+                _routingLayer.MapElements.Add(new MapIcon
                 {
-                    Image = _routePointImage,
-                    Location = new Geopoint((MapPoint)args.NewItems[0])
+                    Location = new Geopoint((MapPoint)args.NewItems[0]),
+                    MapStyleSheetEntry = "Routing.Point",
                 });
             }
         };
@@ -168,19 +156,32 @@ public sealed partial class Map : UserControl
         }
     }
 
-    private void RoutePointsLayer_MapElementPointerExited(MapElementsLayer sender, MapElementsLayerPointerExitedEventArgs args)
+    private void RoutingLayer_MapElementPointerExited(MapElementsLayer sender, MapElementsLayerPointerExitedEventArgs args)
     {
-        Debug.WriteLine("RoutePointsLayer_MapElementPointerExited");
+        if (args.MapElement is MapIcon routePoint)
+        {
+            args.MapElement.MapStyleSheetEntryState = "";
+        }
+        else if (args.MapElement is MapPolyline routeLine)
+        {
+            args.MapElement.MapStyleSheetEntry = "Routing.Line";
+        }
     }
 
-    private void RoutePointsLayer_MapElementPointerEntered(MapElementsLayer sender, MapElementsLayerPointerEnteredEventArgs args)
+    private void RoutingLayer_MapElementPointerEntered(MapElementsLayer sender, MapElementsLayerPointerEnteredEventArgs args)
     {
-        Debug.WriteLine("RoutePointsLayer_MapElementPointerEntered");
+        if (args.MapElement is MapIcon routePoint)
+        {
+            args.MapElement.MapStyleSheetEntryState = "Routing.hover";
+        }
+        else if (args.MapElement is MapPolyline routeLine)
+        { 
+            args.MapElement.MapStyleSheetEntry = "Routing.HoveredLine";
+        }
     }
 
-    private void RoutePointsLayer_MapElementClick(MapElementsLayer sender, MapElementsLayerClickEventArgs args)
+    private void RoutingLayer_MapElementClick(MapElementsLayer sender, MapElementsLayerClickEventArgs args)
     {
-        Debug.WriteLine("RoutePointsLayer_MapElementClick");
         MapControl.Children.Add(_clickPanel);
     }
 
@@ -193,21 +194,6 @@ public sealed partial class Map : UserControl
     private void ClickPanel_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
         Debug.WriteLine("Panel_PointerMoved");
-    }
-
-    private void TrackLayer_MapElementPointerExited(MapElementsLayer sender, MapElementsLayerPointerExitedEventArgs args)
-    {
-        Debug.WriteLine("TrackLayer_MapElementPointerExited");
-    }
-
-    private void TrackLayer_MapElementPointerEntered(MapElementsLayer sender, MapElementsLayerPointerEnteredEventArgs args)
-    {
-        Debug.WriteLine("TrackLayer_MapElementPointerEntered");
-    }
-
-    private void TrackLayer_MapElementClick(MapElementsLayer sender, MapElementsLayerClickEventArgs args)
-    {
-        Debug.WriteLine("TrackLayer_MapElementClick");
     }
 
     private void MapControl_MapTapped(MapControl sender, MapInputEventArgs args)

@@ -99,6 +99,7 @@
     <Compile Include="Format.cs" />
     <Compile Include="ViewModel.Heatmap.cs" />
     <Compile Include="ViewModel.MapStyleAndColor.cs" />
+    <Compile Include="ViewModel.StyleSheet.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -106,7 +107,6 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\RoutePoint.png" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
