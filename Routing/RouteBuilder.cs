@@ -11,16 +11,8 @@ namespace cycloid.Routing;
 
 public class RouteBuilder
 {
-    private static TaskCompletionSource<bool> CompletedTaskCompletionSource()
-    {
-        TaskCompletionSource<bool> tcs = new();
-        tcs.SetResult(true);
-
-        return tcs;
-    }
-
     private readonly Dictionary<MapPoint, RouteSection> _sections = [];
-    private TaskCompletionSource<bool> _volatileTaskSource = CompletedTaskCompletionSource();
+    private TaskCompletionSource<bool> _delayCalculationTaskSource = new();
 
     public ObservableCollection<MapPoint> Points { get; } = [];
     public ObservableCollection<NoGoArea> NoGoAreas { get; } = [];
@@ -41,8 +33,29 @@ public class RouteBuilder
     public event Action<RouteSection> CalculationRetry;
     public event Action<RouteSection, RouteResult> CalculationFinished;
 
+    public RouteBuilder()
+    {
+        DelayCalculation = false;
+    }
+
     public IEnumerable<RouteSection> Sections 
         => Points.SkipLast(1).Select(point => _sections[point]);
+
+    public bool DelayCalculation
+    {
+        get => !_delayCalculationTaskSource.Task.IsCompleted;
+        set
+        {
+            if (value != DelayCalculation)
+            {
+                _delayCalculationTaskSource.TrySetResult(true);
+                if (value)
+                {
+                    _delayCalculationTaskSource = new TaskCompletionSource<bool>();
+                }
+            }
+        }
+    }
 
     private void StartCalculation(RouteSection section)
     {
@@ -62,7 +75,7 @@ public class RouteBuilder
             {
                 if (section.DirectDistance > 50_000)
                 {
-                    await _volatileTaskSource.Task.WithCancellation(cancellationToken);
+                    await _delayCalculationTaskSource.Task.WithCancellation(cancellationToken);
                 }
 
                 CalculationStarting?.Invoke(section);
@@ -201,16 +214,5 @@ public class RouteBuilder
         }
         section.Cancellation.Cancel();
         SectionRemoved?.Invoke(section, startIndex);
-    }
-
-    public void StartVolatileTask()
-    {
-        EndVolatileTask();
-        _volatileTaskSource = new TaskCompletionSource<bool>();
-    }
-
-    public void EndVolatileTask()
-    {
-        _volatileTaskSource.TrySetResult(true);
     }
 }

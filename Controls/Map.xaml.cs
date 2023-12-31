@@ -35,7 +35,6 @@ public sealed partial class Map : UserControl
     private MapTileSource _osm;
     private MapElementsLayer _routingLayer;
 
-
     public Map()
     {
         InitializeComponent();
@@ -95,18 +94,33 @@ public sealed partial class Map : UserControl
 
     private void RoutingLayer_MapElementClick(MapElementsLayer sender, MapElementsLayerClickEventArgs args)
     {
-        MapControl.Children.Add(_clickPanel);
+        if (args.MapElements.OfType<MapIcon>().FirstOrDefault() is MapIcon routePoint)
+        {
+            ViewModel.StartDrag((MapPoint)routePoint.Tag);
+        }
+        else if (args.MapElements.OfType<MapPolyline>().FirstOrDefault() is MapPolyline sectionLine)
+        {
+            ViewModel.StartDrag((RouteSection)sectionLine.Tag, (MapPoint)args.Location.Position);
+        }
+
+        if (ViewModel.IsCaptured)
+        {
+            MapControl.Children.Add(_clickPanel);
+        }            
     }
 
     private void ClickPanel_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        Debug.WriteLine("Panel_Tapped");
+        ViewModel.EndDrag();
         MapControl.Children.Remove(_clickPanel);
     }
 
     private void ClickPanel_PointerMoved(object sender, PointerRoutedEventArgs e)
     {
-        Debug.WriteLine("Panel_PointerMoved");
+        if (MapControl.TryGetLocationFromOffset(e.GetCurrentPoint(MapControl).Position, out Geopoint location))
+        {
+            ViewModel.ContinueDrag((MapPoint)location.Position);
+        }
     }
 
     private void MapControl_MapTapped(MapControl sender, MapInputEventArgs args)
@@ -147,12 +161,16 @@ public sealed partial class Map : UserControl
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    _routingLayer.MapElements.Add(new MapIcon
                     {
-                        Location = new Geopoint((MapPoint)e.NewItems[0]),
-                        NormalizedAnchorPoint = new Point(.5, .5),
-                        MapStyleSheetEntry = "Routing.Point",
-                    });
+                        MapPoint newPoint = (MapPoint)e.NewItems[0];
+                        _routingLayer.MapElements.Add(new MapIcon
+                        {
+                            Location = new Geopoint(newPoint),
+                            Tag = newPoint,
+                            NormalizedAnchorPoint = new Point(.5, .5),
+                            MapStyleSheetEntry = "Routing.Point",
+                        });
+                    }
                     break;
                 case NotifyCollectionChangedAction.Move:
                     break;

@@ -22,16 +22,6 @@ public partial class ViewModel : ObservableObject
     [ObservableProperty]
     private TrackPoint? _hoverPoint;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(TrackHoverPointValuesEnabled))]
-    private bool _mapHoverPointValuesEnabled;
-
-    [ObservableProperty]
-    private bool _trackVisible = true;
-
-    [ObservableProperty]
-    private bool _poisVisible = true;
-
     public event Action<Track, Track> TrackChanged;
 
     public ViewModel()
@@ -44,7 +34,7 @@ public partial class ViewModel : ObservableObject
         }
     }
 
-    public bool TrackHoverPointValuesEnabled
+    public bool ProfileHoverPointValuesEnabled
     {
         get => !MapHoverPointValuesEnabled;
         set => MapHoverPointValuesEnabled = !value;
