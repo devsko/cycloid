@@ -15,7 +15,6 @@ public sealed partial class MainPage : Page
     private void Page_Loaded(object _1, RoutedEventArgs _2)
     {
         ViewModel.ToggleHeatmapVisibleAsync().FireAndForget();
-
     }
 
     private void ViewModel_TrackChanged(Track _, Track track)

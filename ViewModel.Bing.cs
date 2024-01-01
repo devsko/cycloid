@@ -8,30 +8,30 @@ namespace cycloid;
 
 partial class ViewModel
 {
-    private readonly Throttle<TrackPoint?, ViewModel> _bingThrottle = new(GetAddressAsync, TimeSpan.FromSeconds(5));
+    private readonly Throttle<TrackPoint, ViewModel> _bingThrottle = new(GetAddressAsync, TimeSpan.FromSeconds(5));
 
     [ObservableProperty]
     private string _currentPointAddress;
 
-    partial void OnCurrentPointChanged(TrackPoint? value)
+    partial void OnCurrentPointChanged(TrackPoint value)
     {
         _bingThrottle.Next(value, this);
     }
 
-    private static async Task GetAddressAsync(TrackPoint? point, ViewModel @this)
+    private static async Task GetAddressAsync(TrackPoint point, ViewModel @this)
     {
-        if (point is TrackPoint p)
+        if (!point.IsValid)
         {
-            MapLocationFinderResult result = await MapLocationFinder.FindLocationsAtAsync(new Geopoint(p));
+            @this.CurrentPointAddress = string.Empty;
+        }
+        else
+        {
+            MapLocationFinderResult result = await MapLocationFinder.FindLocationsAtAsync(Convert.ToGeopoint(point));
             if (result.Status == MapLocationFinderStatus.Success && result.Locations is [MapLocation location, ..])
             {
                 MapAddress address = location.Address;
                 @this.CurrentPointAddress = $"{address.Town}, {address.District}, {address.Region}, {address.Country}";
-
-                return;
             }
         }
-
-        @this.CurrentPointAddress = null;
     }
 }

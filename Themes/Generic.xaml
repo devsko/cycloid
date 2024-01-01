@@ -56,7 +56,6 @@
 
     <Style TargetType="controls:MapControlBorder">
         <Setter Property="Background" Value="{ThemeResource MapOverlayBackgroundBrush}" />
-        <Setter Property="IsHitTestVisible" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:MapControlBorder">

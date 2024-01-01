@@ -1,7 +1,6 @@
 ﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-
 namespace cycloid.Controls;
 
 public sealed partial class Bing : UserControl
@@ -22,6 +21,6 @@ public sealed partial class Bing : UserControl
 
     private void AddressChanged()
     {
-        AddressAnimation.Start(Flash);
+        Flash.Start();
     }
 }

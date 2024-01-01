@@ -53,6 +53,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Behaviors\DragableBehavior.cs" />
+    <Compile Include="Behaviors\PropertyChangedTrigger.cs" />
     <Compile Include="Controls\Bing.xaml.cs">
       <DependentUpon>Bing.xaml</DependentUpon>
     </Compile>
@@ -62,7 +63,8 @@
     <Compile Include="Controls\MapCurrentPointValues.xaml.cs">
       <DependentUpon>MapCurrentPointValues.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\PointValuesBase.cs" />
+    <Compile Include="Controls\PointControl.cs" />
+    <Compile Include="Controls\PointValuesControl.cs" />
     <Compile Include="Controls\MapControlBorder.cs" />
     <Compile Include="Controls\MapHoverPointValues.xaml.cs">
       <DependentUpon>MapHoverPointValues.xaml</DependentUpon>

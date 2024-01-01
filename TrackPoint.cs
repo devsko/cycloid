@@ -15,6 +15,8 @@ public readonly struct TrackPoint(float latitude, float longitude, float altitud
         public int Compare(TrackPoint x, TrackPoint y) => x.Distance.CompareTo(y.Distance);
     }
 
+    public static readonly TrackPoint Invalid = new(float.NaN, float.NaN);
+
     private readonly float _latitude = latitude;
     private readonly float _longitude = longitude;
     private readonly CommonValues _values = new(distance, time, ascent, descent);
@@ -41,9 +43,13 @@ public readonly struct TrackPoint(float latitude, float longitude, float altitud
 
     public CommonValues Values => _values;
 
+    public bool IsValid => !float.IsNaN(Latitude);
+
     public static explicit operator TrackPoint(BasicGeoposition position) => new((float)position.Latitude, (float)position.Longitude, 0);
 
-    public static implicit operator BasicGeoposition(TrackPoint point) => new() { Latitude = point.Latitude, Longitude = point.Longitude };
+    public static explicit operator BasicGeoposition(TrackPoint point) =>  point.IsValid 
+        ? new() { Latitude = point.Latitude, Longitude = point.Longitude } 
+        : throw new ArgumentException("invalid", nameof(point));
 
     public static TrackPoint Lerp(TrackPoint previous, TrackPoint next, float fraction)
     {

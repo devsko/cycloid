@@ -5,19 +5,10 @@ using Windows.UI.Xaml.Controls;
 
 namespace cycloid.Controls;
 
-public sealed partial class Compass : UserControl
+public sealed partial class Compass : PointControl
 {
     private readonly Visual _gridVisual;
     private int _rounds;
-
-    public TrackPoint? Point
-    {
-        get => (TrackPoint?)GetValue(PointProperty);
-        set => SetValue(PointProperty, value);
-    }
-
-    public static readonly DependencyProperty PointProperty =
-        DependencyProperty.Register(nameof(Point), typeof(TrackPoint?), typeof(Compass), new PropertyMetadata(null));
 
     public Compass()
     {

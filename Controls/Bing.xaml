@@ -3,42 +3,41 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
     xmlns:ui="using:CommunityToolkit.WinUI" 
-    xmlns:controls="using:cycloid.Controls"
-    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(Address)}">
+    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNullOrEmpty(Address)}">
 
     <Grid>
 
         <controls:MapControlBorder>
 
             <TextBlock
-                    Margin="5"
-                    FontSize="11"
-                    Text="{x:Bind Mode=OneWay, Path=Address}" />
+                Margin="5"
+                FontSize="11"
+                Text="{x:Bind Mode=OneWay, Path=Address}" />
 
         </controls:MapControlBorder>
 
         <Border
-           x:Name="Flash"
-           ui:VisualExtensions.NormalizedCenterPoint=".5,.5"
-           Background="{ThemeResource TextFillColorPrimary}"
-           CornerRadius="5"
-           Opacity="0">
+            ui:VisualExtensions.NormalizedCenterPoint=".5,.5"
+            Background="{ThemeResource TextFillColorPrimary}"
+            CornerRadius="5"
+            Opacity="0">
             <animations:Explicit.Animations>
-                <animations:AnimationSet x:Name="AddressAnimation">
+                <animations:AnimationSet x:Name="Flash">
                     <animations:ScaleAnimation
-                       From="2"
-                       To="1"
-                       Duration="0:0:0.2" />
+                        From="2"
+                        To="1"
+                        Duration="0:0:0.2" />
                     <animations:OpacityAnimation
-                       From="1"
-                       To="0"
-                       Duration="0:0:0.2" />
+                        From="1"
+                        To="0"
+                        Duration="0:0:0.2" />
                 </animations:AnimationSet>
             </animations:Explicit.Animations>
         </Border>
-        
+
     </Grid>
 
 </UserControl>

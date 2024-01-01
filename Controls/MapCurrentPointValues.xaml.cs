@@ -1,6 +1,6 @@
 ﻿namespace cycloid.Controls;
 
-public sealed partial class MapCurrentPointValues : PointValuesBase
+public sealed partial class MapCurrentPointValues : PointValuesControl
 {
     public MapCurrentPointValues()
     {

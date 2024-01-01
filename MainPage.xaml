@@ -194,7 +194,7 @@
                 VerticalAlignment="Bottom"
                 ImageHeight="320"
                 ImageWidth="480"
-                Location="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}"
+                Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}"
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(ViewModel.Track)}" />
 
             <controls:Bing

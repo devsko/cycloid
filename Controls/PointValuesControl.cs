@@ -1,12 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 
 namespace cycloid.Controls;
 
 [ObservableObject]
-public partial class PointValuesBase : UserControl
+public partial class PointValuesControl : PointControl
 {
     private static readonly PropertyChangedEventArgs _isVisibleChangedArgs = new(nameof(IsVisible));
 
@@ -17,15 +16,7 @@ public partial class PointValuesBase : UserControl
     }
 
     public static readonly DependencyProperty TrackProperty =
-    DependencyProperty.Register(nameof(Track), typeof(Track), typeof(PointValuesBase), new PropertyMetadata(null));
-    public TrackPoint? Point
-    {
-        get => (TrackPoint?)GetValue(PointProperty);
-        set => SetValue(PointProperty, value);
-    }
-
-    public static readonly DependencyProperty PointProperty =
-        DependencyProperty.Register(nameof(Point), typeof(TrackPoint?), typeof(PointValuesBase), new PropertyMetadata(null, (sender, e) => ((PointValuesBase)sender).PointChanged(e)));
+    DependencyProperty.Register(nameof(Track), typeof(Track), typeof(PointValuesControl), new PropertyMetadata(null));
 
     public bool Enabled
     {
@@ -34,13 +25,13 @@ public partial class PointValuesBase : UserControl
     }
 
     public static DependencyProperty EnabledProperty =
-        DependencyProperty.Register(nameof(Enabled), typeof(bool), typeof(PointValuesBase), new PropertyMetadata(false, (sender, _) => ((PointValuesBase)sender).EnabledChanged()));
+        DependencyProperty.Register(nameof(Enabled), typeof(bool), typeof(PointValuesControl), new PropertyMetadata(false, (sender, _) => ((PointValuesControl)sender).EnabledChanged()));
 
-    public bool IsVisible => Enabled && Point is not null;
+    public bool IsVisible => Enabled && Point.IsValid;
 
-    private void PointChanged(DependencyPropertyChangedEventArgs e)
+    protected override void PointChanged(DependencyPropertyChangedEventArgs e)
     {
-        if (e.OldValue is null != e.NewValue is null)
+        if (((TrackPoint)e.OldValue).IsValid != ((TrackPoint)e.NewValue).IsValid)
         {
             RaiseIsVisibleChanged();
         }
@@ -65,5 +56,4 @@ public partial class PointValuesBase : UserControl
     protected string DistanceToEnd(TrackPoint point) => Track?.DistanceToEnd(point);
 
     protected string TimeToEnd(TrackPoint point) => Track?.TimeToEnd(point);
-
 }

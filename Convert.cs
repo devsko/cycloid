@@ -72,11 +72,15 @@ public static class Convert
         return (gradient >= 0 ? _gradientBrushes.Ascending : _gradientBrushes.Descending)[(int)((Math.Abs(gradient)) / _maxGradient * (_gradientSteps - 1))];
     }
 
-    public static Geopoint ToGeopoint(TrackPoint? point) => point is TrackPoint p ? new Geopoint(p) : _emptyGeopoint;
+    public static Geopoint ToGeopoint(TrackPoint point) => point.IsValid ? new Geopoint((BasicGeoposition)point) : _emptyGeopoint;
 
     public static Visibility VisibleIf(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
 
     public static Visibility VisibleIfNotNull(object value) => value is null ? Visibility.Collapsed : Visibility.Visible;
+
+    public static Visibility VisibleIfValid(TrackPoint value) => !value.IsValid ? Visibility.Collapsed : Visibility.Visible;
+
+    public static Visibility VisibleIfNotNullOrEmpty(string value) => string.IsNullOrEmpty(value) ? Visibility.Collapsed : Visibility.Visible;
 
     public static bool IsNotNull(object value) => value is not null;
 }

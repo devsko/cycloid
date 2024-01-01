@@ -1,17 +1,19 @@
-﻿<UserControl
+﻿<controls:PointControl
     x:Class="cycloid.Controls.StreetView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cycloid="using:cycloid"
     xmlns:behaviors="using:cycloid.Behaviors"
     xmlns:controls="using:cycloid.Controls"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:ui="using:CommunityToolkit.WinUI">
+    xmlns:ui="using:CommunityToolkit.WinUI" 
+    Visibility="{x:Bind Mode=OneWay,Path=cycloid:Convert.VisibleIfValid(Point)}">
 
     <interactivity:Interaction.Behaviors>
         <behaviors:DragableBehavior x:Name="DragableBehavior" />
     </interactivity:Interaction.Behaviors>
 
-    <controls:MapControlBorder x:Name="Root" IsHitTestVisible="True">
+    <controls:MapControlBorder x:Name="Root">
         <controls:MapControlBorder.RenderTransform>
             <CompositeTransform />
         </controls:MapControlBorder.RenderTransform>
@@ -118,4 +120,4 @@
         </VisualStateManager.VisualStateGroups>
     </controls:MapControlBorder>
 
-</UserControl>
+</controls:PointControl>

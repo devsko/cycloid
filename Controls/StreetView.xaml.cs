@@ -5,7 +5,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace cycloid.Controls;
 
-public sealed partial class StreetView : UserControl
+public sealed partial class StreetView : PointControl
 {
     private readonly DispatcherTimer _requestTimeout;
     private readonly string _apiKey = App.Current.Configuration["Google:ServiceApiKey"];
@@ -50,15 +50,6 @@ public sealed partial class StreetView : UserControl
     public static readonly DependencyProperty HeadingOffsetProperty =
         DependencyProperty.Register(nameof(HeadingOffset), typeof(double), typeof(StreetView), new PropertyMetadata(0d, (sender, _) => ((StreetView)sender).UpdateImageUri()));
 
-    public TrackPoint? Location
-    {
-        get => (TrackPoint?)GetValue(LocationProperty);
-        set => SetValue(LocationProperty, value);
-    }
-
-    public static readonly DependencyProperty LocationProperty =
-        DependencyProperty.Register(nameof(Location), typeof(TrackPoint?), typeof(StreetView), new PropertyMetadata(null, (sender, _) => ((StreetView)sender).UpdateImageUri()));
-
     public StreetView()
     {
         InitializeComponent();
@@ -84,13 +75,13 @@ public sealed partial class StreetView : UserControl
 
     private void UpdateImageUri()
     {
-        if (Location == null)
+        if (!Point.IsValid)
         {
             ImageSource.UriSource = null;
             return;
         }
 
-        Uri uri = new(FormattableString.Invariant($"https://maps.googleapis.com/maps/api/streetview?size={ImageWidth}x{ImageHeight}&location={Location.Value.Latitude},{Location.Value.Longitude}&heading={Location.Value.Heading + (float)HeadingOffset}&pitch=0&fov=90&return_error_code=true&source=outdoor&key={_apiKey}"));
+        Uri uri = new(FormattableString.Invariant($"https://maps.googleapis.com/maps/api/streetview?size={ImageWidth}x{ImageHeight}&location={Point.Latitude},{Point.Longitude}&heading={Point.Heading + (float)HeadingOffset}&pitch=0&fov=90&return_error_code=true&source=outdoor&key={_apiKey}"));
 
         if (uri == ImageSource.UriSource)
         {

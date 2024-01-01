@@ -1,4 +1,4 @@
-﻿<controls:PointValuesBase
+﻿<controls:PointValuesControl
     x:Class="cycloid.Controls.MapHoverPointValues"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -37,7 +37,7 @@
                 Grid.ColumnSpan="3"
                 HorizontalAlignment="Stretch"
                 HorizontalTextAlignment="Center"
-                Text="{x:Bind Mode=OneWay, Path=FilePosition(Point.Value)}" />
+                Text="{x:Bind Mode=OneWay, Path=FilePosition(Point)}" />
 
             <Path
                 Grid.Row="1"
@@ -48,15 +48,15 @@
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="1"
-                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Point.Value.Altitude)}" />
+                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Point.Altitude)}" />
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="2"
                 HorizontalAlignment="Right"
-                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Gradient(Point.Value.Gradient)}" />
+                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Gradient(Point.Gradient)}" />
 
         </Grid>
 
     </controls:MapControlBorder>
 
-</controls:PointValuesBase>
+</controls:PointValuesControl>

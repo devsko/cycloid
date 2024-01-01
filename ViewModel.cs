@@ -17,10 +17,10 @@ public partial class ViewModel : ObservableObject
     private Track _track;
 
     [ObservableProperty]
-    private TrackPoint? _currentPoint;
+    private TrackPoint _currentPoint = TrackPoint.Invalid;
 
     [ObservableProperty]
-    private TrackPoint? _hoverPoint;
+    private TrackPoint _hoverPoint = TrackPoint.Invalid;
 
     public event Action<Track, Track> TrackChanged;
 
@@ -42,8 +42,8 @@ public partial class ViewModel : ObservableObject
 
     partial void OnTrackChanged(Track oldValue, Track newValue)
     {
-        CurrentPoint = null;
-        HoverPoint = null;
+        CurrentPoint = TrackPoint.Invalid;
+        HoverPoint = TrackPoint.Invalid;
 
         TrackChanged?.Invoke(oldValue, newValue);
     }
