@@ -2,25 +2,32 @@
     x:Class="cycloid.Controls.StreetView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:cycloid="using:cycloid"
     xmlns:behaviors="using:cycloid.Behaviors"
     xmlns:controls="using:cycloid.Controls"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:cycloid="using:cycloid"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:ui="using:CommunityToolkit.WinUI" 
-    Visibility="{x:Bind Mode=OneWay,Path=cycloid:Convert.VisibleIfValid(Point)}">
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(Point)}">
+
+    <controls:PointControl.Resources>
+        <labs:TransitionHelper x:Key="Transition">
+            <labs:TransitionConfig Id="root" ScaleMode="Scale" />
+        </labs:TransitionHelper>
+    </controls:PointControl.Resources>
 
     <interactivity:Interaction.Behaviors>
-        <behaviors:DragableBehavior x:Name="DragableBehavior" />
+        <behaviors:DragableBehavior x:Name="DragableBehavior" IsEnabled="False" />
     </interactivity:Interaction.Behaviors>
 
-    <controls:MapControlBorder x:Name="Root">
-        <controls:MapControlBorder.RenderTransform>
-            <CompositeTransform />
-        </controls:MapControlBorder.RenderTransform>
+    <Grid>
 
-        <Grid>
-
-            <Grid x:Name="Expanded" Visibility="Visible">
+        <controls:MapControlBorder
+            x:Name="Expanded"
+            labs:TransitionHelper.Id="root"
+            Visibility="Collapsed">
+            <Grid>
                 <Image
                     x:Name="Image"
                     Width="{x:Bind Mode=OneWay, Path=ImageWidth}"
@@ -48,76 +55,60 @@
                     VerticalAlignment="Top">
                     <Border
                         Margin="1"
-                        Background="Black"
-                        CornerRadius="4"
-                        Opacity=".5" />
-                    <Button Click="CollapseButton_Click" Content="{ui:SymbolIcon Symbol=Cancel}" />
+                        Background="#7F000000"
+                        CornerRadius="4" />
+                    <Button Content="{ui:SymbolIcon Symbol=Cancel}">
+                        <interactivity:Interaction.Behaviors>
+                            <core:EventTriggerBehavior EventName="Click">
+                                <labs:ReverseTransitionAction Transition="{StaticResource Transition}" />
+                                <core:ChangePropertyAction
+                                    PropertyName="IsCollapsed"
+                                    TargetObject="{x:Bind Mode=OneTime}"
+                                    Value="True" />
+                            </core:EventTriggerBehavior>
+                        </interactivity:Interaction.Behaviors>
+                    </Button>
                 </Grid>
             </Grid>
+        </controls:MapControlBorder>
 
-            <Grid x:Name="Collapsed" Visibility="Collapsed">
+        <controls:MapControlBorder
+            x:Name="Collapsed"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            labs:TransitionHelper.Id="root"
+            Visibility="Visible">
+            <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom">
                 <Border
                     Margin="1"
-                    Background="Black"
-                    CornerRadius="4"
-                    Opacity=".5" />
-                <Button Click="ExpandButton_Click" Content="{ui:SymbolIcon Symbol=Camera}" />
+                    Background="#7F000000"
+                    CornerRadius="4" />
+                <Button Content="{ui:SymbolIcon Symbol=Camera}">
+                    <interactivity:Interaction.Behaviors>
+                        <core:EventTriggerBehavior EventName="Click">
+                            <labs:StartTransitionAction
+                                Source="{x:Bind Mode=OneTime, Path=Collapsed}"
+                                Target="{x:Bind Mode=OneTime, Path=Expanded}"
+                                Transition="{StaticResource Transition}" />
+                            <core:ChangePropertyAction
+                                PropertyName="IsCollapsed"
+                                TargetObject="{x:Bind Mode=OneTime}"
+                                Value="False" />
+                        </core:EventTriggerBehavior>
+                    </interactivity:Interaction.Behaviors>
+                </Button>
             </Grid>
+        </controls:MapControlBorder>
 
-            <Ellipse
-                Width="5"
-                Height="5"
-                Margin="5"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Fill="Red"
-                Visibility="{x:Bind Mode=OneWay, Path=RequestPending}" />
+        <Ellipse
+            Width="5"
+            Height="5"
+            Margin="5"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Fill="Red"
+            Visibility="{x:Bind Mode=OneWay, Path=RequestPending}" />
 
-        </Grid>
-
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="ApplicationViewStates" CurrentStateChanged="ApplicationViewStates_CurrentStateChanged">
-                <VisualStateGroup.Transitions>
-                    <VisualTransition GeneratedDuration="0:0:0.2" To="CollapsedState" />
-                    <VisualTransition GeneratedDuration="0:0:0.1" To="ExpandedState" />
-                </VisualStateGroup.Transitions>
-                <VisualState x:Name="ExpandedState" />
-                <VisualState x:Name="CollapsedState">
-                    <Storyboard>
-                        <DoubleAnimation
-                            Storyboard.TargetName="Expanded"
-                            Storyboard.TargetProperty="Opacity"
-                            To="0" />
-                        <DoubleAnimation
-                            x:Name="ScaleXAnimation"
-                            Storyboard.TargetName="Root"
-                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleX)" />
-                        <DoubleAnimation
-                            x:Name="ScaleYAnimation"
-                            Storyboard.TargetName="Root"
-                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.ScaleY)" />
-                        <DoubleAnimation
-                            x:Name="TranslateXAnimation"
-                            Storyboard.TargetName="Root"
-                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)" />
-                        <DoubleAnimation
-                            x:Name="TranslateYAnimation"
-                            Storyboard.TargetName="Root"
-                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateY)" />
-                    </Storyboard>
-                    <VisualState.Setters>
-                        <Setter Target="Expanded.Visibility" Value="Collapsed" />
-                        <Setter Target="Collapsed.Visibility" Value="Visible" />
-                        <Setter Target="Root.Opacity" Value="1" />
-                        <Setter Target="Root.RenderTransform">
-                            <Setter.Value>
-                                <CompositeTransform />
-                            </Setter.Value>
-                        </Setter>
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-    </controls:MapControlBorder>
+    </Grid>
 
 </controls:PointControl>

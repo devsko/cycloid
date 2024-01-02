@@ -1,5 +1,8 @@
+using CommunityToolkit.WinUI;
+using CommunityToolkit.WinUI.Animations;
 using Microsoft.Xaml.Interactivity;
 using System;
+using System.Numerics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
@@ -8,8 +11,8 @@ namespace cycloid.Behaviors;
 
 public class DragableBehavior : Behavior<FrameworkElement>
 {
-    private Thickness _originalMargin;
-    private Thickness _startMargin;
+    private Vector3? _originalOffset;
+    private Vector3 _startOffset;
 
     public event EventHandler DragCompleted;
 
@@ -20,7 +23,7 @@ public class DragableBehavior : Behavior<FrameworkElement>
     }
 
     public static readonly DependencyProperty IsEnabledProperty =
-        DependencyProperty.Register(nameof(IsEnabled), typeof(bool), typeof(DragableBehavior), new PropertyMetadata(true));
+        DependencyProperty.Register(nameof(IsEnabled), typeof(bool), typeof(DragableBehavior), new PropertyMetadata(true, (sender, e) => ((DragableBehavior)sender).EnabledChanged(e)));
 
     protected override void OnAttached()
     {
@@ -28,14 +31,6 @@ public class DragableBehavior : Behavior<FrameworkElement>
         AssociatedObject.ManipulationStarted += AssociatedObject_ManipulationStarted;
         AssociatedObject.ManipulationDelta += AssociatedObject_ManipulationDelta;
         AssociatedObject.ManipulationCompleted += AssociatedObject_ManipulationCompleted;
-        AssociatedObject.Loaded += AssociatedObject_Loaded;
-    }
-
-    private void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
-    {
-        // TODO Horizontal/Vertical alignment
-        _originalMargin = AssociatedObject.Margin = new Thickness(
-            -100_000, -100_000, AssociatedObject.Margin.Right, AssociatedObject.Margin.Bottom);
     }
 
     protected override void OnDetaching()
@@ -43,19 +38,45 @@ public class DragableBehavior : Behavior<FrameworkElement>
         AssociatedObject.ManipulationStarted -= AssociatedObject_ManipulationStarted;
         AssociatedObject.ManipulationDelta -= AssociatedObject_ManipulationDelta;
         AssociatedObject.ManipulationCompleted -= AssociatedObject_ManipulationCompleted;
-        AssociatedObject.Loaded -= AssociatedObject_Loaded;
     }
 
     public void Reset()
     {
-        AssociatedObject.Margin = _originalMargin;
+        if (_originalOffset is Vector3 originalOffset)
+        {
+            AnimationBuilder
+                .Create()
+                .Offset(originalOffset)
+                .StartAsync(AssociatedObject)
+                .FireAndForget();
+        }
+    }
+
+    private void EnabledChanged(DependencyPropertyChangedEventArgs e)
+    {
+        if (IsEnabled)
+        {
+            _originalOffset = null;
+        }
+        else
+        {
+            Reset();
+        }
     }
 
     private void AssociatedObject_ManipulationStarted(object _1, ManipulationStartedRoutedEventArgs _2)
     {
         if (IsEnabled)
         {
-            _startMargin = AssociatedObject.Margin;
+            _startOffset = AssociatedObject.GetVisual().Offset;
+            if (_startOffset == default)
+            {
+                _startOffset = AssociatedObject.ActualOffset;
+            }
+            if (_originalOffset is null)
+            {
+                _originalOffset = _startOffset;
+            }
         }
     }
 
@@ -64,8 +85,7 @@ public class DragableBehavior : Behavior<FrameworkElement>
         Point translation = args.Cumulative.Translation;
         if (IsEnabled)
         {
-            AssociatedObject.Margin = new Thickness(
-                _startMargin.Left, _startMargin.Top, _startMargin.Right - translation.X, _startMargin.Bottom - translation.Y);
+            AssociatedObject.GetVisual().Offset = _startOffset + translation.ToVector3();
         }
     }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using Windows.Foundation;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 
 namespace cycloid.Controls;
 
@@ -11,8 +10,15 @@ public sealed partial class StreetView : PointControl
     private readonly string _apiKey = App.Current.Configuration["Google:ServiceApiKey"];
 
     private bool _requestWaiting;
-    private Size _collapsedSize;
-    private Size _collapsedMargin;
+
+    public bool IsCollapsed
+    {
+        get => (bool)GetValue(IsCollapsedProperty);
+        set => SetValue(IsCollapsedProperty, value);
+    }
+
+    public static readonly DependencyProperty IsCollapsedProperty =
+        DependencyProperty.Register(nameof(IsCollapsed), typeof(bool), typeof(StreetView), new PropertyMetadata(true, (sender, e) => ((StreetView)sender).IsCollapsedChanged(e)));
 
     public double ImageWidth
     {
@@ -60,8 +66,6 @@ public sealed partial class StreetView : PointControl
         VisualStateManager.GoToState(this, "CollapsedState", false);
     }
 
-    public bool IsCollapsed => ApplicationViewStates.CurrentState?.Name == "CollapsedState";
-
     private void EndRequest()
     {
         _requestTimeout.Stop();
@@ -104,23 +108,6 @@ public sealed partial class StreetView : PointControl
         }
     }
 
-    private void ExpandButton_Click(object sender, RoutedEventArgs e)
-    {
-        _collapsedSize = new Size(ActualWidth, ActualHeight);
-        _collapsedMargin = new Size(Margin.Right, Margin.Bottom);
-        VisualStateManager.GoToState(this, "ExpandedState", true);
-    }
-
-    private void CollapseButton_Click(object sender, RoutedEventArgs e)
-    {
-        TranslateXAnimation.To = ActualWidth + Margin.Right - (_collapsedSize.Width + _collapsedMargin.Width);
-        TranslateYAnimation.To = ActualHeight + Margin.Bottom - (_collapsedSize.Height + _collapsedMargin.Height);
-        ScaleXAnimation.To = _collapsedSize.Width / ActualWidth;
-        ScaleYAnimation.To = _collapsedSize.Height / ActualHeight;
-
-        VisualStateManager.GoToState(this, "CollapsedState", true);
-    }
-
     private void Image_ImageOpened(object sender, RoutedEventArgs e)
     {
         EndRequest();
@@ -131,9 +118,8 @@ public sealed partial class StreetView : PointControl
         EndRequest();
     }
 
-    private void ApplicationViewStates_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
+    private void IsCollapsedChanged(DependencyPropertyChangedEventArgs e)
     {
-        DragableBehavior.Reset();
         DragableBehavior.IsEnabled = !IsCollapsed;
 
         if (!IsCollapsed)

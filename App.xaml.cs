@@ -19,7 +19,11 @@ sealed partial class App : Application
 
     public App()
     {
-        UnhandledException += (_, e) => ShowExceptionAsync(e.Exception?.ToString() ?? e.Message).FireAndForget();
+        UnhandledException += (_, e) =>
+        {
+            e.Handled = true;
+            ShowExceptionAsync(e.Exception?.ToString() ?? e.Message).FireAndForget();
+        };
         
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
