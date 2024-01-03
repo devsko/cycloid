@@ -4,18 +4,13 @@ using Windows.Storage;
 
 namespace cycloid;
 
-public partial class Track
+public partial class Track(IStorageFile file)
 {
-    public IStorageFile File { get; }
+    public IStorageFile File { get; } = file;
 
     public RouteBuilder RouteBuilder { get; } = new();
 
     public PointCollection Points { get; } = new();
-    
-    public Track(IStorageFile file)
-    {
-        File = file;
-    }
 
     public string Name => File is null ? "" : Path.GetFileNameWithoutExtension(File.Name);
 

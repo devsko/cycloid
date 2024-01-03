@@ -52,7 +52,7 @@ public class DragableBehavior : Behavior<FrameworkElement>
         }
     }
 
-    private void EnabledChanged(DependencyPropertyChangedEventArgs e)
+    private void EnabledChanged(DependencyPropertyChangedEventArgs _)
     {
         if (IsEnabled)
         {
@@ -73,10 +73,8 @@ public class DragableBehavior : Behavior<FrameworkElement>
             {
                 _startOffset = AssociatedObject.ActualOffset;
             }
-            if (_originalOffset is null)
-            {
-                _originalOffset = _startOffset;
-            }
+            
+            _originalOffset ??= _startOffset;
         }
     }
 

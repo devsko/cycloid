@@ -82,5 +82,7 @@ public static class Convert
 
     public static Visibility VisibleIfNotNullOrEmpty(string value) => string.IsNullOrEmpty(value) ? Visibility.Collapsed : Visibility.Visible;
 
+    public static Visibility VisibleIfNotVisible(Visibility visibility) => visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+
     public static bool IsNotNull(object value) => value is not null;
 }

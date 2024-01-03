@@ -1,7 +1,7 @@
 namespace cycloid;
 
-public class WayPoint
+public class WayPoint(MapPoint location, bool isDirectRoute)
 {
-    public MapPoint Location { get; set; }
-    public bool EndOfLeg { get; set; }
+    public MapPoint Location { get; init; } = location;
+    public bool IsDirectRoute { get; set; } = isDirectRoute;
 }

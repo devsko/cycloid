@@ -6,10 +6,46 @@
     xmlns:cycloid="using:cycloid"
     xmlns:maps="using:Windows.UI.Xaml.Controls.Maps">
 
+    <UserControl.Resources>
+        <controls:MapCommandBarFlyout x:Name="MapNoTrackMenu" />
+        <controls:MapCommandBarFlyout x:Name="MapEditMenu">
+            <AppBarButton Label="Add new destination" />
+            <AppBarButton Label="Add waypoint" />
+            <AppBarButton Label="Add new start" />
+            <AppBarSeparator />
+            <AppBarButton Label="Add forbidden area" />
+        </controls:MapCommandBarFlyout>
+        <controls:MapCommandBarFlyout x:Name="MapEditPointMenu">
+            <AppBarButton Label="Move waypoint" />
+            <AppBarButton Label="Delete waypoint" />
+            <AppBarSeparator />
+            <AppBarButton
+                x:Name="SplitGpxHere"
+                Label="Split GPX here"
+                Visibility="{x:Bind Mode=OneWay, Path=VisibleIfNotIsFileSplit(HoveredWayPoint)}" />
+            <AppBarButton Label="Don't split GPX here" Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(SplitGpxHere.Visibility)}" />
+        </controls:MapCommandBarFlyout>
+        <controls:MapCommandBarFlyout x:Name="MapEditSectionMenu">
+            <AppBarButton Label="Add new waypoint" />
+            <AppBarSeparator />
+            <AppBarButton
+                x:Name="DirectRoute"
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleSectionIsDirectRouteCommand}"
+                CommandParameter="{x:Bind Mode=OneWay, Path=HoveredSection}"
+                Label="Direct route"
+                Visibility="{x:Bind Mode=OneWay, Path=VisibleIfNotIsDirectRoute(HoveredSection)}" />
+            <AppBarButton
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleSectionIsDirectRouteCommand}"
+                CommandParameter="{x:Bind Mode=OneWay, Path=HoveredSection}"
+                Label="Follow routing"
+                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(DirectRoute.Visibility)}" />
+        </controls:MapCommandBarFlyout>
+    </UserControl.Resources>
+
     <maps:MapControl
         x:Name="MapControl"
         Loaded="MapControl_Loaded"
-        MapRightTapped="MapControl_MapRightTapped"
+        MapContextRequested="MapControl_MapContextRequested"
         MapServiceToken="{cycloid:ConfigurationValue Key=Bing:ServiceApiKey}"
         MapTapped="MapControl_MapTapped"
         StyleSheet="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.StyleSheet}">
@@ -45,7 +81,7 @@
             maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.CurrentPoint)}"
             maps:MapControl.NormalizedAnchorPoint=".5 .5"
             UseLayoutRounding="false"
-            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(ViewModel.CurrentPoint)}">
+            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.CurrentPoint)}">
             <Grid>
                 <Ellipse
                     Width="15"
@@ -67,7 +103,7 @@
             maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.HoverPoint)}"
             maps:MapControl.NormalizedAnchorPoint=".5 .5"
             UseLayoutRounding="false"
-            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNull(ViewModel.HoverPoint)}">
+            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.HoverPoint)}">
             <Grid>
                 <Ellipse
                     Width="10"

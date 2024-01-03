@@ -1,3 +1,5 @@
+using GeoJSON.Text.Feature;
+using GeoJSON.Text.Geometry;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,7 +12,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using GeoJSON.Text.Feature;
 
 namespace cycloid.Routing;
 
@@ -21,7 +22,7 @@ public partial class BrouterClient
 
     public async Task<Feature> GetRouteAsync(MapPoint from, MapPoint to, IEnumerable<NoGoArea> noGoAreas, Profile profile, Action retryCallback, CancellationToken cancellationToken)
     {
-        string profileId = await _profiles.GetOrAdd(profile, profile => CreateProfileAsync(profile)).ConfigureAwait(false);
+        string profileId = await GetProfileIdAsync(profile).ConfigureAwait(false);
 
         string query = FormattableString.Invariant($"?lonlats={from.Longitude},{from.Latitude}|{to.Longitude},{to.Latitude}&nogos={string.Join('|', noGoAreas.Select(noGo => FormattableString.Invariant($"{noGo.Center.Longitude},{noGo.Center.Latitude},{noGo.Radius}")))}&profile={profileId}&alternativeidx=0&format=geojson");
 
@@ -44,6 +45,38 @@ public partial class BrouterClient
 
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    public async Task<IPosition> GetPositionAsync(MapPoint point, Profile profile, Action retryCallback, CancellationToken cancellationToken)
+    {
+        string profileId = await GetProfileIdAsync(profile).ConfigureAwait(false);
+
+        string query = FormattableString.Invariant($"?lonlats={point.Longitude},{point.Latitude}|{point.Longitude},{point.Latitude}&profile={profileId}&alternativeidx=0&format=geojson");
+
+        while (true)
+        {
+            using HttpResponseMessage response = await _http.GetAsync(query, cancellationToken).ConfigureAwait(false);
+            if (response.IsSuccessStatusCode)
+            {
+                using Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                FeatureCollection result = await JsonSerializer.DeserializeAsync<FeatureCollection>(contentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+                return (result?.Features.FirstOrDefault()?.Geometry as LineString)?.Coordinates[0];
+            }
+            else if (response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            retryCallback?.Invoke();
+
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private Task<string> GetProfileIdAsync(Profile profile)
+    {
+        return _profiles.GetOrAdd(profile, CreateProfileAsync);
 
         async Task<string> CreateProfileAsync(Profile profile)
         {

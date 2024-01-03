@@ -26,12 +26,23 @@ partial class ViewModel
         }
         else
         {
-            MapLocationFinderResult result = await MapLocationFinder.FindLocationsAtAsync(Convert.ToGeopoint(point));
-            if (result.Status == MapLocationFinderStatus.Success && result.Locations is [MapLocation location, ..])
+            string address = await GetAddressAsync(Convert.ToGeopoint(point));
+            if (address is not null)
             {
-                MapAddress address = location.Address;
-                @this.CurrentPointAddress = $"{address.Town}, {address.District}, {address.Region}, {address.Country}";
+                @this.CurrentPointAddress = address;
             }
         }
+    }
+
+    public static async Task<string> GetAddressAsync(Geopoint point)
+    {
+        MapLocationFinderResult result = await MapLocationFinder.FindLocationsAtAsync(point);
+        if (result.Status == MapLocationFinderStatus.Success && result.Locations is [MapLocation location, ..])
+        {
+            MapAddress address = location.Address;
+            return $"{address.Town}, {address.District}, {address.Region}, {address.Country}";
+        }
+
+        return null;
     }
 }

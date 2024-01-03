@@ -2,12 +2,21 @@
 
 namespace cycloid.Routing;
 
-public class RouteSection(MapPoint start, MapPoint end)
+public class RouteSection(WayPoint start, WayPoint end)
 {
-    public MapPoint Start { get; } = start;
-    public MapPoint End { get; } = end;
-    public float DirectDistance { get; } = GeoCalculation.Distance(start, end);
-    public CancellationTokenSource Cancellation { get; } = new();
+    public WayPoint Start { get; } = start;
+
+    public WayPoint End { get; } = end;
+
+    public float DirectDistance { get; } = GeoCalculation.Distance(start.Location, end.Location);
+
+    public CancellationTokenSource Cancellation { get; set; }
 
     public bool IsCanceled => Cancellation.IsCancellationRequested;
+
+    public bool IsDirectRoute
+    {
+        get => Start.IsDirectRoute;
+        set => Start.IsDirectRoute = value;
+    }
 }

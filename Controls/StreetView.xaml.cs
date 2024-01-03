@@ -108,17 +108,17 @@ public sealed partial class StreetView : PointControl
         }
     }
 
-    private void Image_ImageOpened(object sender, RoutedEventArgs e)
+    private void Image_ImageOpened(object _1, RoutedEventArgs _2)
     {
         EndRequest();
     }
 
-    private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+    private void Image_ImageFailed(object _1, ExceptionRoutedEventArgs _2)
     {
         EndRequest();
     }
 
-    private void IsCollapsedChanged(DependencyPropertyChangedEventArgs e)
+    private void IsCollapsedChanged(DependencyPropertyChangedEventArgs _)
     {
         DragableBehavior.IsEnabled = !IsCollapsed;
 

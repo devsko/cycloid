@@ -5,13 +5,13 @@ namespace cycloid.Serizalization;
 
 public class TrackFile
 {
-    public Leg[] Legs { get; set; }
+    public WayPoint[] WayPoints { get; set; }
+    public GpxFile[] GpxFiles { get; set; }
     public PointOfInterest[] PointsOfInterest { get; set; }
 }
 
-public class Leg
+public class GpxFile
 {
-    public Point[] Waypoints { get; set; }
     public GpxPoint[] Points { get; set; }
 }
 
@@ -21,18 +21,23 @@ public struct Point
     public float Lon { get; set; }
 }
 
+public struct WayPoint
+{
+    public Point Point { get; set; }
+    public bool IsDirectRoute { get; set; }
+    public bool IsFileSplit { get; set; }
+}
+
 public struct GpxPoint
 {
-    public float Lat { get; set; }
-    public float Lon { get; set; }
+    public Point Point { get; set; }
     public TimeSpan Time { get; set; }
 }
 
 public struct PointOfInterest
 {
+    public Point Point { get; set; }
     public DateTime Created { get; set; }
-    public float Lat { get; set; }
-    public float Lon { get; set; }
     public byte Mask { get; set; }
     public string Type { get; set; }
     public string Name { get; set; }

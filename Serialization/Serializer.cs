@@ -11,12 +11,9 @@ public static class Serializer
     {
         TrackFile trackFile = await DeserializeAsync();
 
-        foreach (Leg leg in trackFile.Legs)
+        foreach (WayPoint wayPoint in trackFile.WayPoints)
         {
-            foreach (var point in leg.Waypoints)
-            {
-                track.RouteBuilder.AddLastPoint(new MapPoint(point.Lat, point.Lon));
-            }
+            track.RouteBuilder.AddLastPoint(new cycloid.WayPoint(new MapPoint(wayPoint.Point.Lat, wayPoint.Point.Lon), wayPoint.IsDirectRoute));
         }
 
         async Task<TrackFile> DeserializeAsync()

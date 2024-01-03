@@ -1,3 +1,4 @@
+using Microsoft.VisualStudio.Threading;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -5,16 +6,15 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Threading;
 
 namespace cycloid.Routing;
 
 public class RouteBuilder
 {
-    private readonly Dictionary<MapPoint, RouteSection> _sections = [];
-    private TaskCompletionSource<bool> _delayCalculationTaskSource = new();
+    private readonly Dictionary<WayPoint, RouteSection> _sections = [];
+    private TaskCompletionSource<bool> _delayCalculationTaskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    public ObservableCollection<MapPoint> Points { get; } = [];
+    public ObservableCollection<WayPoint> Points { get; } = [];
     public ObservableCollection<NoGoArea> NoGoAreas { get; } = [];
     public BrouterClient Client { get; } = new();
     public Profile Profile { get; set; } = new()
@@ -51,13 +51,13 @@ public class RouteBuilder
                 _delayCalculationTaskSource.TrySetResult(true);
                 if (value)
                 {
-                    _delayCalculationTaskSource = new TaskCompletionSource<bool>();
+                    _delayCalculationTaskSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 }
             }
         }
     }
 
-    private void StartCalculation(RouteSection section)
+    public void StartCalculation(RouteSection section)
     {
         CalculateAsync().FireAndForget();
 
@@ -70,10 +70,11 @@ public class RouteBuilder
         {
             SynchronizationContext capturedContext = SynchronizationContext.Current;
 
+            section.Cancellation = new CancellationTokenSource();
             CancellationToken cancellationToken = section.Cancellation.Token;
             try
             {
-                if (section.DirectDistance > 50_000)
+                if (section.DirectDistance > 25_000)
                 {
                     await _delayCalculationTaskSource.Task.WithCancellation(cancellationToken);
                 }
@@ -82,29 +83,47 @@ public class RouteBuilder
 
                 await TaskScheduler.Default;
 
-                GeoJSON.Text.Feature.Feature feature = await Client.GetRouteAsync(section.Start, section.End, NoGoAreas, Profile, RetryCallback, cancellationToken).ConfigureAwait(false);
-
-                if (feature is not null)
+                if (section.IsDirectRoute)
                 {
-                    IEnumerable<float> times = ((JsonElement)feature.Properties["times"]).EnumerateArray().Select(e => e.GetSingle());
-                    ReadOnlyCollection<GeoJSON.Text.Geometry.IPosition> positions = ((GeoJSON.Text.Geometry.LineString)feature.Geometry).Coordinates;
+                    GeoJSON.Text.Geometry.IPosition startPosition = await Client.GetPositionAsync(section.Start.Location, Profile, RetryCallback, cancellationToken);
+                    GeoJSON.Text.Geometry.IPosition endPosition = await Client.GetPositionAsync(section.End.Location, Profile, RetryCallback, cancellationToken);
 
-                    IEnumerable<RoutePoint> points = positions.Zip(times,
-                        (position, time) => new RoutePoint(
-                            (float)position.Latitude,
-                            (float)position.Longitude,
-                            (float)(position.Altitude ?? 0),
-                            TimeSpan.FromSeconds(time)));
+                    if (startPosition is not null && endPosition is not null)
+                    {
+                        TimeSpan duration = TimeSpan.FromHours(section.DirectDistance / 1_000 / 20);
+                        return new RouteResult(
+                        [
+                            new RoutePoint((float)startPosition.Latitude, (float)startPosition.Longitude, (float)(startPosition.Altitude ?? 0), TimeSpan.Zero),
+                            new RoutePoint((float)endPosition.Latitude, (float)endPosition.Longitude, (float)(endPosition.Altitude ?? 0), duration)
+                        ], 2, (long)section.DirectDistance, (long)duration.TotalSeconds);
+                    }
+                }
+                else
+                {
+                    GeoJSON.Text.Feature.Feature feature = await Client.GetRouteAsync(section.Start.Location, section.End.Location, NoGoAreas, Profile, RetryCallback, cancellationToken).ConfigureAwait(false);
 
-                    long GetProperty(string name) => long.Parse(((JsonElement)feature.Properties[name]).GetString()!);
+                    if (feature is not null)
+                    {
+                        IEnumerable<float> times = ((JsonElement)feature.Properties["times"]).EnumerateArray().Select(e => e.GetSingle());
+                        ReadOnlyCollection<GeoJSON.Text.Geometry.IPosition> positions = ((GeoJSON.Text.Geometry.LineString)feature.Geometry).Coordinates;
 
-                    long length = GetProperty("track-length");
-                    long duration = GetProperty("total-time");
-                    //long ascend = GetProperty("filtered ascend");
+                        IEnumerable<RoutePoint> points = positions.Zip(times,
+                            (position, time) => new RoutePoint(
+                                (float)position.Latitude,
+                                (float)position.Longitude,
+                                (float)(position.Altitude ?? 0),
+                                TimeSpan.FromSeconds(time)));
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                        long GetProperty(string name) => long.Parse(((JsonElement)feature.Properties[name]).GetString()!);
 
-                    return new RouteResult(points, positions.Count, length, duration);
+                        long length = GetProperty("track-length");
+                        long duration = GetProperty("total-time");
+                        //long ascend = GetProperty("filtered ascend");
+
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        return new RouteResult(points, positions.Count, length, duration);
+                    }
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -125,16 +144,13 @@ public class RouteBuilder
         }
     }
 
-    public void InsertPoint(MapPoint point, RouteSection section) 
-        => AddPoint(point, Points.IndexOf(section.Start) + 1);
+    public void InsertPoint(WayPoint point, RouteSection section) => AddPoint(point, Points.IndexOf(section.Start) + 1);
 
-    public void AddLastPoint(MapPoint point) 
-        => AddPoint(point, Points.Count);
+    public void AddLastPoint(WayPoint point) => AddPoint(point, Points.Count);
 
-    public void AddFirstPoint(MapPoint point) 
-        => AddPoint(point, 0);
+    public void AddFirstPoint(WayPoint point) => AddPoint(point, 0);
 
-    private void AddPoint(MapPoint point, int index)
+    private void AddPoint(WayPoint point, int index)
     {
         Points.Insert(index, point);
         if (Points.Count > 1)
@@ -156,7 +172,7 @@ public class RouteBuilder
         }
     }
 
-    public void RemovePoint(MapPoint point)
+    public void RemovePoint(WayPoint point)
     {
         int index = Points.IndexOf(point);
         Points.RemoveAt(index);
@@ -178,7 +194,7 @@ public class RouteBuilder
         }
     }
 
-    public void MovePoint(MapPoint moveFrom, MapPoint moveTo)
+    public void MovePoint(WayPoint moveFrom, WayPoint moveTo)
     {
         int index = Points.IndexOf(moveFrom);
         Points[index] = moveTo;
@@ -195,9 +211,9 @@ public class RouteBuilder
         }
     }
 
-    private void CreateSection(int startIndex, MapPoint? startPoint = null)
+    private void CreateSection(int startIndex, WayPoint startPoint = null)
     {
-        MapPoint point = startPoint ?? Points[startIndex];
+        WayPoint point = startPoint ?? Points[startIndex];
         RouteSection section = new(point, Points[startIndex + 1]);
         _sections.Add(point, section);
         SectionAdded?.Invoke(section, startIndex);
@@ -205,9 +221,9 @@ public class RouteBuilder
         StartCalculation(section);
     }
 
-    private void RemoveSection(int startIndex, MapPoint? startPoint = null)
+    private void RemoveSection(int startIndex, WayPoint startPoint = null)
     {
-        MapPoint point = startPoint ?? Points[startIndex];
+        WayPoint point = startPoint ?? Points[startIndex];
         if (!_sections.Remove(point, out RouteSection section))
         {
             throw new InvalidOperationException();
