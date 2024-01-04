@@ -68,6 +68,7 @@ public sealed partial class Map : UserControl
     {
         ViewModel.TrackChanged += ViewModel_TrackChanged;
         ViewModel.DragWayPointStarted += ViewModel_DragWayPointStarted;
+        ViewModel.DragWayPointEnded += ViewModel_DragWayPointEnded;
 
         MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
         MapControl.ZoomLevel = 7;
@@ -151,7 +152,6 @@ public sealed partial class Map : UserControl
     private void ClickPanel_Tapped(object _, TappedRoutedEventArgs e)
     {
         ViewModel.EndDragWayPoint();
-        MapControl.Children.Remove(_clickPanel);
         e.Handled = true;
     }
 
@@ -220,6 +220,20 @@ public sealed partial class Map : UserControl
             MapControl.TryGetLocationFromOffset(pointer, out Geopoint location))
         {
             ViewModel.ContinueDragWayPoint((MapPoint)location.Position);
+        }
+    }
+
+    private void ViewModel_DragWayPointEnded()
+    {
+        MapControl.Children.Remove(_clickPanel);
+    }
+
+    private void MapControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Escape)
+        {
+            ViewModel.CancelDragWayPoint();
+            e.Handled = true;
         }
     }
 }

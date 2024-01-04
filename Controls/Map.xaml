@@ -2,8 +2,8 @@
     x:Class="cycloid.Controls.Map"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:cycloid="using:cycloid"
     xmlns:controls="using:cycloid.Controls"
+    xmlns:cycloid="using:cycloid"
     xmlns:maps="using:Windows.UI.Xaml.Controls.Maps">
 
     <UserControl.Resources>
@@ -50,6 +50,7 @@
 
     <maps:MapControl
         x:Name="MapControl"
+        PreviewKeyDown="MapControl_PreviewKeyDown"
         Loaded="MapControl_Loaded"
         MapContextRequested="MapControl_MapContextRequested"
         MapServiceToken="{cycloid:ConfigurationValue Key=Bing:ServiceApiKey}"

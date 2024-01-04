@@ -23,11 +23,13 @@ partial class ViewModel
     [ObservableProperty]
     private RouteSection _hoveredSection;
 
-    private WayPoint _capturedPoint;
+    private WayPoint _capturedWayPoint;
+    private MapPoint _capturedWayPointOriginalLocation;
 
     public event Action<WayPoint> DragWayPointStarted;
+    public event Action DragWayPointEnded;
 
-    public bool IsCaptured => _capturedPoint is not null;
+    public bool IsCaptured => _capturedWayPoint is not null;
 
     [RelayCommand]
     public void ToggleSectionIsDirectRoute(RouteSection section)
@@ -42,7 +44,8 @@ partial class ViewModel
         if (Track is not null && !IsCaptured && HoveredWayPoint is not null)
         {
             Track.RouteBuilder.DelayCalculation = true;
-            _capturedPoint = HoveredWayPoint;
+            _capturedWayPoint = HoveredWayPoint;
+            _capturedWayPointOriginalLocation = HoveredWayPoint.Location;
             DragWayPointStarted?.Invoke(HoveredWayPoint);
         }
     }
@@ -55,7 +58,8 @@ partial class ViewModel
             WayPoint wayPoint = new(location, HoveredSection.IsDirectRoute);
             Track.RouteBuilder.DelayCalculation = true;
             Track.RouteBuilder.InsertPoint(wayPoint, HoveredSection);
-            _capturedPoint = wayPoint;
+            _capturedWayPoint = wayPoint;
+            _capturedWayPointOriginalLocation = MapPoint.Invalid;
             DragWayPointStarted?.Invoke(wayPoint);
         }
     }
@@ -82,7 +86,7 @@ partial class ViewModel
     {
         if (Track is not null && IsCaptured)
         {
-            _capturedPoint = Track.RouteBuilder.MovePoint(_capturedPoint, location);
+            _capturedWayPoint = Track.RouteBuilder.MovePoint(_capturedWayPoint, location);
         }
     }
 
@@ -91,8 +95,24 @@ partial class ViewModel
         if (Track is not null && IsCaptured)
         {
             Track.RouteBuilder.DelayCalculation = false;
-            _capturedPoint = null;
+            _capturedWayPoint = null;
+            DragWayPointEnded?.Invoke();
         }
     }
 
+    public void CancelDragWayPoint()
+    {
+        if (Track is not null && IsCaptured)
+        {
+            if (_capturedWayPointOriginalLocation.IsValid)
+            {
+                Track.RouteBuilder.MovePoint(_capturedWayPoint, _capturedWayPointOriginalLocation);
+            }
+            else
+            {
+                Track.RouteBuilder.RemovePoint(_capturedWayPoint);
+            }
+            EndDragWayPoint();
+        }
+    }
 }
