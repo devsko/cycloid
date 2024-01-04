@@ -11,6 +11,14 @@ public class Throttle<TValue, TState>(Func<TValue, TState, Task> action, TimeSpa
     private volatile bool _hasValue;
     private TValue _value;
 
+    public Throttle(Action<TValue, TState> action, TimeSpan delay)
+        : this((value, state) =>
+        {
+            action(value, state);
+            return Task.CompletedTask;
+        }, delay)
+    { }
+
     public void Next(TValue value, TState state)
     {
         NextAsync(value, state).FireAndForget();

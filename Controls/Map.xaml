@@ -2,41 +2,47 @@
     x:Class="cycloid.Controls.Map"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
+    xmlns:controls="using:cycloid.Controls"
     xmlns:maps="using:Windows.UI.Xaml.Controls.Maps">
 
     <UserControl.Resources>
         <controls:MapCommandBarFlyout x:Name="MapNoTrackMenu" />
         <controls:MapCommandBarFlyout x:Name="MapEditMenu">
-            <AppBarButton Label="Add new destination" />
+            <AppBarButton
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.AddDestinationCommand}"
+                CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
+                Label="Add new destination" />
             <AppBarButton Label="Add waypoint" />
             <AppBarButton Label="Add new start" />
             <AppBarSeparator />
             <AppBarButton Label="Add forbidden area" />
         </controls:MapCommandBarFlyout>
         <controls:MapCommandBarFlyout x:Name="MapEditPointMenu">
-            <AppBarButton Label="Move waypoint" />
-            <AppBarButton Label="Delete waypoint" />
+            <AppBarButton Command="{x:Bind Mode=OneTime, Path=ViewModel.StartDragWayPointCommand}" Label="Move waypoint" />
+            <AppBarButton Command="{x:Bind Mode=OneTime, Path=ViewModel.DeleteWayPointCommand}" Label="Delete waypoint" />
             <AppBarSeparator />
             <AppBarButton
                 x:Name="SplitGpxHere"
                 Label="Split GPX here"
-                Visibility="{x:Bind Mode=OneWay, Path=VisibleIfNotIsFileSplit(HoveredWayPoint)}" />
+                Visibility="{x:Bind Mode=OneWay, Path=VisibleIfNotIsFileSplit(ViewModel.HoveredWayPoint)}" />
             <AppBarButton Label="Don't split GPX here" Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(SplitGpxHere.Visibility)}" />
         </controls:MapCommandBarFlyout>
         <controls:MapCommandBarFlyout x:Name="MapEditSectionMenu">
-            <AppBarButton Label="Add new waypoint" />
+            <AppBarButton
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.StartDragNewWayPointCommand}"
+                CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
+                Label="Add new waypoint" />
             <AppBarSeparator />
             <AppBarButton
                 x:Name="DirectRoute"
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleSectionIsDirectRouteCommand}"
-                CommandParameter="{x:Bind Mode=OneWay, Path=HoveredSection}"
+                CommandParameter="{x:Bind Mode=OneWay, Path=ViewModel.HoveredSection}"
                 Label="Direct route"
-                Visibility="{x:Bind Mode=OneWay, Path=VisibleIfNotIsDirectRoute(HoveredSection)}" />
+                Visibility="{x:Bind Mode=OneWay, Path=VisibleIfNotIsDirectRoute(ViewModel.HoveredSection)}" />
             <AppBarButton
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleSectionIsDirectRouteCommand}"
-                CommandParameter="{x:Bind Mode=OneWay, Path=HoveredSection}"
+                CommandParameter="{x:Bind Mode=OneWay, Path=ViewModel.HoveredSection}"
                 Label="Follow routing"
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(DirectRoute.Visibility)}" />
         </controls:MapCommandBarFlyout>

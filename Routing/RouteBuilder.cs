@@ -194,9 +194,10 @@ public class RouteBuilder
         }
     }
 
-    public void MovePoint(WayPoint moveFrom, WayPoint moveTo)
+    public WayPoint MovePoint(WayPoint moveFrom, MapPoint location)
     {
         int index = Points.IndexOf(moveFrom);
+        WayPoint moveTo = new(location, moveFrom.IsDirectRoute);
         Points[index] = moveTo;
 
         if (index > 0)
@@ -209,6 +210,8 @@ public class RouteBuilder
             RemoveSection(index, moveFrom);
             CreateSection(index, moveTo);
         }
+
+        return moveTo;
     }
 
     private void CreateSection(int startIndex, WayPoint startPoint = null)

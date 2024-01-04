@@ -1,4 +1,3 @@
-using cycloid.Routing;
 using System.Threading.Tasks;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
@@ -18,14 +17,24 @@ public class MapCommandBarFlyout : CommandBarFlyout
     private readonly TextBlock _coordinates = new();
     private readonly TextBlock _address = new();
 
+    public MapPoint Location
+    {
+        get => (MapPoint)GetValue(LocationProperty);
+        set => SetValue(LocationProperty, value);
+    }
+
+    public static readonly DependencyProperty LocationProperty =
+        DependencyProperty.Register(nameof(Location), typeof(MapPoint), typeof(MapCommandBarFlyout), new PropertyMetadata(MapPoint.Invalid));
+
     public MapCommandBarFlyout()
     {
         Placement = FlyoutPlacementMode.Full;
     }
 
-    public void ShowAt(FrameworkElement placementTarget, MapPoint point, Point position)
+    public void ShowAt(FrameworkElement placementTarget, MapPoint location, Point position)
     {
-        _coordinates.Text = $"{Format.Latitude(point.Latitude)} {Format.Longitude(point.Longitude)}";
+        Location = location;
+        _coordinates.Text = $"{Format.Latitude(location.Latitude)} {Format.Longitude(location.Longitude)}";
         ShowAsync().FireAndForget();
 
         async Task ShowAsync()
@@ -33,7 +42,7 @@ public class MapCommandBarFlyout : CommandBarFlyout
             string address = null;
             try
             {
-                address = await ViewModel.GetAddressAsync(new Geopoint((BasicGeoposition)point));
+                address = await ViewModel.GetAddressAsync(new Geopoint((BasicGeoposition)location));
             }
             catch
             { }
