@@ -5,7 +5,7 @@ using Windows.Devices.Geolocation;
 
 namespace cycloid;
 
-public readonly struct TrackPoint(float latitude, float longitude, float altitude = 0f, TimeSpan time = default, float distance = 0f, float heading = 0f, float gradient = 0f, float speed = 0f, float ascent = 0f, float descent = 0f) : IRoutePoint, IEquatable<TrackPoint>
+public readonly partial struct TrackPoint(float latitude, float longitude, float altitude = 0f, TimeSpan time = default, float distance = 0f, float heading = 0f, float gradient = 0f, float speed = 0f, float ascent = 0f, float descent = 0f) : IRoutePoint, IEquatable<TrackPoint>
 {
     public class DistanceComparer : IComparer<TrackPoint>
     {
@@ -42,6 +42,8 @@ public readonly struct TrackPoint(float latitude, float longitude, float altitud
     public float Speed => (float)_speed / 10;
 
     public CommonValues Values => _values;
+
+    public (float, float, int, ushort) RawValues => (_latitude, _longitude, _values.RawTime, _altitude);
 
     public bool IsValid => !float.IsNaN(Latitude);
 

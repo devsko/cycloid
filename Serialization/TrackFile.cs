@@ -12,7 +12,6 @@ public class TrackFile
 
 public class GpxFile
 {
-    public GpxPoint[] Points { get; set; }
 }
 
 public struct Point
@@ -23,15 +22,10 @@ public struct Point
 
 public struct WayPoint
 {
-    public Point Point { get; set; }
+    public Point Location { get; set; }
+    public byte[] Points { get; set; }
     public bool IsDirectRoute { get; set; }
     public bool IsFileSplit { get; set; }
-}
-
-public struct GpxPoint
-{
-    public Point Point { get; set; }
-    public TimeSpan Time { get; set; }
 }
 
 public struct PointOfInterest

@@ -106,8 +106,11 @@
     <Compile Include="Track.cs" />
     <Compile Include="Convert.cs" />
     <Compile Include="Track.PointCollection.cs" />
+    <Compile Include="Track.Segment.cs" />
+    <Compile Include="Track.SegmentCollection.cs" />
+    <Compile Include="TrackAggregator.cs" />
     <Compile Include="TrackPoint.cs" />
-    <Compile Include="CommonValues.cs" />
+    <Compile Include="TrackPoint.CommonValues.cs" />
     <Compile Include="ViewModel.Bing.cs" />
     <Compile Include="ViewModel.cs" />
     <Compile Include="Format.cs" />

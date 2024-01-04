@@ -1,16 +1,24 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using cycloid.Routing;
+using System.Collections.Generic;
 using System.IO;
 using Windows.Storage;
 
 namespace cycloid;
 
-public partial class Track(IStorageFile file)
+public partial class Track : ObservableObject
 {
-    public IStorageFile File { get; } = file;
+    public IStorageFile File { get; }
 
     public RouteBuilder RouteBuilder { get; } = new();
 
-    public PointCollection Points { get; } = new();
+    public PointCollection Points { get; }
+
+    public Track(IStorageFile file)
+    {
+        File = file;
+        Points = new PointCollection(RouteBuilder);
+    }
 
     public string Name => File is null ? "" : Path.GetFileNameWithoutExtension(File.Name);
 

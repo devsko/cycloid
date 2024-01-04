@@ -47,4 +47,13 @@ partial class ViewModel
 
         Track = new Track(file);
     }
+
+    [RelayCommand]
+    public async Task SaveTrackAsync()
+    {
+        if (Track is not null)
+        {
+            await Serializer.SaveAsync(Track);
+        }
+    }
 }

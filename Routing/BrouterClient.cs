@@ -26,6 +26,7 @@ public partial class BrouterClient
 
         string query = FormattableString.Invariant($"?lonlats={from.Longitude},{from.Latitude}|{to.Longitude},{to.Latitude}&nogos={string.Join('|', noGoAreas.Select(noGo => FormattableString.Invariant($"{noGo.Center.Longitude},{noGo.Center.Latitude},{noGo.Radius}")))}&profile={profileId}&alternativeidx=0&format=geojson");
 
+        int retryCount = 0;
         while (true)
         {
             using HttpResponseMessage response = await _http.GetAsync(query, cancellationToken).ConfigureAwait(false);
@@ -36,7 +37,7 @@ public partial class BrouterClient
 
                 return result?.Features.FirstOrDefault();
             }
-            else if (response.StatusCode == HttpStatusCode.BadRequest)
+            else if (++retryCount > 3 || response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
                 return null;
             }
@@ -53,6 +54,7 @@ public partial class BrouterClient
 
         string query = FormattableString.Invariant($"?lonlats={point.Longitude},{point.Latitude}|{point.Longitude},{point.Latitude}&profile={profileId}&alternativeidx=0&format=geojson");
 
+        int retryCount = 0;
         while (true)
         {
             using HttpResponseMessage response = await _http.GetAsync(query, cancellationToken).ConfigureAwait(false);
@@ -63,7 +65,7 @@ public partial class BrouterClient
 
                 return (result?.Features.FirstOrDefault()?.Geometry as LineString)?.Coordinates[0];
             }
-            else if (response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+            else if (++retryCount > 3 || response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
                 return null;
             }

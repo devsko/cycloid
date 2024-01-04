@@ -58,7 +58,10 @@
                         <KeyboardAccelerator Key="N" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
-                <AppBarButton Icon="CellPhone" Label="Wahoo" />
+                <AppBarButton
+                    Command="{x:Bind Mode=OneTime, Path=ViewModel.SaveTrackCommand}"
+                    Icon="CellPhone"
+                    Label="Wahoo" />
             </StackPanel>
 
             <ComboBox
@@ -140,10 +143,22 @@
                                 Grid.Column="0"
                                 HorizontalTextAlignment="End"
                                 Text="Descent" />
-                            <!--<TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(ViewModel.Track.Points.Total.Distance)}" />
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.Track.Points.Total.Time)}" />
-                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Ascent)}" />
-                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Descent)}" />-->
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(ViewModel.Track.Points.Total.Distance)}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.Track.Points.Total.Time)}" />
+                            <TextBlock
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Ascent)}" />
+                            <TextBlock
+                                Grid.Row="3"
+                                Grid.Column="1"
+                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Descent)}" />
                         </Grid>
                     </mux:TabViewItem>
                     <mux:TabViewItem Header="Sections" IsClosable="false">
