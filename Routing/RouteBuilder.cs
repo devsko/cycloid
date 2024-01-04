@@ -144,11 +144,17 @@ public class RouteBuilder
         }
     }
 
-    public void InsertPoint(WayPoint point, RouteSection section) => AddPoint(point, Points.IndexOf(section.Start) + 1);
+    public WayPoint InsertPoint(MapPoint location, RouteSection section)
+    {
+        WayPoint wayPoint = new(location, section.IsDirectRoute);
+        AddPoint(wayPoint, Points.IndexOf(section.Start) + 1);
 
-    public void AddLastPoint(WayPoint point) => AddPoint(point, Points.Count);
+        return wayPoint;
+    }
 
-    public void AddFirstPoint(WayPoint point) => AddPoint(point, 0);
+    public void AddLastPoint(WayPoint wayPoint) => AddPoint(wayPoint, Points.Count);
+
+    public void AddFirstPoint(WayPoint wayPoint) => AddPoint(wayPoint, 0);
 
     private void AddPoint(WayPoint point, int index)
     {

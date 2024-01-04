@@ -13,8 +13,14 @@
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.AddDestinationCommand}"
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
                 Label="Add new destination" />
-            <AppBarButton Label="Add waypoint" />
-            <AppBarButton Label="Add new start" />
+            <AppBarButton 
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.AddWayPointCommand}"
+                CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
+                Label="Add waypoint" />
+            <AppBarButton 
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.AddStartCommand}"
+                CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
+                Label="Add new start" />
             <AppBarSeparator />
             <AppBarButton Label="Add forbidden area" />
         </controls:MapCommandBarFlyout>
