@@ -169,22 +169,6 @@ public sealed partial class Map : UserControl
         }
     }
 
-    private void MapControl_MapTapped(MapControl _, MapInputEventArgs args)
-    {
-        // This is raised ADDITIONALY to MapElementClick!
-        if (ViewModel.HoveredWayPoint is not null || ViewModel.HoveredSection is not null)
-        {
-            return;
-        }
-
-        bool ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-
-        if (!ctrl)
-        {
-            ViewModel.AddDestination((MapPoint)args.Location.Position);
-        }
-    }
-
     private void MapControl_MapContextRequested(MapControl sender, MapContextRequestedEventArgs args)
     {
         MapCommandBarFlyout menu;

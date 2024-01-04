@@ -60,23 +60,6 @@ partial class ViewModel
         }
     }
 
-    public void ContinueDragWayPoint(MapPoint location)
-    {
-        if (Track is not null && IsCaptured)
-        {
-            _capturedPoint = Track.RouteBuilder.MovePoint(_capturedPoint, location);
-        }
-    }
-
-    public void EndDragWayPoint()
-    {
-        if (Track is not null && IsCaptured)
-        {
-            Track.RouteBuilder.DelayCalculation = false;
-            _capturedPoint = null;
-        }
-    }
-
     [RelayCommand]
     public void AddDestination(MapPoint location)
     {
@@ -94,4 +77,22 @@ partial class ViewModel
             Track.RouteBuilder.RemovePoint(HoveredWayPoint);
         }
     }
+
+    public void ContinueDragWayPoint(MapPoint location)
+    {
+        if (Track is not null && IsCaptured)
+        {
+            _capturedPoint = Track.RouteBuilder.MovePoint(_capturedPoint, location);
+        }
+    }
+
+    public void EndDragWayPoint()
+    {
+        if (Track is not null && IsCaptured)
+        {
+            Track.RouteBuilder.DelayCalculation = false;
+            _capturedPoint = null;
+        }
+    }
+
 }
