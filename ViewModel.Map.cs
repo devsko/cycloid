@@ -1,9 +1,8 @@
+using System;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using cycloid.Routing;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace cycloid;
 
@@ -30,6 +29,7 @@ partial class ViewModel
 
     public event Action<WayPoint> DragWayPointStarted;
     public event Action DragWayPointEnded;
+    public event Action<WayPoint> FileSplitChanged;
 
     public bool IsCaptured => _capturedWayPoint is not null;
 
@@ -38,7 +38,7 @@ partial class ViewModel
     {
         if (Track is not null && !IsCaptured)
         {
-            await Track.RouteBuilder.AddLastPointAsync(new WayPoint(location, false));
+            await Track.RouteBuilder.AddLastPointAsync(new WayPoint(location, false, false));
         }
     }
 
@@ -47,7 +47,7 @@ partial class ViewModel
     {
         if (Track is not null && !IsCaptured)
         {
-            await Track.RouteBuilder.AddFirstPointAsync(new WayPoint(location, false));
+            await Track.RouteBuilder.AddFirstPointAsync(new WayPoint(location, false, false));
         }
     }
 
@@ -143,12 +143,23 @@ partial class ViewModel
     }
 
     [RelayCommand]
-    public void ToggleSectionIsDirectRoute(RouteSection section)
+    public void TogglePointIsFileSplit()
     {
-        if (Track is not null)
+        if (Track is not null && HoveredWayPoint is not null)
         {
-            section.IsDirectRoute = !section.IsDirectRoute;
-            Track.RouteBuilder.StartCalculation(section);
+            HoveredWayPoint.IsFileSplit = !HoveredWayPoint.IsFileSplit;
+            FileSplitChanged?.Invoke(HoveredWayPoint);
+            SaveTrackAsync().FireAndForget();
+        }
+    }
+
+    [RelayCommand]
+    public void ToggleSectionIsDirectRoute()
+    {
+        if (Track is not null && HoveredSection is not null)
+        {
+            HoveredSection.IsDirectRoute = !HoveredSection.IsDirectRoute;
+            Track.RouteBuilder.StartCalculation(HoveredSection);
         }
     }
 }

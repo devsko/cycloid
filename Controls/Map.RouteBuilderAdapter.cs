@@ -28,6 +28,8 @@ partial class Map
             routeBuilder.CalculationStarting += RouteBuilder_CalculationStarting;
             routeBuilder.CalculationRetry += RouteBuilder_CalculationRetry;
             routeBuilder.CalculationFinished += RouteBuilder_CalculationFinished;
+
+            viewModel.FileSplitChanged += ViewModel_FileSplitChanged;
         }
 
         public void Disconnect()
@@ -38,6 +40,8 @@ partial class Map
             _routeBuilder.CalculationStarting -= RouteBuilder_CalculationStarting;
             _routeBuilder.CalculationRetry -= RouteBuilder_CalculationRetry;
             _routeBuilder.CalculationFinished -= RouteBuilder_CalculationFinished;
+
+            _viewModel.FileSplitChanged -= ViewModel_FileSplitChanged;
         }
 
         private MapIcon GetWayPointIcon(WayPoint point) => _routingLayer.MapElements.OfType<MapIcon>().First(element => (WayPoint)element.Tag == point);
@@ -56,7 +60,7 @@ partial class Map
                             Location = new Geopoint(newPoint.Location),
                             Tag = newPoint,
                             NormalizedAnchorPoint = new Point(.5, .5),
-                            MapStyleSheetEntry = "Routing.Point",
+                            MapStyleSheetEntry = newPoint.IsFileSplit ? "Routing.SplitPoint" : "Routing.Point",
                         });
                     }
                     break;
@@ -158,6 +162,11 @@ partial class Map
                     line.MapStyleSheetEntry = "Routing.ErrorLine";
                 }
             }
+        }
+
+        private void ViewModel_FileSplitChanged(WayPoint wayPoint)
+        {
+            GetWayPointIcon(wayPoint).MapStyleSheetEntry = wayPoint.IsFileSplit ? "Routing.SplitPoint" : "Routing.Point";
         }
     }
 }

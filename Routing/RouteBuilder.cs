@@ -154,7 +154,7 @@ public partial class RouteBuilder
     {
         using (await ChangeLock.EnterCalculationAsync())
         {
-            WayPoint wayPoint = new(location, section.IsDirectRoute);
+            WayPoint wayPoint = new(location, section.IsDirectRoute, false);
             AddPoint(wayPoint, Points.IndexOf(section.Start) + 1);
 
             return wayPoint;
@@ -225,7 +225,7 @@ public partial class RouteBuilder
         using (await ChangeLock.EnterCalculationAsync())
         {
             int index = Points.IndexOf(moveFrom);
-            WayPoint moveTo = new(location, moveFrom.IsDirectRoute);
+            WayPoint moveTo = new(location, moveFrom.IsDirectRoute, moveFrom.IsFileSplit);
             Points[index] = moveTo;
 
             if (index > 0)

@@ -13,11 +13,11 @@
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.AddDestinationCommand}"
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
                 Label="Add new destination" />
-            <AppBarButton 
+            <AppBarButton
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.AddWayPointCommand}"
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
                 Label="Add waypoint" />
-            <AppBarButton 
+            <AppBarButton
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.AddStartCommand}"
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
                 Label="Add new start" />
@@ -30,9 +30,13 @@
             <AppBarSeparator />
             <AppBarButton
                 x:Name="SplitGpxHere"
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.TogglePointIsFileSplitCommand}"
                 Label="Split GPX here"
                 Visibility="{x:Bind Mode=OneWay, Path=VisibleIfNotIsFileSplit(ViewModel.HoveredWayPoint)}" />
-            <AppBarButton Label="Don't split GPX here" Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(SplitGpxHere.Visibility)}" />
+            <AppBarButton
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.TogglePointIsFileSplitCommand}"
+                Label="Don't split GPX here"
+                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(SplitGpxHere.Visibility)}" />
         </controls:MapCommandBarFlyout>
         <controls:MapCommandBarFlyout x:Name="MapEditSectionMenu">
             <AppBarButton
@@ -43,12 +47,10 @@
             <AppBarButton
                 x:Name="DirectRoute"
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleSectionIsDirectRouteCommand}"
-                CommandParameter="{x:Bind Mode=OneWay, Path=ViewModel.HoveredSection}"
                 Label="Direct route"
                 Visibility="{x:Bind Mode=OneWay, Path=VisibleIfNotIsDirectRoute(ViewModel.HoveredSection)}" />
             <AppBarButton
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleSectionIsDirectRouteCommand}"
-                CommandParameter="{x:Bind Mode=OneWay, Path=ViewModel.HoveredSection}"
                 Label="Follow routing"
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(DirectRoute.Visibility)}" />
         </controls:MapCommandBarFlyout>
@@ -56,11 +58,11 @@
 
     <maps:MapControl
         x:Name="MapControl"
-        PreviewKeyDown="MapControl_PreviewKeyDown"
         Loaded="MapControl_Loaded"
         MapContextRequested="MapControl_MapContextRequested"
         MapServiceToken="{cycloid:ConfigurationValue Key=Bing:ServiceApiKey}"
         MapTapped="MapControl_MapTapped"
+        PreviewKeyDown="MapControl_PreviewKeyDown"
         StyleSheet="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.StyleSheet}">
 
         <maps:MapControl.Resources>
@@ -86,7 +88,6 @@
                 MapElementClick="RoutingLayer_MapElementClick"
                 MapElementPointerEntered="RoutingLayer_MapElementPointerEntered"
                 MapElementPointerExited="RoutingLayer_MapElementPointerExited" />
-            <maps:MapIcon x:Name="NewPoint" MapStyleSheetEntry="Routing.NewPoint" />
         </maps:MapControl.Resources>
 
         <!--  CurrentPoint  -->

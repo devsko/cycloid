@@ -23,7 +23,7 @@ public static class Serializer
             RoutePoint[] routePoints = Deserialize(i > 0 ? trackFile.TrackPoints[i - 1] : null);
 
             track.RouteBuilder.InitializePoint(
-                new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute), 
+                new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute, wayPoint.IsFileSplit), 
                 routePoints);
         }
 
@@ -71,6 +71,7 @@ public static class Serializer
                 {
                     Location = new Point { Lat = wayPoint.Location.Latitude, Lon = wayPoint.Location.Longitude },
                     IsDirectRoute = wayPoint.IsDirectRoute,
+                    IsFileSplit = wayPoint.IsFileSplit,
                 })
                 .ToArray(),
             TrackPoints = trackPoints

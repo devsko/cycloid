@@ -24,12 +24,12 @@ partial class ViewModel
                     "strokeColor": "#FFFFFFFF",
                     "iconScale": 2.3
                   },
-                  "NewPoint": {
-                    "scale": 0.5,
-                    "fillColor": "#80000000",
-                    "strokeColor": "#FFFFFFFF",
-                    "iconColor": "#40FFFFFF",
-                    "iconScale": 2.3
+                  "SplitPoint": {
+                    "scale": 0.5, 
+                    "fillColor": "#FFF3F523", 
+                    "iconColor": "#FFFF9728", 
+                    "iconScale": 2.3, 
+                    "strokeColor": "#FFFFFFFF"                  
                   },
                   "Line": {
                     "fillColor": "#FFFF00FF",

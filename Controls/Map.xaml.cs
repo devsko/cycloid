@@ -52,7 +52,7 @@ public sealed partial class Map : UserControl
 
     private bool IsFileSplit(WayPoint wayPoint)
     {
-        return false;
+        return wayPoint is { IsFileSplit: true };
     }
 
     private Visibility VisibleIfNotIsFileSplit(WayPoint wayPoint) => !IsFileSplit(wayPoint) ? Visibility.Visible : Visibility.Collapsed;
