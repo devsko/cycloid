@@ -22,6 +22,9 @@ public partial class ViewModel : ObservableObject
     [ObservableProperty]
     private TrackPoint _hoverPoint = TrackPoint.Invalid;
 
+    [ObservableProperty]
+    private string _status;
+
     public event Action<Track, Track> TrackChanged;
 
     public ViewModel()

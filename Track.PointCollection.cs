@@ -41,14 +41,20 @@ partial class Track
             }
         }
 
-        public async Task<(WayPoint, TrackPoint[])[]> GetSegmentsAsync(CancellationToken cancellationToken)
+        public async Task<(WayPoint[], TrackPoint[][])> GetSegmentsAsync(CancellationToken cancellationToken)
         {
             using (await _routeBuilder.ChangeLock.EnterAsync(cancellationToken))
             {
-                return _segments
-                    .Select(segment => (segment.Section.End, segment.Points))
-                    .Prepend((_segments[0].Section.Start, null))
-                    .ToArray();
+                return 
+                    (
+                        _segments
+                            .Select(segment => segment.Section.End)
+                            .Prepend(_segments[0].Section.Start)
+                            .ToArray(),
+                        _segments
+                            .Select(segment => segment.Points)
+                            .ToArray()
+                    );
             }
         }
 

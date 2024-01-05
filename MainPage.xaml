@@ -39,6 +39,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal">
@@ -179,12 +180,16 @@
                 </mux:TabView.TabItems>
             </mux:TabView>
 
+            <TextBlock
+                Grid.Row="4"
+                FontSize="11"
+                Text="{x:Bind Mode=OneWay, Path=ViewModel.Status}" />
+
         </Grid>
 
         <Grid
             Grid.Row="0"
-            Grid.Column="1"
-            ui:UIElementExtensions.ClipToBounds="True">
+            Grid.Column="1">
 
             <controls:Map />
 

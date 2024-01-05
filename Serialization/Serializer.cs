@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,10 +17,14 @@ public static class Serializer
     {
         TrackFile trackFile = await DeserializeAsync();
 
-        foreach (WayPoint wayPoint in trackFile.WayPoints)
+        for (int i = 0; i < trackFile.WayPoints.Length; i++)
         {
-            RoutePoint[] points = Deserialize(wayPoint.Points);
-            track.RouteBuilder.InitializePoint(new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute), points);
+            WayPoint wayPoint = trackFile.WayPoints[i];
+            RoutePoint[] routePoints = Deserialize(i > 0 ? trackFile.TrackPoints[i - 1] : null);
+
+            track.RouteBuilder.InitializePoint(
+                new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute), 
+                routePoints);
         }
 
         async Task<TrackFile> DeserializeAsync()
@@ -57,24 +62,21 @@ public static class Serializer
     {
         await TaskScheduler.Default;
 
-        (cycloid.WayPoint, TrackPoint[])[] segments = await track.Points.GetSegmentsAsync(cancellationToken).ConfigureAwait(false);
+        (cycloid.WayPoint[] wayPoints, TrackPoint[][] trackPoints) = await track.Points.GetSegmentsAsync(cancellationToken).ConfigureAwait(false);
 
-        WayPoint[] wayPoints = new WayPoint[segments.Length];
-        for (int i = 0; i < wayPoints.Length; i++)
+        TrackFile trackFile = new()
         {
-            (cycloid.WayPoint wayPoint, TrackPoint[] trackPoints) = segments[i];
-            MapPoint location = wayPoint.Location;
-            wayPoints[i] = new WayPoint
-            {
-                Location = new Point { Lat = location.Latitude, Lon = location.Longitude },
-                IsDirectRoute = wayPoint.IsDirectRoute,
-                Points = Serialize(trackPoints),
-            };
-
-            cancellationToken.ThrowIfCancellationRequested();
-        }
-
-        TrackFile trackFile = new() { WayPoints = wayPoints };
+            WayPoints = wayPoints.Select(wayPoint => 
+                new WayPoint
+                {
+                    Location = new Point { Lat = wayPoint.Location.Latitude, Lon = wayPoint.Location.Longitude },
+                    IsDirectRoute = wayPoint.IsDirectRoute,
+                })
+                .ToArray(),
+            TrackPoints = trackPoints
+                .Select(trackPoints => Serialize(trackPoints))
+                .ToArray()
+        };
 
         using IRandomAccessStream winRtStream = await track.File.OpenAsync(FileAccessMode.ReadWrite).AsTask().ConfigureAwait(false);
         winRtStream.Size = 0;

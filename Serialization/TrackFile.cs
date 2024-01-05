@@ -6,6 +6,7 @@ namespace cycloid.Serizalization;
 public class TrackFile
 {
     public WayPoint[] WayPoints { get; set; }
+    public byte[][] TrackPoints { get; set; }
     public GpxFile[] GpxFiles { get; set; }
     public PointOfInterest[] PointsOfInterest { get; set; }
 }
@@ -23,7 +24,6 @@ public struct Point
 public struct WayPoint
 {
     public Point Location { get; set; }
-    public byte[] Points { get; set; }
     public bool IsDirectRoute { get; set; }
     public bool IsFileSplit { get; set; }
 }
