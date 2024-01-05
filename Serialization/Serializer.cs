@@ -1,3 +1,4 @@
+using cycloid.Routing;
 using Microsoft.VisualStudio.Threading;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,8 @@ public static class Serializer
 
         foreach (WayPoint wayPoint in trackFile.WayPoints)
         {
-            track.RouteBuilder.AddLastPoint(new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute));
+            RoutePoint[] points = Deserialize(wayPoint.Points);
+            track.RouteBuilder.InitializePoint(new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute), points);
         }
 
         async Task<TrackFile> DeserializeAsync()
@@ -28,6 +30,24 @@ public static class Serializer
 
             return await JsonSerializer.DeserializeAsync(stream, PoiContext.Default.TrackFile).ConfigureAwait(false);
         }
+
+        RoutePoint[] Deserialize(byte[] binary)
+        {
+            if (binary is null)
+            {
+                return null;
+            }
+
+            RoutePoint[] points = new RoutePoint[binary.Length / 16];
+            MemoryStream stream = new(binary);
+            BinaryReader reader = new(stream);
+            for (int i = 0; i < points.Length; i++)
+            {
+                points[i] = new RoutePoint(reader.ReadSingle(), reader.ReadSingle(), (float)reader.ReadInt32() / 10, TimeSpan.FromMilliseconds(reader.ReadInt32()));
+            }
+
+            return points;
+        }
     }
 
     public static async Task SaveAsync(Track track)
@@ -36,20 +56,20 @@ public static class Serializer
 
         WayPoint[] wayPoints = new WayPoint[track.RouteBuilder.Points.Count];
         IEnumerator<TrackPoint[]> enumerator = track.Points.Segments.GetEnumerator();
+        byte[] points = null;
         for (int i = 0; i < wayPoints.Length; i++)
         {
             cycloid.WayPoint wayPoint = track.RouteBuilder.Points[i];
-            byte[] points = null;
-            if (enumerator.MoveNext())
-            {
-                points = Serialize(enumerator.Current);
-            }
             wayPoints[i] = new WayPoint
             {
                 Location = new Point { Lat = wayPoint.Location.Latitude, Lon = wayPoint.Location.Longitude },
                 IsDirectRoute = wayPoint.IsDirectRoute,
                 Points = points,
             };
+            if (enumerator.MoveNext())
+            {
+                points = Serialize(enumerator.Current);
+            }
         }
 
         TrackFile trackFile = new() { WayPoints = wayPoints };
@@ -65,18 +85,17 @@ public static class Serializer
             await JsonSerializer.SerializeAsync(stream, trackFile, PoiContext.Default.TrackFile).ConfigureAwait(false);
         }
 
-        byte[] Serialize(TrackPoint[] segment)
+        byte[] Serialize(TrackPoint[] points)
         {
-            byte[] binary = new byte[segment.Length * 14];
+            byte[] binary = new byte[points.Length * 16];
             MemoryStream stream = new(binary);
             BinaryWriter writer = new(stream);
-            foreach (TrackPoint point in segment)
+            foreach (TrackPoint point in points)
             {
-                (float latitude, float longitude, int time, ushort altitude) = point.RawValues;
-                writer.Write(latitude);
-                writer.Write(longitude);
-                writer.Write(time);
-                writer.Write(altitude);
+                writer.Write(point.Latitude);
+                writer.Write(point.Longitude);
+                writer.Write((int)(point.Altitude * 10));
+                writer.Write((int)point.Time.TotalMilliseconds);
             }
 
             return binary;

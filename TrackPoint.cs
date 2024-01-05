@@ -43,8 +43,6 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
 
     public CommonValues Values => _values;
 
-    public (float, float, int, ushort) RawValues => (_latitude, _longitude, _values.RawTime, _altitude);
-
     public bool IsValid => !float.IsNaN(Latitude);
 
     public static explicit operator TrackPoint(BasicGeoposition position) => new((float)position.Latitude, (float)position.Longitude, 0);

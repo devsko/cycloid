@@ -2,7 +2,7 @@
 
 namespace cycloid.Routing;
 
-public readonly record struct RouteResult(IEnumerable<RoutePoint> Points, int PointCount, long Length, long Duration)
+public readonly record struct RouteResult(IEnumerable<RoutePoint> Points, int PointCount)
 {
     public bool IsValid => Points is not null;
 }

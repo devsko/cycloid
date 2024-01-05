@@ -12,7 +12,7 @@ public class RouteSection(WayPoint start, WayPoint end)
 
     public CancellationTokenSource Cancellation { get; set; }
 
-    public bool IsCanceled => Cancellation.IsCancellationRequested;
+    public bool IsCanceled => Cancellation is { IsCancellationRequested: true };
 
     public bool IsDirectRoute
     {

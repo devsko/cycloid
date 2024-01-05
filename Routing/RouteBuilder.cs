@@ -95,7 +95,7 @@ public class RouteBuilder
                         [
                             new RoutePoint((float)startPosition.Latitude, (float)startPosition.Longitude, (float)(startPosition.Altitude ?? 0), TimeSpan.Zero),
                             new RoutePoint((float)endPosition.Latitude, (float)endPosition.Longitude, (float)(endPosition.Altitude ?? 0), duration)
-                        ], 2, (long)section.DirectDistance, (long)duration.TotalSeconds);
+                        ], 2/*, (long)section.DirectDistance, (long)duration.TotalSeconds*/);
                     }
                 }
                 else
@@ -122,7 +122,7 @@ public class RouteBuilder
 
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        return new RouteResult(points, positions.Count, length, duration);
+                        return new RouteResult(points, positions.Count/*, length, duration*/);
                     }
                 }
             }
@@ -155,6 +155,15 @@ public class RouteBuilder
     public void AddLastPoint(WayPoint wayPoint) => AddPoint(wayPoint, Points.Count);
 
     public void AddFirstPoint(WayPoint wayPoint) => AddPoint(wayPoint, 0);
+
+    public void InitializePoint(WayPoint wayPoint, RoutePoint[] points)
+    {
+        Points.Add(wayPoint);
+        if (Points.Count > 1)
+        {
+            InitializeSection(points);
+        }
+    }
 
     private void AddPoint(WayPoint point, int index)
     {
@@ -228,6 +237,16 @@ public class RouteBuilder
         SectionAdded?.Invoke(section, startIndex);
 
         StartCalculation(section);
+    }
+
+    private void InitializeSection(RoutePoint[] routePoints)
+    {
+        int startIndex = Points.Count - 2;
+        WayPoint point = Points[startIndex];
+        RouteSection section = new(point, Points[startIndex + 1]);
+        _sections.Add(point, section);
+        SectionAdded?.Invoke(section, startIndex);
+        CalculationFinished?.Invoke(section, new RouteResult { Points = routePoints, PointCount = routePoints.Length });
     }
 
     private void RemoveSection(int startIndex, WayPoint startPoint = null)
