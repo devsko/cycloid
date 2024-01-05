@@ -94,6 +94,7 @@
     </Compile>
     <Compile Include="Controls\PopupBrowser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Routing\RouteBuilder.ChangeLocker.cs" />
     <Compile Include="Routing\RouteBuilder.cs" />
     <Compile Include="Routing\RoutePoint.cs" />
     <Compile Include="Routing\RouteResult.cs" />

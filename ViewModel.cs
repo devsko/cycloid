@@ -45,6 +45,20 @@ public partial class ViewModel : ObservableObject
         CurrentPoint = TrackPoint.Invalid;
         HoverPoint = TrackPoint.Invalid;
 
+        if (oldValue is not null)
+        {
+            oldValue.RouteBuilder.Changed -= RouteBuilder_Changed;
+        }
+        if (newValue is not null)
+        {
+            newValue.RouteBuilder.Changed += RouteBuilder_Changed;
+        }
+
         TrackChanged?.Invoke(oldValue, newValue);
+    }
+
+    private void RouteBuilder_Changed()
+    {
+        SaveTrackAsync().FireAndForget();
     }
 }

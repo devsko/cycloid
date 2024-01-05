@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using cycloid.Routing;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace cycloid;
 
@@ -33,25 +34,25 @@ partial class ViewModel
     public bool IsCaptured => _capturedWayPoint is not null;
 
     [RelayCommand]
-    public void AddDestination(MapPoint location)
+    public async Task AddDestinationAsync(MapPoint location)
     {
         if (Track is not null && !IsCaptured)
         {
-            Track.RouteBuilder.AddLastPoint(new WayPoint(location, false));
+            await Track.RouteBuilder.AddLastPointAsync(new WayPoint(location, false));
         }
     }
 
     [RelayCommand]
-    public void AddStart(MapPoint location)
+    public async Task AddStartAsync(MapPoint location)
     {
         if (Track is not null && !IsCaptured)
         {
-            Track.RouteBuilder.AddFirstPoint(new WayPoint(location, false));
+            await Track.RouteBuilder.AddFirstPointAsync(new WayPoint(location, false));
         }
     }
 
     [RelayCommand]
-    public void AddWayPoint(MapPoint location)
+    public async Task AddWayPointAsync(MapPoint location)
     {
         if (Track is not null && !IsCaptured)
         {
@@ -69,17 +70,17 @@ partial class ViewModel
 
             if (nearestSection is not null)
             {
-                Track.RouteBuilder.InsertPoint(location, nearestSection);
+                await Track.RouteBuilder.InsertPointAsync(location, nearestSection);
             }
         }
     }
 
     [RelayCommand]
-    public void DeleteWayPoint()
+    public async Task DeleteWayPointAsync()
     {
         if (Track is not null && !IsCaptured && HoveredWayPoint is not null)
         {
-            Track.RouteBuilder.RemovePoint(HoveredWayPoint);
+            await Track.RouteBuilder.RemovePointAsync(HoveredWayPoint);
         }
     }
 
@@ -96,22 +97,22 @@ partial class ViewModel
     }
 
     [RelayCommand]
-    public void StartDragNewWayPoint(MapPoint location)
+    public async Task StartDragNewWayPointAsync(MapPoint location)
     {
         if (Track is not null && !IsCaptured && HoveredSection is not null)
         {
             Track.RouteBuilder.DelayCalculation = true;
-            _capturedWayPoint = Track.RouteBuilder.InsertPoint(location, HoveredSection);
+            _capturedWayPoint = await Track.RouteBuilder.InsertPointAsync(location, HoveredSection);
             _capturedWayPointOriginalLocation = MapPoint.Invalid;
             DragWayPointStarted?.Invoke(_capturedWayPoint);
         }
     }
 
-    public void ContinueDragWayPoint(MapPoint location)
+    public async Task ContinueDragWayPointAsync(MapPoint location)
     {
         if (Track is not null && IsCaptured)
         {
-            _capturedWayPoint = Track.RouteBuilder.MovePoint(_capturedWayPoint, location);
+            _capturedWayPoint = await Track.RouteBuilder.MovePointAsync(_capturedWayPoint, location);
         }
     }
 
@@ -125,17 +126,17 @@ partial class ViewModel
         }
     }
 
-    public void CancelDragWayPoint()
+    public async Task CancelDragWayPointAsync()
     {
         if (Track is not null && IsCaptured)
         {
             if (_capturedWayPointOriginalLocation.IsValid)
             {
-                Track.RouteBuilder.MovePoint(_capturedWayPoint, _capturedWayPointOriginalLocation);
+                await Track.RouteBuilder.MovePointAsync(_capturedWayPoint, _capturedWayPointOriginalLocation);
             }
             else
             {
-                Track.RouteBuilder.RemovePoint(_capturedWayPoint);
+                await Track.RouteBuilder.RemovePointAsync(_capturedWayPoint);
             }
             EndDragWayPoint();
         }

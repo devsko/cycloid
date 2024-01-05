@@ -1,7 +1,6 @@
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using cycloid.Routing;
-using System.Collections.Generic;
-using System.IO;
 using Windows.Storage;
 
 namespace cycloid;

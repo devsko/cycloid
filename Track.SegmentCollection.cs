@@ -1,8 +1,8 @@
-using cycloid.Routing;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using cycloid.Routing;
 
 namespace cycloid;
 
@@ -140,6 +140,10 @@ partial class Track
             return segment.Points is { };
         }
 
+        public IEnumerator<Segment> GetEnumerator() => _segments.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => _segments.GetEnumerator();
+
         [Conditional("DEBUG")]
         private void CheckTotal()
         {
@@ -176,9 +180,5 @@ partial class Track
                 index++;
             }
         }
-
-        public IEnumerator<Segment> GetEnumerator() => _segments.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => _segments.GetEnumerator();
     }
 }

@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.WinUI;
+﻿using System;
+using CommunityToolkit.WinUI;
 using cycloid.Routing;
-using System;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
 using Windows.System;
@@ -135,7 +135,7 @@ public sealed partial class Map : UserControl
             {
                 if (ctrl)
                 {
-                    ViewModel.DeleteWayPoint();
+                    ViewModel.DeleteWayPointAsync().FireAndForget();
                 }
                 else
                 {
@@ -144,7 +144,7 @@ public sealed partial class Map : UserControl
             }
             else if (ViewModel.HoveredSection is not null)
             {
-                ViewModel.StartDragNewWayPoint((MapPoint)args.Location.Position);
+                ViewModel.StartDragNewWayPointAsync((MapPoint)args.Location.Position).FireAndForget();
             }
         }
     }
@@ -165,7 +165,23 @@ public sealed partial class Map : UserControl
     {
         if (MapControl.TryGetLocationFromOffset(point, out Geopoint location))
         {
-            ViewModel.ContinueDragWayPoint((MapPoint)location.Position);
+            ViewModel.ContinueDragWayPointAsync((MapPoint)location.Position).FireAndForget();
+        }
+    }
+
+    private void MapControl_MapTapped(MapControl _, MapInputEventArgs args)
+    {
+        // This is raised ADDITIONALY to MapElementClick!
+        if (ViewModel.HoveredWayPoint is not null || ViewModel.HoveredSection is not null)
+        {
+            return;
+        }
+
+        bool ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+
+        if (ctrl)
+        {
+            ViewModel.AddDestinationAsync((MapPoint)args.Location.Position).FireAndForget();
         }
     }
 
@@ -219,7 +235,7 @@ public sealed partial class Map : UserControl
         if (transform.TryTransform(pointer, out pointer) &&
             MapControl.TryGetLocationFromOffset(pointer, out Geopoint location))
         {
-            ViewModel.ContinueDragWayPoint((MapPoint)location.Position);
+            ViewModel.ContinueDragWayPointAsync((MapPoint)location.Position).FireAndForget();
         }
     }
 
@@ -232,7 +248,7 @@ public sealed partial class Map : UserControl
     {
         if (e.Key == VirtualKey.Escape)
         {
-            ViewModel.CancelDragWayPoint();
+            ViewModel.CancelDragWayPointAsync().FireAndForget();
             e.Handled = true;
         }
     }

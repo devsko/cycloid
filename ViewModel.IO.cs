@@ -1,7 +1,8 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using cycloid.Serizalization;
-using System;
-using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
@@ -9,6 +10,8 @@ namespace cycloid;
 
 partial class ViewModel
 {
+    private CancellationTokenSource _saveTrackCts;
+
     [RelayCommand]
     public async Task OpenTrackAsync()
     {
@@ -53,7 +56,14 @@ partial class ViewModel
     {
         if (Track is not null)
         {
-            await Serializer.SaveAsync(Track);
+            _saveTrackCts?.Cancel();
+            _saveTrackCts = new CancellationTokenSource();
+            try
+            {
+                await Serializer.SaveAsync(Track, _saveTrackCts.Token);
+            }
+            catch (OperationCanceledException) when (_saveTrackCts.IsCancellationRequested)
+            { }
         }
     }
 }

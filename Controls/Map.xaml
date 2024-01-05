@@ -60,6 +60,7 @@
         Loaded="MapControl_Loaded"
         MapContextRequested="MapControl_MapContextRequested"
         MapServiceToken="{cycloid:ConfigurationValue Key=Bing:ServiceApiKey}"
+        MapTapped="MapControl_MapTapped"
         StyleSheet="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.StyleSheet}">
 
         <maps:MapControl.Resources>

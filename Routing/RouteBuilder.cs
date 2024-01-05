@@ -1,4 +1,3 @@
-using Microsoft.VisualStudio.Threading;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,14 +5,16 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
 
 namespace cycloid.Routing;
 
-public class RouteBuilder
+public partial class RouteBuilder
 {
     private readonly Dictionary<WayPoint, RouteSection> _sections = [];
     private TaskCompletionSource<bool> _delayCalculationTaskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+    public ChangeLocker ChangeLock { get; }
     public ObservableCollection<WayPoint> Points { get; } = [];
     public ObservableCollection<NoGoArea> NoGoAreas { get; } = [];
     public BrouterClient Client { get; } = new();
@@ -33,8 +34,11 @@ public class RouteBuilder
     public event Action<RouteSection> CalculationRetry;
     public event Action<RouteSection, RouteResult> CalculationFinished;
 
+    public event Action Changed;
+
     public RouteBuilder()
     {
+        ChangeLock = new ChangeLocker(this);
         DelayCalculation = false;
     }
 
@@ -63,15 +67,17 @@ public class RouteBuilder
 
         async Task CalculateAsync()
         {
-            CalculationFinished?.Invoke(section, await GetResultAsync());
+            section.ResetCancellation();
+            using (await ChangeLock.EnterCalculationAsync(section.CancellationToken))
+            {
+                CalculationFinished?.Invoke(section, await GetResultAsync(section.CancellationToken));
+            }
         }
 
-        async Task<RouteResult> GetResultAsync()
+        async Task<RouteResult> GetResultAsync(CancellationToken cancellationToken)
         {
             SynchronizationContext capturedContext = SynchronizationContext.Current;
 
-            section.Cancellation = new CancellationTokenSource();
-            CancellationToken cancellationToken = section.Cancellation.Token;
             try
             {
                 if (section.DirectDistance > 25_000)
@@ -144,24 +150,26 @@ public class RouteBuilder
         }
     }
 
-    public WayPoint InsertPoint(MapPoint location, RouteSection section)
+    public async Task<WayPoint> InsertPointAsync(MapPoint location, RouteSection section)
     {
-        WayPoint wayPoint = new(location, section.IsDirectRoute);
-        AddPoint(wayPoint, Points.IndexOf(section.Start) + 1);
+        using (await ChangeLock.EnterCalculationAsync())
+        {
+            WayPoint wayPoint = new(location, section.IsDirectRoute);
+            AddPoint(wayPoint, Points.IndexOf(section.Start) + 1);
 
-        return wayPoint;
+            return wayPoint;
+        }
     }
 
-    public void AddLastPoint(WayPoint wayPoint) => AddPoint(wayPoint, Points.Count);
+    public Task AddLastPointAsync(WayPoint wayPoint) => AddPointAsync(wayPoint, Points.Count);
 
-    public void AddFirstPoint(WayPoint wayPoint) => AddPoint(wayPoint, 0);
+    public Task AddFirstPointAsync(WayPoint wayPoint) => AddPointAsync(wayPoint, 0);
 
-    public void InitializePoint(WayPoint wayPoint, RoutePoint[] points)
+    private async Task AddPointAsync(WayPoint point, int index)
     {
-        Points.Add(wayPoint);
-        if (Points.Count > 1)
+        using (await ChangeLock.EnterCalculationAsync())
         {
-            InitializeSection(points);
+            AddPoint(point, index);
         }
     }
 
@@ -187,46 +195,52 @@ public class RouteBuilder
         }
     }
 
-    public void RemovePoint(WayPoint point)
+    public async Task RemovePointAsync(WayPoint point)
     {
-        int index = Points.IndexOf(point);
-        Points.RemoveAt(index);
+        using (await ChangeLock.EnterCalculationAsync())
+        {
+            int index = Points.IndexOf(point);
+            Points.RemoveAt(index);
 
-        int removed = 0;
-        if (index < Points.Count)
-        {
-            RemoveSection(index, point);
-            removed++;
-        }
-        if (index > 0)
-        {
-            RemoveSection(index - 1);
-            removed++;
-        }
-        if (removed == 2)
-        {
-            CreateSection(index - 1);
+            int removed = 0;
+            if (index < Points.Count)
+            {
+                RemoveSection(index, point);
+                removed++;
+            }
+            if (index > 0)
+            {
+                RemoveSection(index - 1);
+                removed++;
+            }
+            if (removed == 2)
+            {
+                CreateSection(index - 1);
+            }
         }
     }
 
-    public WayPoint MovePoint(WayPoint moveFrom, MapPoint location)
+    public async Task<WayPoint> MovePointAsync(WayPoint moveFrom, MapPoint location)
     {
-        int index = Points.IndexOf(moveFrom);
-        WayPoint moveTo = new(location, moveFrom.IsDirectRoute);
-        Points[index] = moveTo;
-
-        if (index > 0)
+        using (await ChangeLock.EnterCalculationAsync())
         {
-            RemoveSection(index - 1);
-            CreateSection(index - 1);
-        }
-        if (index < Points.Count - 1)
-        {
-            RemoveSection(index, moveFrom);
-            CreateSection(index, moveTo);
-        }
+            int index = Points.IndexOf(moveFrom);
+            WayPoint moveTo = new(location, moveFrom.IsDirectRoute);
+            Points[index] = moveTo;
 
-        return moveTo;
+            if (index > 0)
+            {
+                RemoveSection(index - 1);
+                CreateSection(index - 1);
+            }
+            if (index < Points.Count - 1)
+            {
+                RemoveSection(index, moveFrom);
+                CreateSection(index, moveTo);
+            }
+
+            return moveTo;
+        }
     }
 
     private void CreateSection(int startIndex, WayPoint startPoint = null)
@@ -239,16 +253,6 @@ public class RouteBuilder
         StartCalculation(section);
     }
 
-    private void InitializeSection(RoutePoint[] routePoints)
-    {
-        int startIndex = Points.Count - 2;
-        WayPoint point = Points[startIndex];
-        RouteSection section = new(point, Points[startIndex + 1]);
-        _sections.Add(point, section);
-        SectionAdded?.Invoke(section, startIndex);
-        CalculationFinished?.Invoke(section, new RouteResult { Points = routePoints, PointCount = routePoints.Length });
-    }
-
     private void RemoveSection(int startIndex, WayPoint startPoint = null)
     {
         WayPoint point = startPoint ?? Points[startIndex];
@@ -256,7 +260,21 @@ public class RouteBuilder
         {
             throw new InvalidOperationException();
         }
-        section.Cancellation.Cancel();
+        section.Cancel();
         SectionRemoved?.Invoke(section, startIndex);
+    }
+
+    public void InitializePoint(WayPoint wayPoint, RoutePoint[] routePoints)
+    {
+        Points.Add(wayPoint);
+        if (Points.Count > 1)
+        {
+            int startIndex = Points.Count - 2;
+            WayPoint point = Points[startIndex];
+            RouteSection section = new(point, wayPoint);
+            _sections.Add(point, section);
+            SectionAdded?.Invoke(section, startIndex);
+            CalculationFinished?.Invoke(section, new RouteResult { Points = routePoints, PointCount = routePoints.Length });
+        }
     }
 }
