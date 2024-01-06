@@ -29,8 +29,8 @@ public sealed partial class Map : UserControl
         }
     }
 
-    private readonly Throttle<Point, Map> _pointerMovedThrottle = new(
-        static (point, map) => map.ThrottledClickPanelPointerMoved(point),
+    private readonly Throttle<PointerRoutedEventArgs, Map> _pointerMovedThrottle = new(
+        static (e, @this) => @this.ThrottledClickPanelPointerMoved(e),
         TimeSpan.FromMilliseconds(100));
 
     private readonly ClickPanel _clickPanel;
@@ -151,19 +151,19 @@ public sealed partial class Map : UserControl
 
     private void ClickPanel_Tapped(object _, TappedRoutedEventArgs e)
     {
-        ViewModel.EndDragWayPoint();
+        ViewModel.EndDragWayPoint(commit: true);
         e.Handled = true;
     }
 
     private void ClickPanel_PointerMoved(object _, PointerRoutedEventArgs e)
     {
-        _pointerMovedThrottle.Next(e.GetCurrentPoint(MapControl).Position, this);
+        _pointerMovedThrottle.Next(e, this);
         e.Handled = true;
     }
 
-    private void ThrottledClickPanelPointerMoved(Point point)
+    private void ThrottledClickPanelPointerMoved(PointerRoutedEventArgs e)
     {
-        if (MapControl.TryGetLocationFromOffset(point, out Geopoint location))
+        if (MapControl.TryGetLocationFromOffset(e.GetCurrentPoint(MapControl).Position, out Geopoint location))
         {
             ViewModel.ContinueDragWayPointAsync((MapPoint)location.Position).FireAndForget();
         }
@@ -209,6 +209,15 @@ public sealed partial class Map : UserControl
         menu.ShowAt(MapControl, location, args.Position);
     }
 
+    private void MapControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Escape)
+        {
+            ViewModel.CancelDragWayPointAsync().FireAndForget();
+            e.Handled = true;
+        }
+    }
+
     private void ViewModel_TrackChanged(Track oldTrack, Track newTrack)
     {
         _routingLayer.MapElements.Clear();
@@ -242,14 +251,5 @@ public sealed partial class Map : UserControl
     private void ViewModel_DragWayPointEnded()
     {
         MapControl.Children.Remove(_clickPanel);
-    }
-
-    private void MapControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (e.Key == VirtualKey.Escape)
-        {
-            ViewModel.CancelDragWayPointAsync().FireAndForget();
-            e.Handled = true;
-        }
     }
 }

@@ -62,6 +62,9 @@ public partial class ViewModel : ObservableObject
 
     private void RouteBuilder_Changed()
     {
-        SaveTrackAsync().FireAndForget();
+        if (!IsCaptured)
+        {
+            SaveTrackAsync().FireAndForget();
+        }
     }
 }

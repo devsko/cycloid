@@ -116,13 +116,17 @@ partial class ViewModel
         }
     }
 
-    public void EndDragWayPoint()
+    public void EndDragWayPoint(bool commit)
     {
         if (Track is not null && IsCaptured)
         {
             Track.RouteBuilder.DelayCalculation = false;
             _capturedWayPoint = null;
             DragWayPointEnded?.Invoke();
+            if (commit)
+            {
+                SaveTrackAsync().FireAndForget();
+            }
         }
     }
 
@@ -138,7 +142,7 @@ partial class ViewModel
             {
                 await Track.RouteBuilder.RemovePointAsync(_capturedWayPoint);
             }
-            EndDragWayPoint();
+            EndDragWayPoint(commit: false);
         }
     }
 

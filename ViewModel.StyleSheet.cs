@@ -6,7 +6,7 @@ partial class ViewModel
 {
     private static class StyleSheet
     {
-        public static MapStyleSheet Extension { get; } = MapStyleSheet.ParseFromJson("""
+        public static MapStyleSheet Extension { get; } = MapStyleSheet.ParseFromJson(/*lang=json*/ """
             {
               "version": "1.*",
               "settings": {
@@ -26,10 +26,10 @@ partial class ViewModel
                   },
                   "SplitPoint": {
                     "scale": 0.5, 
-                    "fillColor": "#FFF3F523", 
-                    "iconColor": "#FFFF9728", 
-                    "iconScale": 2.3, 
-                    "strokeColor": "#FFFFFFFF"                  
+                    "fillColor": "#FFFFFFFF", 
+                    "strokeColor": "#FFFF0000",
+                    "iconColor": "#FFFF0000", 
+                    "iconScale": 2.3
                   },
                   "Line": {
                     "fillColor": "#FFFF00FF",
@@ -69,7 +69,7 @@ partial class ViewModel
             }
             """);
 
-        public static MapStyleSheet Empty { get; } = MapStyleSheet.ParseFromJson("""
+        public static MapStyleSheet Empty { get; } = MapStyleSheet.ParseFromJson(/*lang=json*/ """
             {
               "version": "1.*",
               "elements": {
@@ -84,7 +84,7 @@ partial class ViewModel
             }
             """);
 
-        public static MapStyleSheet InterestingPoints { get; } = MapStyleSheet.ParseFromJson("""
+        public static MapStyleSheet InterestingPoints { get; } = MapStyleSheet.ParseFromJson(/*lang=json*/ """
             {
               "version": "1.*",
               "settings": {
