@@ -27,7 +27,9 @@ partial class ViewModel
     private WayPoint _capturedWayPoint;
     private MapPoint _capturedWayPointOriginalLocation;
 
-    public event Action<WayPoint> DragWayPointStarted;
+    public event Action<WayPoint> DragWayPointStarting;
+    public event Action<RouteSection> DragNewWayPointStarting;
+    public event Action DragWayPointStarted;
     public event Action DragWayPointEnded;
     public event Action<WayPoint> FileSplitChanged;
 
@@ -90,9 +92,11 @@ partial class ViewModel
         if (Track is not null && !IsCaptured && HoveredWayPoint is not null)
         {
             Track.RouteBuilder.DelayCalculation = true;
+            DragWayPointStarting?.Invoke(HoveredWayPoint);
+
             _capturedWayPoint = HoveredWayPoint;
             _capturedWayPointOriginalLocation = HoveredWayPoint.Location;
-            DragWayPointStarted?.Invoke(HoveredWayPoint);
+            DragWayPointStarted?.Invoke();
         }
     }
 
@@ -102,9 +106,11 @@ partial class ViewModel
         if (Track is not null && !IsCaptured && HoveredSection is not null)
         {
             Track.RouteBuilder.DelayCalculation = true;
+            DragNewWayPointStarting?.Invoke(HoveredSection);
+            
             _capturedWayPoint = await Track.RouteBuilder.InsertPointAsync(location, HoveredSection);
             _capturedWayPointOriginalLocation = MapPoint.Invalid;
-            DragWayPointStarted?.Invoke(_capturedWayPoint);
+            DragWayPointStarted?.Invoke();
         }
     }
 

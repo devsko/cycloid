@@ -1,10 +1,8 @@
-﻿using System;
-using CommunityToolkit.WinUI;
+﻿using CommunityToolkit.WinUI;
 using cycloid.Routing;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
 using Windows.System;
-using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -16,24 +14,6 @@ namespace cycloid.Controls;
 
 public sealed partial class Map : UserControl
 {
-    private class ClickPanel : Panel
-    {
-        public ClickPanel()
-        {
-            Background = new SolidColorBrush(Colors.Transparent);
-        }
-
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            return new Size(1e5, 1e5);
-        }
-    }
-
-    private readonly Throttle<PointerRoutedEventArgs, Map> _pointerMovedThrottle = new(
-        static (e, @this) => @this.ThrottledClickPanelPointerMoved(e),
-        TimeSpan.FromMilliseconds(100));
-
-    private readonly ClickPanel _clickPanel;
     private MapTileSource _heatmap;
     private MapTileSource _osm;
     private MapElementsLayer _routingLayer;
@@ -42,10 +22,6 @@ public sealed partial class Map : UserControl
     public Map()
     {
         InitializeComponent();
-
-        _clickPanel = new ClickPanel();
-        _clickPanel.PointerMoved += ClickPanel_PointerMoved;
-        _clickPanel.Tapped += ClickPanel_Tapped;
     }
 
     private ViewModel ViewModel => (ViewModel)this.FindResource(nameof(ViewModel));
@@ -67,6 +43,8 @@ public sealed partial class Map : UserControl
     private void MapControl_Loaded(object _1, RoutedEventArgs _2)
     {
         ViewModel.TrackChanged += ViewModel_TrackChanged;
+        ViewModel.DragWayPointStarting += ViewModel_DragWayPointStarting;
+        ViewModel.DragNewWayPointStarting += ViewModel_DragNewWayPointStarting;
         ViewModel.DragWayPointStarted += ViewModel_DragWayPointStarted;
         ViewModel.DragWayPointEnded += ViewModel_DragWayPointEnded;
 
@@ -133,11 +111,12 @@ public sealed partial class Map : UserControl
         {
             if (ViewModel.HoveredWayPoint is not null)
             {
-                if (ctrl)
-                {
-                    ViewModel.DeleteWayPointAsync().FireAndForget();
-                }
-                else
+                // PROBLEM: MapControl_MapTapped is raised additionaly. After deleting the waypoint there is no way to detect it was just element clicked
+                //if (ctrl)
+                //{
+                //    ViewModel.DeleteWayPointAsync().FireAndForget();
+                //}
+                //else
                 {
                     ViewModel.StartDragWayPoint();
                 }
@@ -147,18 +126,6 @@ public sealed partial class Map : UserControl
                 ViewModel.StartDragNewWayPointAsync((MapPoint)args.Location.Position).FireAndForget();
             }
         }
-    }
-
-    private void ClickPanel_Tapped(object _, TappedRoutedEventArgs e)
-    {
-        ViewModel.EndDragWayPoint(commit: true);
-        e.Handled = true;
-    }
-
-    private void ClickPanel_PointerMoved(object _, PointerRoutedEventArgs e)
-    {
-        _pointerMovedThrottle.Next(e, this);
-        e.Handled = true;
     }
 
     private void ThrottledClickPanelPointerMoved(PointerRoutedEventArgs e)
@@ -232,9 +199,19 @@ public sealed partial class Map : UserControl
         }
     }
 
-    private void ViewModel_DragWayPointStarted(WayPoint wayPoint)
+    private void ViewModel_DragWayPointStarting(WayPoint wayPoint)
     {
-        MapControl.Children.Add(_clickPanel);
+        _routeBuilderAdapter.BeginDrag(ViewModel.Track.RouteBuilder.GetSections(wayPoint));
+    }
+
+    private void ViewModel_DragNewWayPointStarting(RouteSection section)
+    {
+        _routeBuilderAdapter.BeginDrag((section, section));
+    }
+
+    private void ViewModel_DragWayPointStarted()
+    {
+        PointerMovedEnabled = true;
 
         GeneralTransform transform = Window.Current.Content.TransformToVisual(MapControl);
         Rect window = Window.Current.CoreWindow.Bounds;
@@ -250,6 +227,7 @@ public sealed partial class Map : UserControl
 
     private void ViewModel_DragWayPointEnded()
     {
-        MapControl.Children.Remove(_clickPanel);
+        PointerMovedEnabled = false;
+        _routeBuilderAdapter.EndDrag();
     }
 }

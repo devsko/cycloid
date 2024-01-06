@@ -61,6 +61,16 @@ public partial class RouteBuilder
         }
     }
 
+    public (RouteSection To, RouteSection From) GetSections(WayPoint point)
+    {
+        int index = Points.IndexOf(point);
+
+        RouteSection to = index == 0 ? null : _sections[Points[index - 1]];
+        RouteSection from = index == Points.Count - 1 ? null : _sections[point];
+
+        return (to, from);
+    }
+
     public void StartCalculation(RouteSection section)
     {
         CalculateAsync().FireAndForget();
@@ -274,6 +284,12 @@ public partial class RouteBuilder
             RouteSection section = new(point, wayPoint);
             _sections.Add(point, section);
             SectionAdded?.Invoke(section, startIndex);
+
+            if (routePoints is null)
+            {
+                routePoints = [new RoutePoint(point.Location.Latitude, point.Location.Longitude, 0, TimeSpan.Zero), new RoutePoint(wayPoint.Location.Latitude, wayPoint.Location.Longitude, 0, TimeSpan.Zero)];
+            }
+
             CalculationFinished?.Invoke(section, new RouteResult { Points = routePoints, PointCount = routePoints.Length });
         }
     }

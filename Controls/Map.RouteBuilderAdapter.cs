@@ -1,6 +1,6 @@
-using cycloid.Routing;
 using System.Collections.Specialized;
 using System.Linq;
+using cycloid.Routing;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
 using Windows.UI.Xaml.Controls.Maps;
@@ -11,10 +11,65 @@ partial class Map
 {
     private class RouteBuilderAdapter
     {
+        private struct DragState
+        {
+            private readonly MapPolyline _line;
+            private readonly bool _compareStart;
+            private RouteSection _oldSection;
+            private RouteSection _newSection;
+
+            public DragState(MapPolyline line, bool compareStart)
+            {
+                _line = line;
+                _oldSection = (RouteSection)line.Tag;
+                _compareStart = compareStart;
+            }
+
+            public static bool IsSameSection(DragState dragStateTo, DragState dragStateFrom, RouteSection section) 
+                => dragStateTo._oldSection == dragStateFrom._oldSection && section.End == dragStateFrom._oldSection?.End;
+
+            public bool Added(RouteSection section)
+            {
+                if (_compareStart ? section.Start == _oldSection?.Start : section.End == _oldSection?.End)
+                {
+                    _line.Tag = section;
+                    _newSection = section;
+                    return true;
+                }
+                return false;
+            }
+
+            public bool Removed(RouteSection section)
+            {
+                if (section == _oldSection)
+                {
+                    return true;
+                }
+                if (section == _newSection)
+                {
+                    _newSection = null;
+                    return true;
+                }
+                return false;
+            }
+
+            public bool Calculated(RouteSection section)
+            {
+                if (section == _newSection)
+                {
+                    _oldSection = section;
+                    _newSection = null;
+                    return true;
+                }
+                return false;
+            }
+        }
+
         private readonly RouteBuilder _routeBuilder;
         private readonly MapElementsLayer _routingLayer;
         private readonly ViewModel _viewModel;
-        private MapPolyline _cachedLine;
+        private DragState _dragStateTo;
+        private DragState _dragStateFrom;
 
         public RouteBuilderAdapter(RouteBuilder routeBuilder, MapElementsLayer routingLayer, ViewModel viewModel)
         {
@@ -42,6 +97,17 @@ partial class Map
             _routeBuilder.CalculationFinished -= RouteBuilder_CalculationFinished;
 
             _viewModel.FileSplitChanged -= ViewModel_FileSplitChanged;
+        }
+
+        public void BeginDrag((RouteSection To, RouteSection From) sections)
+        {
+            _dragStateTo = sections.To == null ? default : new DragState(GetSectionLine(sections.To), true);
+            _dragStateFrom = sections.From == null ? default : new DragState(GetSectionLine(sections.From), false);
+        }
+
+        public void EndDrag()
+        {
+            _dragStateTo = _dragStateFrom = default;
         }
 
         private MapIcon GetWayPointIcon(WayPoint point) => _routingLayer.MapElements.OfType<MapIcon>().First(element => (WayPoint)element.Tag == point);
@@ -98,42 +164,36 @@ partial class Map
 
         private void RouteBuilder_SectionAdded(RouteSection section, int index)
         {
-            Geopath path = new([(BasicGeoposition)section.Start.Location, (BasicGeoposition)section.End.Location]);
-
-            if (_cachedLine is MapPolyline line)
+            if (DragState.IsSameSection(_dragStateTo, _dragStateFrom, section))
             {
-                _cachedLine = null;
-                line.MapStyleSheetEntry = "Routing.NewLine";
-                line.Tag = section;
-                line.Path = path;
-                line.Visible = true;
+                MapPolyline line = new() { Tag = section, Path = new Geopath([new BasicGeoposition()]) };
+                _routingLayer.MapElements.Add(line);
+                _dragStateFrom = new DragState(line, false);
+                _dragStateFrom.Added(section);
             }
-            else
+            else if (!_dragStateTo.Added(section) && 
+                !_dragStateFrom.Added(section))
             {
                 _routingLayer.MapElements.Add(new MapPolyline()
                 {
                     MapStyleSheetEntry = "Routing.NewLine",
                     Tag = section,
-                    Path = path,
+                    Path = new Geopath([(BasicGeoposition)section.Start.Location, (BasicGeoposition)section.End.Location]),
                 });
             }
         }
 
         private void RouteBuilder_SectionRemoved(RouteSection section, int index)
         {
-            MapPolyline line = GetSectionLine(section);
+            if (!_dragStateTo.Removed(section) && 
+                !_dragStateFrom.Removed(section))
+            {
+                _routingLayer.MapElements.Remove(GetSectionLine(section));
+            }
+
             if (section == _viewModel.HoveredSection)
             {
                 _viewModel.HoveredSection = null;
-            }
-            line.Visible = false;
-            if (_cachedLine is null)
-            {
-                _cachedLine = line;
-            }
-            else
-            {
-                _routingLayer.MapElements.Remove(line);
             }
         }
 
@@ -151,6 +211,9 @@ partial class Map
         {
             if (!section.IsCanceled)
             {
+                _dragStateTo.Calculated(section);
+                _dragStateFrom.Calculated(section);
+
                 MapPolyline line = GetSectionLine(section);
                 if (result.IsValid)
                 {

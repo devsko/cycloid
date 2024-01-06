@@ -47,18 +47,18 @@ partial class ViewModel
                     "strokeWidthScale": 4
                   },
                   "CalculatingLine": {
-                    "fillColor": "#40202080",
-                    "strokeColor": "#40202040",
+                    "fillColor": "#E0FF00FF",
+                    "strokeColor": "#E0400040",
                     "strokeWidthScale": 4
                   },
                   "RetryLine": {
-                    "fillColor": "#80805200",
-                    "strokeColor": "#80402900",
+                    "fillColor": "#E0805200",
+                    "strokeColor": "#E0402900",
                     "strokeWidthScale": 4
                   },
                   "ErrorLine": {
-                    "fillColor": "#80800000",
-                    "strokeColor": "#80400000",
+                    "fillColor": "#E0800000",
+                    "strokeColor": "#E0400000",
                     "strokeWidthScale": 4
                   },
                   "hover": {

@@ -90,6 +90,11 @@
                 MapElementPointerExited="RoutingLayer_MapElementPointerExited" />
         </maps:MapControl.Resources>
 
+        <controls:PointerPanel
+            x:Name="PointerPanel"
+            PointerMoved="PointerPanel_PointerMoved"
+            Tapped="PointerPanel_Tapped" />
+
         <!--  CurrentPoint  -->
         <Border
             maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.CurrentPoint)}"
