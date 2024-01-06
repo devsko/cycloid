@@ -1,10 +1,12 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using cycloid.Serizalization;
 using Windows.Storage;
+using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 
 namespace cycloid;
@@ -29,7 +31,30 @@ partial class ViewModel
             return;
         }
 
+        StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", file);
+        await  OpenTrackFileAsync(file);
+    }
+
+    public async Task OpenLastTrackAsync()
+    {
+        if (StorageApplicationPermissions.FutureAccessList.ContainsItem("LastTrack"))
+        {
+            try
+            {
+                StorageFile file = await StorageApplicationPermissions.FutureAccessList.GetFileAsync("LastTrack");
+                await OpenTrackFileAsync(file);
+            }
+            catch (FileNotFoundException)
+            {
+                StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
+            }
+        }
+    }
+
+    private async Task OpenTrackFileAsync(StorageFile file)
+    {
         Track = new Track(file);
+
         Stopwatch watch = Stopwatch.StartNew();
         await Serializer.LoadAsync(Track);
         Status = $"{Track.Name} opened ({watch.ElapsedMilliseconds} ms)";
@@ -51,6 +76,8 @@ partial class ViewModel
             return;
         }
 
+        StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
+
         Track = new Track(file);
         Status = $"{Track.Name} created";
     }
@@ -67,6 +94,8 @@ partial class ViewModel
                 Stopwatch watch = Stopwatch.StartNew();
                 await Serializer.SaveAsync(Track, _saveTrackCts.Token);
                 Status = $"{Track.Name} saved ({watch.ElapsedMilliseconds} ms)";
+
+                StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", Track.File);
             }
             catch (OperationCanceledException) when (_saveTrackCts.IsCancellationRequested)
             { }
