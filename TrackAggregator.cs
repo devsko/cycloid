@@ -87,7 +87,7 @@ public struct TrackAggregator
                 }
                 else
                 {
-                    runningDistance = distance = heading = gradient = speed = ascent = descent = 0;
+                    distance = heading = gradient = speed = 0;
                 }
 
                 yield return new TrackPoint(
