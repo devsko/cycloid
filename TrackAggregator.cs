@@ -1,11 +1,11 @@
-using cycloid.Routing;
-using System.Collections.Generic;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using cycloid.Routing;
 
 namespace cycloid;
 
-public struct TrackAggregator<T> where T : IRoutePoint
+public struct TrackAggregator
 {
     private TrackPoint[] _points = [];
 
@@ -14,7 +14,7 @@ public struct TrackAggregator<T> where T : IRoutePoint
 
     public readonly TrackPoint[] ToArray() => _points;
 
-    public void Add(IEnumerable<T> points, int count)
+    public void Add(IEnumerable<RoutePoint> points, int count)
     {
         if (count >= 2)
         {
@@ -23,10 +23,10 @@ public struct TrackAggregator<T> where T : IRoutePoint
 
         IEnumerable<TrackPoint> Convert()
         {
-            IEnumerator<T> enumerator = points.GetEnumerator();
+            IEnumerator<RoutePoint> enumerator = points.GetEnumerator();
             enumerator.MoveNext();
 
-            T previous = enumerator.Current;
+            RoutePoint previous = enumerator.Current;
 
             double runningDistance = 0;
             double distance = 0;
@@ -37,7 +37,7 @@ public struct TrackAggregator<T> where T : IRoutePoint
             float descent = 0;
             float ascentCumulated = 0;
             float descentCumulated = 0;
-            T current = default;
+            RoutePoint current = default;
             bool more;
 
             do
@@ -84,6 +84,10 @@ public struct TrackAggregator<T> where T : IRoutePoint
 
                         speed = distance / 1_000 / (current.Time - previous.Time).TotalHours;
                     }
+                }
+                else
+                {
+                    runningDistance = distance = heading = gradient = speed = ascent = descent = 0;
                 }
 
                 yield return new TrackPoint(

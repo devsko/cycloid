@@ -57,7 +57,7 @@ partial class Track
                 Segment segment = Find(section);
                 _points.Total -= segment.Values;
 
-                TrackAggregator<RoutePoint> aggregator = new();
+                TrackAggregator aggregator = new();
                 aggregator.Add(result.Points, result.PointCount);
                 segment.Points = aggregator.ToArray();
 

@@ -31,7 +31,6 @@ partial class ViewModel
     public event Action<RouteSection> DragNewWayPointStarting;
     public event Action DragWayPointStarted;
     public event Action DragWayPointEnded;
-    public event Action<WayPoint> FileSplitChanged;
 
     public bool IsCaptured => _capturedWayPoint is not null;
 
@@ -157,9 +156,7 @@ partial class ViewModel
     {
         if (Track is not null && HoveredWayPoint is not null)
         {
-            HoveredWayPoint.IsFileSplit = !HoveredWayPoint.IsFileSplit;
-            FileSplitChanged?.Invoke(HoveredWayPoint);
-            SaveTrackAsync().FireAndForget();
+            Track.RouteBuilder.SetFileSplit(HoveredWayPoint, !HoveredWayPoint.IsFileSplit);
         }
     }
 
@@ -168,8 +165,7 @@ partial class ViewModel
     {
         if (Track is not null && HoveredSection is not null)
         {
-            HoveredSection.IsDirectRoute = !HoveredSection.IsDirectRoute;
-            Track.RouteBuilder.StartCalculation(HoveredSection);
+            Track.RouteBuilder.SetIsDirectRoute(HoveredSection, !HoveredSection.IsDirectRoute);
         }
     }
 }

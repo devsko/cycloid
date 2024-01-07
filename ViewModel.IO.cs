@@ -56,12 +56,12 @@ partial class ViewModel
         Track = new Track(file);
 
         Stopwatch watch = Stopwatch.StartNew();
-        await Serializer.LoadAsync(Track);
+        await Track.LoadAsync();
         Status = $"{Track.Name} opened ({watch.ElapsedMilliseconds} ms)";
     }
 
     [RelayCommand]
-    public async Task NewTrackAsync()
+    private async Task NewTrackAsync()
     {
         FileSavePicker picker = new()
         {

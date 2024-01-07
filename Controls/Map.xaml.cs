@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.WinUI;
+﻿using System;
+using System.Threading.Tasks;
+using CommunityToolkit.WinUI;
 using cycloid.Routing;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
@@ -17,7 +19,6 @@ public sealed partial class Map : UserControl
     private MapTileSource _heatmap;
     private MapTileSource _osm;
     private MapElementsLayer _routingLayer;
-    private RouteBuilderAdapter _routeBuilderAdapter;
 
     public Map()
     {
@@ -25,6 +26,15 @@ public sealed partial class Map : UserControl
     }
 
     private ViewModel ViewModel => (ViewModel)this.FindResource(nameof(ViewModel));
+
+    public async Task SetCenterAsync(string address, int zoom = 10)
+    {
+        Geopoint point = await ViewModel.GetLocationAsync(address, MapControl.Center);
+        if (point is not null)
+        {
+            await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Default);
+        }
+    }
 
     private bool IsFileSplit(WayPoint wayPoint)
     {
@@ -49,7 +59,6 @@ public sealed partial class Map : UserControl
         ViewModel.DragWayPointEnded += ViewModel_DragWayPointEnded;
 
         MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
-        MapControl.ZoomLevel = 7;
 
         // Heatmap
         _heatmap = (MapTileSource)MapControl.Resources["Heatmap"];
@@ -191,22 +200,22 @@ public sealed partial class Map : UserControl
 
         if (oldTrack is not null)
         {
-            _routeBuilderAdapter.Disconnect();
+            Disconnect(oldTrack);
         }
         if (newTrack is not null)
         {
-            _routeBuilderAdapter = new RouteBuilderAdapter(newTrack.RouteBuilder, _routingLayer, ViewModel);
+            Connect(newTrack);
         }
     }
 
     private void ViewModel_DragWayPointStarting(WayPoint wayPoint)
     {
-        _routeBuilderAdapter.BeginDrag(ViewModel.Track.RouteBuilder.GetSections(wayPoint));
+        BeginDrag(ViewModel.Track.RouteBuilder.GetSections(wayPoint));
     }
 
     private void ViewModel_DragNewWayPointStarting(RouteSection section)
     {
-        _routeBuilderAdapter.BeginDrag((section, section));
+        BeginDrag((section, section));
     }
 
     private void ViewModel_DragWayPointStarted()
@@ -228,6 +237,6 @@ public sealed partial class Map : UserControl
     private void ViewModel_DragWayPointEnded()
     {
         PointerMovedEnabled = false;
-        _routeBuilderAdapter.EndDrag();
+        EndDrag();
     }
 }

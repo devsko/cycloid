@@ -66,7 +66,7 @@
     <Compile Include="Controls\Compass.xaml.cs">
       <DependentUpon>Compass.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Map.RouteBuilderAdapter.cs" />
+    <Compile Include="Controls\Map.TrackConnector.cs" />
     <Compile Include="Controls\MapCommandBarFlyout.cs" />
     <Compile Include="Controls\MapCurrentPointValues.xaml.cs">
       <DependentUpon>MapCurrentPointValues.xaml</DependentUpon>

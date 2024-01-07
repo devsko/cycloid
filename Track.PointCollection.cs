@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +10,7 @@ namespace cycloid;
 
 partial class Track
 {
-    public partial class PointCollection : ObservableObject
+    public partial class PointCollection : ObservableObject, IEnumerable<TrackPoint>
     {
         private readonly RouteBuilder _routeBuilder;
         private readonly SegmentCollection _segments;
@@ -37,7 +39,7 @@ partial class Track
 
                 Segment lastSegment = _segments[^1];
 
-                return lastSegment.StartIndex + lastSegment.Points.Length;
+                return lastSegment.StartIndex - _segments.Count + lastSegment.Points.Length;
             }
         }
 
@@ -55,6 +57,31 @@ partial class Track
                             .Select(segment => segment.Points)
                             .ToArray()
                     );
+            }
+        }
+
+        public IEnumerator<TrackPoint> GetEnumerator()
+        {
+            foreach ((_, TrackPoint point, _) in Enumerate())
+            {
+                yield return point;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private IEnumerable<(Segment Segment, TrackPoint Point, Index index)> Enumerate(Index from = default)
+        {
+            int startPointIndex = from.PointIndex;
+            for (int segmentIndex = from.SegmentIndex; segmentIndex < _segments.Count; segmentIndex++)
+            {
+                Segment segment = _segments[segmentIndex];
+                TrackPoint[] points = segment.Points;
+                for (int pointIndex = startPointIndex; pointIndex < points.Length - 1; pointIndex++)
+                {
+                    yield return (segment, points[pointIndex], new Index(segmentIndex, pointIndex));
+                }
+                startPointIndex = 0;
             }
         }
 

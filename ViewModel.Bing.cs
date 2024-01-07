@@ -1,6 +1,6 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
 
@@ -41,6 +41,17 @@ partial class ViewModel
         {
             MapAddress address = location.Address;
             return $"{address.Town}, {address.District}, {address.Region}, {address.Country}";
+        }
+
+        return null;
+    }
+
+    public static async Task<Geopoint> GetLocationAsync(string address, Geopoint hint)
+    {
+        MapLocationFinderResult result = await MapLocationFinder.FindLocationsAsync(address, hint);
+        if (result.Status == MapLocationFinderStatus.Success && result.Locations is [MapLocation location, ..])
+        {
+            return location.Point;
         }
 
         return null;

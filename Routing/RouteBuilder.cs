@@ -35,6 +35,7 @@ public partial class RouteBuilder
     public event Action<RouteSection, RouteResult> CalculationFinished;
 
     public event Action Changed;
+    public event Action<WayPoint> FileSplitChanged;
 
     public RouteBuilder()
     {
@@ -59,6 +60,18 @@ public partial class RouteBuilder
                 }
             }
         }
+    }
+
+    public void SetIsDirectRoute(RouteSection section, bool value)
+    {
+        section.IsDirectRoute = value;
+        StartCalculation(section);
+    }
+
+    public void SetFileSplit(WayPoint wayPoint, bool value)
+    {
+        wayPoint.IsFileSplit = value;
+        FileSplitChanged?.Invoke(wayPoint);
     }
 
     public (RouteSection To, RouteSection From) GetSections(WayPoint point)

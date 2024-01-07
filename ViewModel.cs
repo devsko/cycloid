@@ -51,10 +51,12 @@ public partial class ViewModel : ObservableObject
         if (oldValue is not null)
         {
             oldValue.RouteBuilder.Changed -= RouteBuilder_Changed;
+            oldValue.RouteBuilder.FileSplitChanged -= RouteBuilder_FileSplitChanged;
         }
         if (newValue is not null)
         {
             newValue.RouteBuilder.Changed += RouteBuilder_Changed;
+            newValue.RouteBuilder.FileSplitChanged += RouteBuilder_FileSplitChanged;
         }
 
         TrackChanged?.Invoke(oldValue, newValue);
@@ -66,5 +68,10 @@ public partial class ViewModel : ObservableObject
         {
             SaveTrackAsync().FireAndForget();
         }
+    }
+
+    private void RouteBuilder_FileSplitChanged(WayPoint wayPoint)
+    {
+        SaveTrackAsync().FireAndForget();
     }
 }
