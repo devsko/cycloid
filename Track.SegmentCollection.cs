@@ -56,11 +56,7 @@ partial class Track
             {
                 Segment segment = Find(section);
                 _points.Total -= segment.Values;
-
-                TrackAggregator aggregator = new();
-                aggregator.Add(result.Points, result.PointCount);
-                segment.Points = aggregator.ToArray();
-
+                segment.Points = TrackPointConverter.Convert(result.Points, result.PointCount);
                 _points.Total += segment.Values;
 
                 LinkRemainingSegments(segment, _segments.IndexOf(segment) + 1);

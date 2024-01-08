@@ -1,27 +1,28 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using cycloid.Routing;
 
 namespace cycloid;
 
-public struct TrackAggregator
+public static class TrackPointConverter
 {
-    private TrackPoint[] _points = [];
-
-    public TrackAggregator()
-    { }
-
-    public readonly TrackPoint[] ToArray() => _points;
-
-    public void Add(IEnumerable<RoutePoint> points, int count)
+    public static TrackPoint[] Convert(IEnumerable<RoutePoint> points, int count)
     {
-        if (count >= 2)
+        if (count < 2)
         {
-            _points = [.. _points, .. new TrackPointCollection(Convert(), count)];
+            throw new ArgumentException();
         }
 
-        IEnumerable<TrackPoint> Convert()
+        TrackPoint[] trackPoints = new TrackPoint[count];
+        int i = 0;
+        foreach (var trackPoint in Convert(points))
+        {
+            trackPoints[i++] = trackPoint;
+        }
+
+        return trackPoints;
+
+        static IEnumerable<TrackPoint> Convert(IEnumerable<RoutePoint> points)
         {
             IEnumerator<RoutePoint> enumerator = points.GetEnumerator();
             enumerator.MoveNext();
@@ -29,10 +30,6 @@ public struct TrackAggregator
             RoutePoint previous = enumerator.Current;
 
             double runningDistance = 0;
-            double distance = 0;
-            double heading = 0;
-            double gradient = 0;
-            double speed = 0;
             float ascent = 0;
             float descent = 0;
             float ascentCumulated = 0;
@@ -42,6 +39,11 @@ public struct TrackAggregator
 
             do
             {
+                double distance;
+                double heading;
+                double gradient;
+                double speed;
+
                 if (more = enumerator.MoveNext())
                 {
                     current = enumerator.Current;
@@ -107,29 +109,5 @@ public struct TrackAggregator
             }
             while (more);
         }
-    }
-
-    private class TrackPointCollection(IEnumerable<TrackPoint> points, int count) : ICollection<TrackPoint>
-    {
-        private readonly IEnumerable<TrackPoint> _points = points;
-        private readonly int _count = count;
-
-        public int Count => _count;
-
-        public IEnumerator<TrackPoint> GetEnumerator() => _points.GetEnumerator();
-
-        public bool IsReadOnly => throw new NotImplementedException();
-
-        public void Add(TrackPoint item) => throw new NotImplementedException();
-
-        public void Clear() => throw new NotImplementedException();
-
-        public bool Contains(TrackPoint item) => throw new NotImplementedException();
-
-        public void CopyTo(TrackPoint[] array, int arrayIndex) => throw new NotImplementedException();
-
-        public bool Remove(TrackPoint item) => throw new NotImplementedException();
-
-        IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
     }
 }

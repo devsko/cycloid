@@ -110,7 +110,7 @@
     <Compile Include="Track.PointCollection.cs" />
     <Compile Include="Track.Segment.cs" />
     <Compile Include="Track.SegmentCollection.cs" />
-    <Compile Include="TrackAggregator.cs" />
+    <Compile Include="TrackPointConverter.cs" />
     <Compile Include="TrackPoint.cs" />
     <Compile Include="TrackPoint.CommonValues.cs" />
     <Compile Include="ViewModel.Bing.cs" />
