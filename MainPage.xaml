@@ -66,18 +66,8 @@
                     Label="Wahoo" />
             </StackPanel>
 
-            <TextBox Grid.Row="1" KeyDown="SearchText_KeyDown" />
-
-            <ComboBox
-                Grid.Row="2"
-                Width="210"
-                DisplayMemberPath="Name"
-                ItemsSource="{x:Bind Mode=OneTime, Path=cycloid:ViewModel.MapStyleAndColors}"
-                SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.MapStyleAndColor}" />
-
             <StackPanel
-                Grid.Row="3"
-                HorizontalAlignment="Center"
+                Grid.Row="1"
                 Orientation="Horizontal"
                 Spacing="5">
                 <ToggleButton Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}" IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
@@ -105,6 +95,15 @@
                     </ToggleButton.KeyboardAccelerators>
                 </ToggleButton>
             </StackPanel>
+
+            <ComboBox
+                Grid.Row="2"
+                Width="210"
+                DisplayMemberPath="Name"
+                ItemsSource="{x:Bind Mode=OneTime, Path=cycloid:ViewModel.MapStyleAndColors}"
+                SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.MapStyleAndColor}" />
+
+            <TextBox Grid.Row="3" KeyDown="SearchText_KeyDown" />
 
             <mux:TabView
                 Grid.Row="4"
