@@ -16,6 +16,10 @@ namespace cycloid.Controls;
 
 public sealed partial class Map : UserControl
 {
+    private readonly Throttle<PointerRoutedEventArgs, Map> _pointerMovedThrottle = new(
+        static (e, @this) => @this.ThrottledPointerPanelPointerMoved(e),
+        TimeSpan.FromMilliseconds(100));
+
     private MapTileSource _heatmap;
     private MapTileSource _osm;
     private MapElementsLayer _routingLayer;
@@ -137,7 +141,7 @@ public sealed partial class Map : UserControl
         }
     }
 
-    private void ThrottledClickPanelPointerMoved(PointerRoutedEventArgs e)
+    private void ThrottledPointerPanelPointerMoved(PointerRoutedEventArgs e)
     {
         if (MapControl.TryGetLocationFromOffset(e.GetCurrentPoint(MapControl).Position, out Geopoint location))
         {
@@ -194,6 +198,18 @@ public sealed partial class Map : UserControl
         }
     }
 
+    private void PointerPanel_Tapped(object _, TappedRoutedEventArgs e)
+    {
+        ViewModel.EndDragWayPoint();
+        e.Handled = true;
+    }
+
+    private void PointerPanel_PointerMoved(object _, PointerRoutedEventArgs e)
+    {
+        _pointerMovedThrottle.Next(e, this);
+        e.Handled = true;
+    }
+
     private void ViewModel_TrackChanged(Track oldTrack, Track newTrack)
     {
         _routingLayer.MapElements.Clear();
@@ -220,7 +236,7 @@ public sealed partial class Map : UserControl
 
     private void ViewModel_DragWayPointStarted()
     {
-        PointerMovedEnabled = true;
+        PointerPanel.IsEnabled = true;
 
         GeneralTransform transform = Window.Current.Content.TransformToVisual(MapControl);
         Rect window = Window.Current.CoreWindow.Bounds;
@@ -236,7 +252,7 @@ public sealed partial class Map : UserControl
 
     private void ViewModel_DragWayPointEnded()
     {
-        PointerMovedEnabled = false;
+        PointerPanel.IsEnabled = false;
         EndDrag();
     }
 }

@@ -121,17 +121,15 @@ partial class ViewModel
         }
     }
 
-    public void EndDragWayPoint(bool commit)
+    public void EndDragWayPoint()
     {
         if (Track is not null && IsCaptured)
         {
-            Track.RouteBuilder.DelayCalculation = false;
-            _capturedWayPoint = null;
             DragWayPointEnded?.Invoke();
-            if (commit)
-            {
-                SaveTrackAsync().FireAndForget();
-            }
+            _capturedWayPoint = null;
+            Track.RouteBuilder.DelayCalculation = false;
+            
+            SaveTrackAsync().FireAndForget();
         }
     }
 
@@ -139,6 +137,8 @@ partial class ViewModel
     {
         if (Track is not null && IsCaptured)
         {
+            DragWayPointEnded?.Invoke();
+
             if (_capturedWayPointOriginalLocation.IsValid)
             {
                 await Track.RouteBuilder.MovePointAsync(_capturedWayPoint, _capturedWayPointOriginalLocation);
@@ -147,7 +147,9 @@ partial class ViewModel
             {
                 await Track.RouteBuilder.RemovePointAsync(_capturedWayPoint);
             }
-            EndDragWayPoint(commit: false);
+
+            _capturedWayPoint = null;
+            Track.RouteBuilder.DelayCalculation = false;
         }
     }
 

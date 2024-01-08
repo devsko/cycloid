@@ -32,8 +32,7 @@ partial class Map
         {
             if (_compareStart ? section.Start == _oldSection?.Start : section.End == _oldSection?.End)
             {
-                _line.Tag = section;
-                _newSection = section;
+                _line.Tag = _newSection = section;
                 return true;
             }
             return false;

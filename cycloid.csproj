@@ -72,7 +72,7 @@
       <DependentUpon>MapCurrentPointValues.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\PointControl.cs" />
-    <Compile Include="Controls\Map.PointerMoved.cs" />
+    <Compile Include="Controls\PointerPanel.cs" />
     <Compile Include="Controls\PointValuesControl.cs" />
     <Compile Include="Controls\MapControlBorder.cs" />
     <Compile Include="Controls\MapHoverPointValues.xaml.cs">
