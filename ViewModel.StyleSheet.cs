@@ -36,30 +36,24 @@ partial class ViewModel
                     "strokeColor": "#FF400040",
                     "strokeWidthScale": 4
                   },
-                  "HoveredLine": {
-                    "fillColor": "#FFFF00FF",
-                    "strokeColor": "#FF400040",
+                  "hovered": {
                     "strokeWidthScale": 8
                   },
-                  "NewLine": {
+                  "new": {
                     "fillColor": "#40808080",
-                    "strokeColor": "#40404040",
-                    "strokeWidthScale": 4
+                    "strokeColor": "#40404040"
                   },
-                  "CalculatingLine": {
+                  "calculating": {
                     "fillColor": "#E0FF00FF",
-                    "strokeColor": "#E0400040",
-                    "strokeWidthScale": 4
+                    "strokeColor": "#E0400040"
                   },
-                  "RetryLine": {
+                  "retry": {
                     "fillColor": "#E0805200",
-                    "strokeColor": "#E0402900",
-                    "strokeWidthScale": 4
+                    "strokeColor": "#E0402900"
                   },
-                  "ErrorLine": {
+                  "error": {
                     "fillColor": "#E0800000",
-                    "strokeColor": "#E0400000",
-                    "strokeWidthScale": 4
+                    "strokeColor": "#E0400000"
                   },
                   "hover": {
                     "scale": 0.65

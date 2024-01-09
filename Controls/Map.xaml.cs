@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI;
@@ -135,25 +134,14 @@ public sealed partial class Map : UserControl
         }
         else if (args.MapElement is MapPolyline { Tag: RouteSection section })
         {
-            args.MapElement.MapStyleSheetEntry = "Routing.HoveredLine";
+            args.MapElement.MapStyleSheetEntryState = "Routing.hovered";
             ViewModel.HoveredSection = section;
         }
     }
 
     private void RoutingLayer_MapElementPointerExited(MapElementsLayer _, MapElementsLayerPointerExitedEventArgs args)
     {
-        if (args.MapElement is MapIcon { Tag: WayPoint wayPoint })
-        {
-            System.Diagnostics.Debug.Assert(wayPoint == ViewModel.HoveredWayPoint || (ViewModel.HoveredWayPoint is null && !args.MapElement.Visible));
-
-            args.MapElement.MapStyleSheetEntryState = "";
-        }
-        else if (args.MapElement is MapPolyline { Tag: RouteSection section })
-        {
-            System.Diagnostics.Debug.Assert(section == ViewModel.HoveredSection || ViewModel.HoveredSection is null);
-
-            args.MapElement.MapStyleSheetEntry = "Routing.Line";
-        }
+        args.MapElement.MapStyleSheetEntryState = "";
 
         ViewModel.HoveredWayPoint = null;
         ViewModel.HoveredSection = null;

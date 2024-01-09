@@ -160,7 +160,12 @@ partial class Map
     {
         if (DragState.IsSameSection(_dragStateTo, _dragStateFrom, section))
         {
-            MapPolyline line = new() { Tag = section, Path = new Geopath([new BasicGeoposition()]) };
+            MapPolyline line = new() 
+            { 
+                MapStyleSheetEntry = "Routing.Line", 
+                Tag = section, 
+                Path = new Geopath([new BasicGeoposition()]) 
+            };
             _routingLayer.MapElements.Add(line);
             _dragStateFrom = new DragState(line, false);
             _dragStateFrom.Added(section);
@@ -170,7 +175,8 @@ partial class Map
         {
             _routingLayer.MapElements.Add(new MapPolyline()
             {
-                MapStyleSheetEntry = "Routing.NewLine",
+                MapStyleSheetEntry = "Routing.Line",
+                MapStyleSheetEntryState = "Routing.new",
                 Tag = section,
                 Path = new Geopath([(BasicGeoposition)section.Start.Location, (BasicGeoposition)section.End.Location]),
             });
@@ -193,12 +199,12 @@ partial class Map
 
     private void RouteBuilder_CalculationStarting(RouteSection section)
     {
-        GetSectionLine(section).MapStyleSheetEntry = "Routing.CalculatingLine";
+        //GetSectionLine(section).MapStyleSheetEntryState = "Routing.calculating";
     }
 
     private void RouteBuilder_CalculationRetry(RouteSection section)
     {
-        GetSectionLine(section).MapStyleSheetEntry = "Routing.RetryLine";
+        GetSectionLine(section).MapStyleSheetEntryState = "Routing.retry";
     }
 
     private void RouteBuilder_CalculationFinished(RouteSection section, RouteResult result)
@@ -212,11 +218,11 @@ partial class Map
             if (result.IsValid)
             {
                 line.Path = new Geopath(result.Points.Select(p => new BasicGeoposition { Longitude = p.Longitude, Latitude = p.Latitude }));
-                line.MapStyleSheetEntry = "Routing.Line";
+                line.MapStyleSheetEntryState = "";
             }
             else
             {
-                line.MapStyleSheetEntry = "Routing.ErrorLine";
+                line.MapStyleSheetEntryState = "Routing.error";
             }
         }
     }
