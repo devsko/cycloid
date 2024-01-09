@@ -72,20 +72,28 @@ public sealed partial class Map : UserControl
     {
         if (ViewModel.InfoVisible)
         {
-            Geopath region = MapControl.GetVisibleRegion(MapVisibleRegionKind.Near);
-            if (region is not null)
+            ViewModel.InfoIsLoading = true;
+            try
             {
-                await foreach (Geopoint[] locations in _infos.GetAdditionalWaterPointsAsync(region, cancellationToken))
+                Geopath region = MapControl.GetVisibleRegion(MapVisibleRegionKind.Near);
+                if (region is not null)
                 {
-                    foreach (Geopoint location in locations)
+                    await foreach (Geopoint[] locations in _infos.GetAdditionalWaterPointsAsync(region, cancellationToken))
                     {
-                        _infoLayer.MapElements.Add(new MapIcon
+                        foreach (Geopoint location in locations)
                         {
-                            Location = location,
-                            MapStyleSheetEntry = "Info.Water"
-                        });
+                            _infoLayer.MapElements.Add(new MapIcon
+                            {
+                                Location = location,
+                                MapStyleSheetEntry = "Info.Water"
+                            });
+                        }
                     }
                 }
+            }
+            finally
+            {
+                ViewModel.InfoIsLoading = false;
             }
         }
     }

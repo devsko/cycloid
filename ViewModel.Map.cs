@@ -24,6 +24,9 @@ partial class ViewModel
     private bool _infoShouldVisible = true;
 
     [ObservableProperty]
+    private bool _infoIsLoading;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ProfileHoverPointValuesEnabled))]
     private bool _mapHoverPointValuesEnabled;
 
