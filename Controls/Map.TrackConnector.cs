@@ -199,7 +199,10 @@ partial class Map
 
     private void RouteBuilder_CalculationStarting(RouteSection section)
     {
-        //GetSectionLine(section).MapStyleSheetEntryState = "Routing.calculating";
+        if (!ViewModel.IsCaptured)
+        {
+            GetSectionLine(section).MapStyleSheetEntryState = "Routing.calculating";
+        }
     }
 
     private void RouteBuilder_CalculationRetry(RouteSection section)
@@ -222,6 +225,10 @@ partial class Map
             }
             else
             {
+                if (line.Path.Positions.Count < 2)
+                {
+                    line.Path = new Geopath([(BasicGeoposition)section.Start.Location, (BasicGeoposition)section.End.Location]);
+                }
                 line.MapStyleSheetEntryState = "Routing.error";
             }
         }

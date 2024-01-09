@@ -44,16 +44,16 @@ partial class ViewModel
                     "strokeColor": "#40404040"
                   },
                   "calculating": {
-                    "fillColor": "#E0FF00FF",
-                    "strokeColor": "#E0400040"
+                    "fillColor": "#C0FF00FF",
+                    "strokeColor": "#C0400040"
                   },
                   "retry": {
-                    "fillColor": "#E0805200",
-                    "strokeColor": "#E0402900"
+                    "fillColor": "#C0805200",
+                    "strokeColor": "#C0402900"
                   },
                   "error": {
-                    "fillColor": "#E0800000",
-                    "strokeColor": "#E0400000"
+                    "fillColor": "#C0800000",
+                    "strokeColor": "#C0400000"
                   },
                   "hover": {
                     "scale": 0.65

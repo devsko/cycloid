@@ -97,7 +97,7 @@ partial class ViewModel
 
                 StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", Track.File);
             }
-            catch (OperationCanceledException) when (_saveTrackCts.IsCancellationRequested)
+            catch (OperationCanceledException)
             { }
         }
     }

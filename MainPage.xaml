@@ -79,12 +79,22 @@
                     </Border>
                 </ToggleButton>
                 <ToggleButton
-                    Content="{ui:SymbolIcon Symbol=Directions}"
                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.IsNotNull(ViewModel.Track)}">
                     <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="T" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
+                    <ToggleButton.Content>
+                        <Grid>
+                            <SymbolIcon Symbol="Directions" />
+                            <mux:ProgressBar
+                                Margin="-8,-6,-8,-6"
+                                VerticalAlignment="Bottom"
+                                Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
+                                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.TrackIsCalculating)}"
+                                IsIndeterminate="True" />
+                        </Grid>
+                    </ToggleButton.Content>
                 </ToggleButton>
                 <ToggleButton
                     Content="{ui:SymbolIcon Symbol=MapPin}"
