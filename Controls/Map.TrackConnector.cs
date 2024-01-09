@@ -11,28 +11,19 @@ namespace cycloid.Controls;
 
 partial class Map
 {
-    private struct DragState
+    private struct DragState(MapPolyline line, bool compareStart)
     {
-        private readonly MapPolyline _line;
-        private readonly bool _compareStart;
-        private RouteSection _oldSection;
+        private RouteSection _oldSection = (RouteSection)line.Tag;
         private RouteSection _newSection;
-
-        public DragState(MapPolyline line, bool compareStart)
-        {
-            _line = line;
-            _oldSection = (RouteSection)line.Tag;
-            _compareStart = compareStart;
-        }
 
         public static bool IsSameSection(DragState dragStateTo, DragState dragStateFrom, RouteSection section)
             => dragStateTo._oldSection == dragStateFrom._oldSection && section.End == dragStateFrom._oldSection?.End;
 
         public bool Added(RouteSection section)
         {
-            if (_compareStart ? section.Start == _oldSection?.Start : section.End == _oldSection?.End)
+            if (compareStart ? section.Start == _oldSection?.Start : section.End == _oldSection?.End)
             {
-                _line.Tag = _newSection = section;
+                line.Tag = _newSection = section;
                 return true;
             }
             return false;

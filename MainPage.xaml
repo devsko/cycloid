@@ -91,6 +91,14 @@
                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.PoisVisible}"
                     IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.IsNotNull(ViewModel.Track)}">
                     <ToggleButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="P" Modifiers="Control" />
+                    </ToggleButton.KeyboardAccelerators>
+                </ToggleButton>
+                <ToggleButton
+                    Content="{ui:SymbolIcon Symbol=OutlineStar}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.InfoEnabled}"
+                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.InfoShouldVisible}">
+                    <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="I" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
                 </ToggleButton>

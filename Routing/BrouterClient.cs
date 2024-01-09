@@ -1,5 +1,3 @@
-using GeoJSON.Text.Feature;
-using GeoJSON.Text.Geometry;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,6 +10,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using GeoJSON.Text.Feature;
+using GeoJSON.Text.Geometry;
 
 namespace cycloid.Routing;
 

@@ -58,12 +58,14 @@
 
     <maps:MapControl
         x:Name="MapControl"
+        ActualCameraChanged="MapControl_ActualCameraChanged"
         Loaded="MapControl_Loaded"
         MapContextRequested="MapControl_MapContextRequested"
         MapServiceToken="{cycloid:ConfigurationValue Key=Bing:ServiceApiKey}"
         MapTapped="MapControl_MapTapped"
         PreviewKeyDown="MapControl_PreviewKeyDown"
-        StyleSheet="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.StyleSheet}">
+        StyleSheet="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.StyleSheet}"
+        ZoomLevel="{x:Bind Mode=TwoWay, Path=ViewModel.MapZoomLevel}">
 
         <maps:MapControl.Resources>
             <maps:MapTileSource
@@ -87,7 +89,10 @@
                 x:Name="RoutingLayer"
                 MapElementClick="RoutingLayer_MapElementClick"
                 MapElementPointerEntered="RoutingLayer_MapElementPointerEntered"
-                MapElementPointerExited="RoutingLayer_MapElementPointerExited" />
+                MapElementPointerExited="RoutingLayer_MapElementPointerExited"
+                Visible="{x:Bind Mode=OneWay, Path=ViewModel.TrackVisible}" />
+            <maps:MapElementsLayer x:Name="PoisLayer" Visible="{x:Bind Mode=OneWay, Path=ViewModel.PoisVisible}" />
+            <maps:MapElementsLayer x:Name="InfoLayer" Visible="{x:Bind Mode=OneWay, Path=ViewModel.InfoVisible}" />
         </maps:MapControl.Resources>
 
         <controls:PointerPanel

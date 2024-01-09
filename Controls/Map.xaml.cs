@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI;
+using cycloid.Info;
 using cycloid.Routing;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
@@ -20,9 +23,16 @@ public sealed partial class Map : UserControl
         static (e, @this) => @this.ThrottledPointerPanelPointerMoved(e),
         TimeSpan.FromMilliseconds(100));
 
+    private readonly Throttle<MapActualCameraChangedEventArgs, Map> _actualCameraChangedThrottle = new(
+        static (e, @this, cancellationToken) => @this.ThrottledActualCameraChangedAsync(e, cancellationToken),
+        TimeSpan.FromSeconds(2));
+
+    private readonly InfoLoader _infos = new();
     private MapTileSource _heatmap;
     private MapTileSource _osm;
     private MapElementsLayer _routingLayer;
+    private MapElementsLayer _poisLayer;
+    private MapElementsLayer _infoLayer;
 
     public Map()
     {
@@ -54,6 +64,33 @@ public sealed partial class Map : UserControl
 
     private Visibility VisibleIfNotIsDirectRoute(RouteSection section) => !IsDirectRoute(section) ? Visibility.Visible : Visibility.Collapsed;
 
+    private void MapControl_ActualCameraChanged(MapControl _, MapActualCameraChangedEventArgs args)
+    {
+        _actualCameraChangedThrottle.Next(args, this);
+    }
+
+    private async Task ThrottledActualCameraChangedAsync(MapActualCameraChangedEventArgs e, CancellationToken cancellationToken)
+    {
+        if (ViewModel.InfoVisible)
+        {
+            Geopath region = MapControl.GetVisibleRegion(MapVisibleRegionKind.Near);
+            if (region is not null)
+            {
+                await foreach (Geopoint[] locations in _infos.GetAdditionalWaterPointsAsync(region, cancellationToken))
+                {
+                    foreach (Geopoint location in locations)
+                    {
+                        _infoLayer.MapElements.Add(new MapIcon
+                        {
+                            Location = location,
+                            MapStyleSheetEntry = "Info.Water"
+                        });
+                    }
+                }
+            }
+        }
+    }
+
     private void MapControl_Loaded(object _1, RoutedEventArgs _2)
     {
         ViewModel.TrackChanged += ViewModel_TrackChanged;
@@ -77,6 +114,14 @@ public sealed partial class Map : UserControl
         // RoutingLayer
         _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
         MapControl.Layers.Add(_routingLayer);
+
+        // PoisLayer
+        _poisLayer = (MapElementsLayer)MapControl.Resources["PoisLayer"];
+        MapControl.Layers.Add(_poisLayer);
+
+        // InfoLayer
+        _infoLayer = (MapElementsLayer)MapControl.Resources["InfoLayer"];
+        MapControl.Layers.Add(_infoLayer);
     }
 
     private void RoutingLayer_MapElementPointerEntered(MapElementsLayer _, MapElementsLayerPointerEnteredEventArgs args)

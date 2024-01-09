@@ -8,11 +8,20 @@ namespace cycloid;
 
 partial class ViewModel
 {
+    public const double MinInfoZoomLevel = 11;
+
+    [ObservableProperty]
+    private bool _heatmapVisible;
+
     [ObservableProperty]
     private bool _trackVisible = true;
 
     [ObservableProperty]
     private bool _poisVisible = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InfoVisible))]
+    private bool _infoShouldVisible = true;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ProfileHoverPointValuesEnabled))]
@@ -24,6 +33,11 @@ partial class ViewModel
     [ObservableProperty]
     private RouteSection _hoveredSection;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InfoEnabled))]
+    [NotifyPropertyChangedFor(nameof(InfoVisible))]
+    private double _mapZoomLevel;
+
     private WayPoint _capturedWayPoint;
     private MapPoint _capturedWayPointOriginalLocation;
 
@@ -32,7 +46,26 @@ partial class ViewModel
     public event Action DragWayPointStarted;
     public event Action DragWayPointEnded;
 
+    public bool InfoEnabled => MapZoomLevel >= MinInfoZoomLevel;
+
+    public bool InfoVisible => InfoShouldVisible && InfoEnabled;
+
     public bool IsCaptured => _capturedWayPoint is not null;
+
+    [RelayCommand]
+    public async Task ToggleHeatmapVisibleAsync()
+    {
+        if (HeatmapVisible)
+        {
+            HeatmapVisible = false;
+        }
+        else
+        {
+            HeatmapVisible = await Strava.InitializeHeatmapAsync();
+            // Notify property changed again to convinvce the toggle button
+            OnPropertyChanged(nameof(HeatmapVisible));
+        }
+    }
 
     [RelayCommand]
     public async Task AddDestinationAsync(MapPoint location)

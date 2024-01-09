@@ -64,6 +64,18 @@ partial class ViewModel
                   "hover": {
                     "scale": 0.65
                   }
+                },
+                "Info": {
+                  "Water": {
+                    "fillColor": "#80FFFFFF", 
+                    "iconColor": "#FF0000BF", 
+                    "iconScale": 1.2, 
+                    "scale": 0.85, 
+                    "shape": {
+                      "icon": "brewery"
+                    },
+                    "strokeColor": "#00000000"
+                  }
                 }
               }
             }

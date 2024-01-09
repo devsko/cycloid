@@ -1,18 +1,20 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace cycloid;
 
-public class Throttle<TValue, TState>(Func<TValue, TState, Task> action, TimeSpan delay)
+public class Throttle<TValue, TState>(Func<TValue, TState, CancellationToken, Task> action, TimeSpan delay)
 {
-    private readonly Func<TValue, TState, Task> _action = action;
+    private readonly Func<TValue, TState, CancellationToken, Task> _action = action;
     private readonly TimeSpan _delay = delay;
     private volatile bool _isBusy;
     private volatile bool _hasValue;
+    private CancellationTokenSource _cts = new();
     private TValue _value;
 
     public Throttle(Action<TValue, TState> action, TimeSpan delay)
-        : this((value, state) =>
+        : this((value, state, _) =>
         {
             action(value, state);
             return Task.CompletedTask;
@@ -27,6 +29,7 @@ public class Throttle<TValue, TState>(Func<TValue, TState, Task> action, TimeSpa
         {
             if (_isBusy)
             {
+                _cts.Cancel();
                 _value = value;
                 _hasValue = true;
                 return;
@@ -34,14 +37,21 @@ public class Throttle<TValue, TState>(Func<TValue, TState, Task> action, TimeSpa
 
             do
             {
+                if (_cts.IsCancellationRequested)
+                {
+                    _cts = new CancellationTokenSource();
+                }
+
                 _value = default;
                 _hasValue = false;
                 _isBusy = true;
 
                 try
                 {
-                    await _action(value, state);
+                    await _action(value, state, _cts.Token);
                 }
+                catch (OperationCanceledException)
+                { }
                 catch (Exception ex)
                 {
                     await App.Current.ShowExceptionAsync(ex);

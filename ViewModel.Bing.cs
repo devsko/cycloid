@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Windows.Devices.Geolocation;
@@ -18,7 +19,7 @@ partial class ViewModel
         _bingThrottle.Next(value, this);
     }
 
-    private static async Task GetAddressAsync(TrackPoint point, ViewModel @this)
+    private static async Task GetAddressAsync(TrackPoint point, ViewModel @this, CancellationToken _)
     {
         if (!point.IsValid)
         {

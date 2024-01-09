@@ -298,10 +298,7 @@ public partial class RouteBuilder
             _sections.Add(point, section);
             SectionAdded?.Invoke(section, startIndex);
 
-            if (routePoints is null)
-            {
-                routePoints = [new RoutePoint(point.Location.Latitude, point.Location.Longitude, 0, TimeSpan.Zero), new RoutePoint(wayPoint.Location.Latitude, wayPoint.Location.Longitude, 0, TimeSpan.Zero)];
-            }
+            routePoints ??= [new RoutePoint(point.Location.Latitude, point.Location.Longitude, 0, TimeSpan.Zero), new RoutePoint(wayPoint.Location.Latitude, wayPoint.Location.Longitude, 0, TimeSpan.Zero)];
 
             CalculationFinished?.Invoke(section, new RouteResult { Points = routePoints, PointCount = routePoints.Length });
         }

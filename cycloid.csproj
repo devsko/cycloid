@@ -84,6 +84,8 @@
     <Compile Include="Extensions\ConfigurationValue.cs" />
     <Compile Include="External\Osm.cs" />
     <Compile Include="GeoCalculation.cs" />
+    <Compile Include="Info\InfoLoader.cs" />
+    <Compile Include="Info\OsmClient.cs" />
     <Compile Include="MapPoint.cs" />
     <Compile Include="Routing\BrouterClient.cs" />
     <Compile Include="Routing\BrouterClient.ProfileTemplate.cs" />
@@ -116,7 +118,6 @@
     <Compile Include="ViewModel.Bing.cs" />
     <Compile Include="ViewModel.cs" />
     <Compile Include="Format.cs" />
-    <Compile Include="ViewModel.Heatmap.cs" />
     <Compile Include="ViewModel.IO.cs" />
     <Compile Include="ViewModel.Map.cs" />
     <Compile Include="ViewModel.MapStyleAndColor.cs" />
