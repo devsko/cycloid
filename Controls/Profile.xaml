@@ -8,45 +8,6 @@
     Loaded="UserControl_Loaded"
     SizeChanged="UserControl_SizeChanged">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Dark">
-                    <StaticResource x:Key="TrackGraphOutline" ResourceKey="TextFillColorPrimaryBrush" />
-                    <SolidColorBrush
-                        x:Key="TrackGraphFill"
-                        Opacity="0.4"
-                        Color="{StaticResource TextFillColorSecondary}" />
-                    <SolidColorBrush
-                        x:Key="SectionGraphFill"
-                        Opacity="0.3"
-                        Color="{StaticResource SystemAccentColorDark2}" />
-                    <StaticResource x:Key="TrackSelectionGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
-                    <SolidColorBrush
-                        x:Key="TrackHoverGraphOutline"
-                        Opacity="0.7"
-                        Color="{StaticResource TextFillColorPrimary}" />
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Light">
-                    <StaticResource x:Key="TrackGraphOutline" ResourceKey="TextFillColorPrimaryBrush" />
-                    <SolidColorBrush
-                        x:Key="TrackGraphFill"
-                        Opacity="0.4"
-                        Color="{StaticResource TextFillColorSecondary}" />
-                    <SolidColorBrush
-                        x:Key="SectionGraphFill"
-                        Opacity="0.3"
-                        Color="{StaticResource SystemAccentColorDark2}" />
-                    <StaticResource x:Key="TrackSelectionGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
-                    <SolidColorBrush
-                        x:Key="TrackHoverGraphOutline"
-                        Opacity="0.7"
-                        Color="{StaticResource TextFillColorPrimary}" />
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-
     <Grid>
 
         <ScrollViewer

@@ -45,8 +45,13 @@ public sealed partial class Map : UserControl
         Geopoint point = await ViewModel.GetLocationAsync(address, MapControl.Center);
         if (point is not null)
         {
-            await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Default);
+            await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Bow);
         }
+    }
+
+    public async Task SetCenterAsync(Geopoint point, int zoom = 10)
+    {
+        await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Bow);
     }
 
     // WORKAROUND Change the view slightly to update moved child controls.
@@ -124,7 +129,7 @@ public sealed partial class Map : UserControl
         _actualCameraChangedThrottle.Next(args, this);
     }
 
-    private async Task ThrottledActualCameraChangedAsync(MapActualCameraChangedEventArgs e, CancellationToken cancellationToken)
+    private async Task ThrottledActualCameraChangedAsync(MapActualCameraChangedEventArgs _, CancellationToken cancellationToken)
     {
         if (ViewModel.InfoVisible)
         {
@@ -182,7 +187,7 @@ public sealed partial class Map : UserControl
     {
         // No way to find out if it is a middle button click for delete. Use Ctrl-Click as workaround
 
-        bool ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        //bool ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
 
         if (!ViewModel.IsCaptured)
         {

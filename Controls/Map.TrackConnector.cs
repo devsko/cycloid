@@ -104,7 +104,7 @@ partial class Map
         GeoboundingBox bounds = GeoboundingBox.TryCompute(ViewModel.Track.Points.Select(trackPoint => (BasicGeoposition)trackPoint));
         if (bounds is not null)
         {
-            MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.Default).AsTask().FireAndForget();
+            MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.Bow).AsTask().FireAndForget();
         }
     }
 

@@ -127,7 +127,13 @@
                 ItemsSource="{x:Bind Mode=OneTime, Path=cycloid:ViewModel.MapStyleAndColors}"
                 SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.MapStyleAndColor}" />
 
-            <TextBox Grid.Row="3" KeyDown="SearchText_KeyDown" />
+            <AutoSuggestBox
+                Grid.Row="3"
+                DisplayMemberPath="DisplayName"
+                QueryIcon="Find"
+                QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                TextChanged="AutoSuggestBox_TextChanged"
+                TextMemberPath="DisplayName" />
 
             <mux:TabView
                 Grid.Row="4"

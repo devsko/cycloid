@@ -1,8 +1,10 @@
-﻿using Windows.System;
+﻿using System;
+using System.Collections.Generic;
+using Windows.Devices.Geolocation;
+using Windows.Services.Maps;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
 
 namespace cycloid;
 
@@ -15,7 +17,7 @@ public sealed partial class MainPage : Page
 
     private void Page_Loaded(object _1, RoutedEventArgs _2)
     {
-        Map.SetCenterAsync("Stampfl Samerberg").FireAndForget();
+        Map.SetCenterAsync("Stampfl Samerberg", 8).FireAndForget();
         ViewModel.ToggleHeatmapVisibleAsync().FireAndForget();
         ViewModel.OpenLastTrackAsync().FireAndForget();
     }
@@ -25,12 +27,31 @@ public sealed partial class MainPage : Page
         ApplicationView.GetForCurrentView().Title = track is null ? string.Empty : track.Name;
     }
 
-    private void SearchText_KeyDown(object sender, KeyRoutedEventArgs e)
+    private async void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
-        if (e.Key == VirtualKey.Enter)
+        if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
         {
-            Map.SetCenterAsync(((TextBox)sender).Text).FireAndForget();
-            e.Handled = true;
+            MapLocationFinderResult result = await MapLocationFinder.FindLocationsAsync(sender.Text, new Geopoint(new BasicGeoposition { Latitude = 47.5, Longitude = 12 }));
+            if (result.Status == MapLocationFinderStatus.Success)
+            {
+                sender.ItemsSource = result.Locations;
+            }
+        }
+    }
+
+    private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        if (args.ChosenSuggestion is MapLocation location)
+        {
+            Map.SetCenterAsync(location.Point).FireAndForget();
+        }
+        else if (sender.ItemsSource is IReadOnlyList<MapLocation> { Count: > 0 } list)
+        {
+            Map.SetCenterAsync(list[0].Point).FireAndForget();
+        }
+        else if (sender.Text.Length > 2)
+        {
+            Map.SetCenterAsync(sender.Text).FireAndForget();
         }
     }
 }
