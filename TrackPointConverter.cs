@@ -6,7 +6,7 @@ namespace cycloid;
 
 public static class TrackPointConverter
 {
-    public static TrackPoint[] Convert(IEnumerable<RoutePoint> points, int count)
+    public static (TrackPoint[] TrackPoints, float MinAltitude, float MaxAltitude) Convert(IEnumerable<RoutePoint> points, int count)
     {
         if (count < 2)
         {
@@ -14,15 +14,17 @@ public static class TrackPointConverter
         }
 
         TrackPoint[] trackPoints = new TrackPoint[count];
+        float minAltitude = float.MaxValue;
+        float maxAltitude = float.MinValue;
         int i = 0;
         foreach (var trackPoint in Convert(points))
         {
             trackPoints[i++] = trackPoint;
         }
 
-        return trackPoints;
+        return (trackPoints, minAltitude, maxAltitude);
 
-        static IEnumerable<TrackPoint> Convert(IEnumerable<RoutePoint> points)
+        IEnumerable<TrackPoint> Convert(IEnumerable<RoutePoint> points)
         {
             IEnumerator<RoutePoint> enumerator = points.GetEnumerator();
             enumerator.MoveNext();
@@ -75,7 +77,7 @@ public static class TrackPointConverter
 
                         if (descentCumulated < 0)
                         {
-                            gradient = -descentCumulated * 100 / distance;
+                            gradient = descentCumulated * 100 / distance;
                             descent -= descentCumulated;
                             descentCumulated = 0;
                         }
@@ -91,6 +93,9 @@ public static class TrackPointConverter
                 {
                     distance = heading = gradient = speed = 0;
                 }
+
+                minAltitude = Math.Min(minAltitude, previous.Altitude);
+                maxAltitude = Math.Max(maxAltitude, previous.Altitude);
 
                 yield return new TrackPoint(
                     previous.Latitude,

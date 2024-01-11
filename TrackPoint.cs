@@ -41,7 +41,11 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
 
     public float Speed => (float)_speed / 10;
 
-    public CommonValues Values => _values;
+    public CommonValues Values
+    {
+        get => _values;
+        init => _values = value;
+    }
 
     public bool IsValid => !float.IsNaN(Latitude);
 

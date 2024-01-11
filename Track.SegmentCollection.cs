@@ -17,21 +17,16 @@ partial class Track
 
         public Segment this[int index] => _segments[index];
 
-        public void Add(TrackPoint[] points) => Insert(_segments.Count, new Segment { Points = points });
-
         public Segment Find(RouteSection section) => _segments.Find(segment => segment.Section == section);
+        
+        public Segment Find(WayPoint wayPoint) => _segments.Find(segment => segment.Section.Start == wayPoint);
 
-        public void Insert(int index, RouteSection section)
-        {
-            Segment segment = new() { Section = section };
-            Insert(index, segment);
-        }
-
-        private void Insert(int index, Segment segment)
+        public void Insert(Segment segment, int index)
         {
             _segments.Insert(index, segment);
             if (index == 0)
             {
+                segment.FileId = 1;
                 segment.Linked = true;
             }
             else
@@ -39,38 +34,20 @@ partial class Track
                 LinkSegments(segment, _segments[index - 1]);
             }
 
-            if (segment.Points is { })
-            {
-                _points.Total += segment.Values;
-                LinkRemainingSegments(segment, index + 1);
-            }
-            else
-            {
-                UnlinkRemainingSegments(index + 1);
-            }
+            UnlinkRemainingSegments(index + 1);
         }
 
-        public void Update(RouteSection section, RouteResult result)
+        public void Update(Segment segment)
         {
-            if (!section.IsCanceled && result.IsValid)
-            {
-                Segment segment = Find(section);
-                _points.Total -= segment.Values;
-                segment.Points = TrackPointConverter.Convert(result.Points, result.PointCount);
-                _points.Total += segment.Values;
-
-                LinkRemainingSegments(segment, _segments.IndexOf(segment) + 1);
-            }
+            LinkRemainingSegments(segment, _segments.IndexOf(segment) + 1);
 
             CheckTotal();
             CheckLinks();
         }
 
-        public void RemoveAt(int index)
+        public void Remove(Segment segment, int index)
         {
-            Segment segment = _segments[index];
             _segments.RemoveAt(index);
-            _points.Total -= segment.Values;
             segment.Section = null;
 
             if (_segments.Count > 0)
@@ -80,6 +57,7 @@ partial class Track
                     segment = _segments[0];
                     segment.StartIndex = 0;
                     segment.Start = default;
+                    segment.FileId = 1;
                     segment.Linked = true;
                 }
                 else
@@ -93,6 +71,34 @@ partial class Track
             CheckTotal();
             CheckLinks();
         }
+
+        public void UpdateFileId(Segment segment)
+        {
+            int index = _segments.IndexOf(segment);
+            Segment previous;
+            int newFileId;
+            if (index == 0)
+            {
+                newFileId = 1;
+            }
+            else
+            {
+                previous = _segments[index - 1];
+                newFileId = previous.FileId + (segment.Section.Start.IsFileSplit ? 1 : 0);
+            }
+            int diff = newFileId - segment.FileId;
+            if (diff != 0)
+            {
+                for (int i = index; i < _segments.Count; i++)
+                {
+                    _segments[i].FileId += diff;
+                }
+            }
+        }
+
+        public IEnumerator<Segment> GetEnumerator() => _segments.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => _segments.GetEnumerator();
 
         private void LinkRemainingSegments(Segment previous, int index)
         {
@@ -116,8 +122,9 @@ partial class Track
                 {
                     break;
                 }
-                segment.StartIndex = 0;
+                segment.StartIndex = -1;
                 segment.Start = default;
+                segment.FileId = 0;
                 segment.Linked = false;
             }
         }
@@ -131,14 +138,11 @@ partial class Track
 
             segment.StartIndex = previous.StartIndex + previous.Points.Length;
             segment.Start = previous.Start + previous.Values;
+            segment.FileId = previous.FileId + (segment.Section.Start.IsFileSplit ? 1 : 0);
             segment.Linked = true;
 
             return segment.Points is { };
         }
-
-        public IEnumerator<Segment> GetEnumerator() => _segments.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => _segments.GetEnumerator();
 
         [Conditional("DEBUG")]
         private void CheckTotal()

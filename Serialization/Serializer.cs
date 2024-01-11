@@ -17,15 +17,10 @@ public static class Serializer
     {
         TrackFile trackFile = await DeserializeAsync();
 
-        for (int i = 0; i < trackFile.WayPoints.Length; i++)
-        {
-            WayPoint wayPoint = trackFile.WayPoints[i];
-            RoutePoint[] routePoints = Deserialize(i > 0 ? trackFile.TrackPoints[i - 1] : null);
-
-            track.RouteBuilder.InitializePoint(
-                new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute, wayPoint.IsFileSplit), 
-                routePoints);
-        }
+        track.RouteBuilder.Initialize(trackFile.WayPoints.Select((wayPoint, i) => (
+            new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute, wayPoint.IsFileSplit),
+            Deserialize(i > 0 ? trackFile.TrackPoints[i - 1] : null)
+        )));
 
         async Task<TrackFile> DeserializeAsync()
         {

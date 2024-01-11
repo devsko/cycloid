@@ -1,0 +1,168 @@
+﻿<UserControl
+    x:Class="cycloid.Controls.Profile"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:cycloid.Controls"
+    xmlns:cycloid="using:cycloid"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    Loaded="UserControl_Loaded"
+    SizeChanged="UserControl_SizeChanged">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <StaticResource x:Key="TrackGraphOutline" ResourceKey="TextFillColorPrimaryBrush" />
+                    <SolidColorBrush
+                        x:Key="TrackGraphFill"
+                        Opacity="0.4"
+                        Color="{StaticResource TextFillColorSecondary}" />
+                    <SolidColorBrush
+                        x:Key="SectionGraphFill"
+                        Opacity="0.3"
+                        Color="{StaticResource SystemAccentColorDark2}" />
+                    <StaticResource x:Key="TrackSelectionGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
+                    <SolidColorBrush
+                        x:Key="TrackHoverGraphOutline"
+                        Opacity="0.7"
+                        Color="{StaticResource TextFillColorPrimary}" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <StaticResource x:Key="TrackGraphOutline" ResourceKey="TextFillColorPrimaryBrush" />
+                    <SolidColorBrush
+                        x:Key="TrackGraphFill"
+                        Opacity="0.4"
+                        Color="{StaticResource TextFillColorSecondary}" />
+                    <SolidColorBrush
+                        x:Key="SectionGraphFill"
+                        Opacity="0.3"
+                        Color="{StaticResource SystemAccentColorDark2}" />
+                    <StaticResource x:Key="TrackSelectionGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
+                    <SolidColorBrush
+                        x:Key="TrackHoverGraphOutline"
+                        Opacity="0.7"
+                        Color="{StaticResource TextFillColorPrimary}" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+
+        <ScrollViewer
+            x:Name="Scroller"
+            HorizontalScrollBarVisibility="Auto"
+            HorizontalScrollMode="Auto"
+            VerticalScrollBarVisibility="Hidden"
+            VerticalScrollMode="Disabled"
+            ViewChanged="Scroller_ViewChanged">
+            <Canvas
+                x:Name="Root"
+                Background="{ThemeResource ControlFillColorDefaultBrush}"
+                PointerExited="Root_PointerExited"
+                PointerMoved="Root_PointerMoved"
+                SizeChanged="Root_SizeChanged"
+                Tapped="Root_Tapped">
+                <Canvas.Resources>
+                    <CompositeTransform x:Name="GraphTransform" />
+                    <CompositeTransform x:Name="GraphBottomTransform" />
+                </Canvas.Resources>
+                <Path
+                    x:Name="Path"
+                    Fill="{ThemeResource TrackGraphFill}"
+                    Stroke="{ThemeResource TrackGraphOutline}"
+                    StrokeThickness=".5">
+                    <Path.Data>
+                        <PathGeometry Transform="{StaticResource GraphTransform}">
+                            <PathFigure x:Name="GraphFigure">
+                                <PolyLineSegment x:Name="Graph" />
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+                <Path Fill="{ThemeResource TrackGraphFill}">
+                    <Path.Data>
+                        <RectangleGeometry x:Name="GraphBottom" Transform="{StaticResource GraphBottomTransform}" />
+                    </Path.Data>
+                </Path>
+                <Path Stroke="{ThemeResource TrackGraphOutline}" StrokeThickness=".5">
+                    <Path.Data>
+                        <GeometryGroup x:Name="FileSplits" Transform="{StaticResource GraphBottomTransform}" />
+                    </Path.Data>
+                </Path>
+                <Path Fill="{ThemeResource SectionGraphFill}">
+                    <Path.Data>
+                        <PathGeometry Transform="{StaticResource GraphTransform}">
+                            <PathFigure StartPoint="0,0">
+                                <PolyLineSegment x:Name="SectionGraph" />
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+                <Canvas x:Name="TrackPois" />
+                <Canvas x:Name="HorizontalRuler" />
+                <Path
+                    Stroke="{ThemeResource TrackSelectionGraphOutline}"
+                    StrokeThickness="1.5"
+                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.CurrentPoint)}">
+                    <Path.Data>
+                        <GeometryGroup>
+                            <LineGeometry x:Name="CurrentPointLine1" />
+                            <LineGeometry x:Name="CurrentPointLine2" />
+                            <EllipseGeometry
+                                x:Name="CurrentPointCircle"
+                                RadiusX="3"
+                                RadiusY="3" />
+                        </GeometryGroup>
+                    </Path.Data>
+                </Path>
+                <Path
+                    Stroke="{ThemeResource TrackHoverGraphOutline}"
+                    StrokeThickness="1.5"
+                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.HoverPoint)}">
+                    <Path.Data>
+                        <GeometryGroup>
+                            <LineGeometry x:Name="HoverPointLine1" />
+                            <LineGeometry x:Name="HoverPointLine2" />
+                            <EllipseGeometry
+                                x:Name="HoverPointCircle"
+                                RadiusX="3"
+                                RadiusY="3" />
+                        </GeometryGroup>
+                    </Path.Data>
+                </Path>
+            </Canvas>
+        </ScrollViewer>
+
+        <Canvas x:Name="VerticalRuler" IsHitTestVisible="False" />
+
+        <StackPanel
+            Padding="5,5,5,15"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Orientation="Vertical"
+            Spacing="5">
+            <Button
+                x:Name="ZoomIn"
+                HorizontalAlignment="Right"
+                Click="ZoomIn_Click"
+                Content="{ui:SymbolIcon Symbol=ZoomIn}" />
+            <Button
+                x:Name="ZoomOut"
+                HorizontalAlignment="Right"
+                Click="ZoomOut_Click"
+                Content="{ui:SymbolIcon Symbol=ZoomOut}" />
+        </StackPanel>
+
+        <Canvas Margin="-125,15,0,0">
+            <controls:ProfileHoverPointValues
+                x:Name="HoverPointValues"
+                Canvas.Left="{x:Bind Mode=OneWay, Path=GetOffset(ViewModel.HoverPoint)}"
+                Enabled="{x:Bind Mode=TwoWay, Path=ViewModel.ProfileHoverPointValuesEnabled}"
+                Point="{x:Bind Mode=OneWay, Path=ViewModel.HoverPoint}"
+                Track="{x:Bind Mode=OneWay, Path=ViewModel.Track}" />
+        </Canvas>
+
+    </Grid>
+
+</UserControl>

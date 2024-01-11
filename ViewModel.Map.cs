@@ -8,7 +8,7 @@ namespace cycloid;
 
 partial class ViewModel
 {
-    public const double MinInfoZoomLevel = 11;
+    public const double MinInfoZoomLevel = 12;
 
     [ObservableProperty]
     private bool _heatmapVisible;

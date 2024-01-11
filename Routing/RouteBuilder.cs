@@ -34,7 +34,7 @@ public partial class RouteBuilder
     public event Action<RouteSection> CalculationRetry;
     public event Action<RouteSection, RouteResult> CalculationFinished;
 
-    public event Action Changed;
+    public event Action<bool> Changed;
     public event Action<WayPoint> FileSplitChanged;
 
     public RouteBuilder()
@@ -287,20 +287,25 @@ public partial class RouteBuilder
         SectionRemoved?.Invoke(section, startIndex);
     }
 
-    public void InitializePoint(WayPoint wayPoint, RoutePoint[] routePoints)
+    public void Initialize(IEnumerable<(WayPoint WayPoint, RoutePoint[] RoutePoints)> data)
     {
-        Points.Add(wayPoint);
-        if (Points.Count > 1)
+        foreach ((WayPoint wayPoint, RoutePoint[] routePoints) in data)
         {
-            int startIndex = Points.Count - 2;
-            WayPoint point = Points[startIndex];
-            RouteSection section = new(point, wayPoint);
-            _sections.Add(point, section);
-            SectionAdded?.Invoke(section, startIndex);
+            Points.Add(wayPoint);
+            if (Points.Count > 1)
+            {
+                int startIndex = Points.Count - 2;
+                WayPoint point = Points[startIndex];
+                RouteSection section = new(point, wayPoint);
+                _sections.Add(point, section);
+                SectionAdded?.Invoke(section, startIndex);
 
-            routePoints ??= [new RoutePoint(point.Location.Latitude, point.Location.Longitude, 0, TimeSpan.Zero), new RoutePoint(wayPoint.Location.Latitude, wayPoint.Location.Longitude, 0, TimeSpan.Zero)];
+                RoutePoint[] points = routePoints ?? [new RoutePoint(point.Location.Latitude, point.Location.Longitude, 0, TimeSpan.Zero), new RoutePoint(wayPoint.Location.Latitude, wayPoint.Location.Longitude, 0, TimeSpan.Zero)];
 
-            CalculationFinished?.Invoke(section, new RouteResult { Points = routePoints, PointCount = routePoints.Length });
+                CalculationFinished?.Invoke(section, new RouteResult { Points = points, PointCount = points.Length });
+            }
         }
+
+        Changed?.Invoke(true);
     }
 }

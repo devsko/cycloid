@@ -49,6 +49,28 @@ public sealed partial class Map : UserControl
         }
     }
 
+    // WORKAROUND Change the view slightly to update moved child controls.
+    private void Nudge()
+    {
+        if (IsEqualCamera(MapControl.ActualCamera, MapControl.TargetCamera))
+        {
+            MapCamera camera = MapControl.TargetCamera;
+            camera.Roll = camera.Roll == 0 ? 1e-5 : 0;
+            _ = MapControl.TrySetSceneAsync(MapScene.CreateFromCamera(camera), MapAnimationKind.None);
+        }
+
+        static bool IsEqualCamera(MapCamera camera1, MapCamera camera2) =>
+            IsEqualDouble(camera1.Location.Position.Latitude, camera2.Location.Position.Latitude) &&
+            IsEqualDouble(camera1.Location.Position.Longitude, camera2.Location.Position.Longitude) &&
+            (IsEqualDouble(camera1.Heading, camera2.Heading) || Math.Abs(Math.Abs(camera1.Heading - camera2.Heading) - 360) < 1e-4) &&
+            IsEqualDouble(camera1.FieldOfView, camera2.FieldOfView) &&
+            IsEqualDouble(camera1.Pitch, camera2.Pitch) &&
+            IsEqualDouble(camera1.Roll, camera2.Roll);
+
+        static bool IsEqualDouble(double value1, double value2)
+            => Math.Abs(value1 - value2) < 1e-4;
+    }
+
     private bool IsFileSplit(WayPoint wayPoint)
     {
         return wayPoint is { IsFileSplit: true };
@@ -62,6 +84,40 @@ public sealed partial class Map : UserControl
     }
 
     private Visibility VisibleIfNotIsDirectRoute(RouteSection section) => !IsDirectRoute(section) ? Visibility.Visible : Visibility.Collapsed;
+
+    private void MapControl_Loaded(object _1, RoutedEventArgs _2)
+    {
+        ViewModel.TrackChanged += ViewModel_TrackChanged;
+        ViewModel.HoverPointChanged += ViewModel_HoverPointChanged;
+        ViewModel.DragWayPointStarting += ViewModel_DragWayPointStarting;
+        ViewModel.DragNewWayPointStarting += ViewModel_DragNewWayPointStarting;
+        ViewModel.DragWayPointStarted += ViewModel_DragWayPointStarted;
+        ViewModel.DragWayPointEnded += ViewModel_DragWayPointEnded;
+
+        MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
+
+        // Heatmap
+        _heatmap = (MapTileSource)MapControl.Resources["Heatmap"];
+        MapControl.Resources.Remove("Heatmap");
+        MapControl.TileSources.Add(_heatmap);
+
+        // Osm
+        _osm = (MapTileSource)MapControl.Resources["Osm"];
+        MapControl.Resources.Remove("Osm");
+        MapControl.TileSources.Add(_osm);
+
+        // RoutingLayer
+        _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
+        MapControl.Layers.Add(_routingLayer);
+
+        // PoisLayer
+        _poisLayer = (MapElementsLayer)MapControl.Resources["PoisLayer"];
+        MapControl.Layers.Add(_poisLayer);
+
+        // InfoLayer
+        _infoLayer = (MapElementsLayer)MapControl.Resources["InfoLayer"];
+        MapControl.Layers.Add(_infoLayer);
+    }
 
     private void MapControl_ActualCameraChanged(MapControl _, MapActualCameraChangedEventArgs args)
     {
@@ -96,39 +152,6 @@ public sealed partial class Map : UserControl
                 ViewModel.InfoIsLoading = false;
             }
         }
-    }
-
-    private void MapControl_Loaded(object _1, RoutedEventArgs _2)
-    {
-        ViewModel.TrackChanged += ViewModel_TrackChanged;
-        ViewModel.DragWayPointStarting += ViewModel_DragWayPointStarting;
-        ViewModel.DragNewWayPointStarting += ViewModel_DragNewWayPointStarting;
-        ViewModel.DragWayPointStarted += ViewModel_DragWayPointStarted;
-        ViewModel.DragWayPointEnded += ViewModel_DragWayPointEnded;
-
-        MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
-
-        // Heatmap
-        _heatmap = (MapTileSource)MapControl.Resources["Heatmap"];
-        MapControl.Resources.Remove("Heatmap");
-        MapControl.TileSources.Add(_heatmap);
-
-        // Osm
-        _osm = (MapTileSource)MapControl.Resources["Osm"];
-        MapControl.Resources.Remove("Osm");
-        MapControl.TileSources.Add(_osm);
-
-        // RoutingLayer
-        _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
-        MapControl.Layers.Add(_routingLayer);
-
-        // PoisLayer
-        _poisLayer = (MapElementsLayer)MapControl.Resources["PoisLayer"];
-        MapControl.Layers.Add(_poisLayer);
-
-        // InfoLayer
-        _infoLayer = (MapElementsLayer)MapControl.Resources["InfoLayer"];
-        MapControl.Layers.Add(_infoLayer);
     }
 
     private void RoutingLayer_MapElementPointerEntered(MapElementsLayer _, MapElementsLayerPointerEnteredEventArgs args)
@@ -263,6 +286,11 @@ public sealed partial class Map : UserControl
         {
             Connect(newTrack);
         }
+    }
+
+    private void ViewModel_HoverPointChanged(TrackPoint arg1, TrackPoint arg2)
+    {
+        Nudge();
     }
 
     private void ViewModel_DragWayPointStarting(WayPoint wayPoint)

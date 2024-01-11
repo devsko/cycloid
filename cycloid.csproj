@@ -78,8 +78,16 @@
     <Compile Include="Controls\MapHoverPointValues.xaml.cs">
       <DependentUpon>MapHoverPointValues.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\ProfileHoverPointValues.xaml.cs">
+      <DependentUpon>ProfileHoverPointValues.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\StreetView.xaml.cs">
       <DependentUpon>StreetView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Profile.Graph.cs" />
+    <Compile Include="Controls\Profile.Ruler.cs" />
+    <Compile Include="Controls\Profile.xaml.cs">
+      <DependentUpon>Profile.xaml</DependentUpon>
     </Compile>
     <Compile Include="Extensions\ConfigurationValue.cs" />
     <Compile Include="External\Osm.cs" />
@@ -160,7 +168,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\ProfileHoverPointValues.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\StreetView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Profile.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

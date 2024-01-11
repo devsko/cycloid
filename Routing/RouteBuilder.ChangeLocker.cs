@@ -50,7 +50,7 @@ partial class RouteBuilder
             if (_runningCalculationCounter == 0)
             {
                 _semaphore.Release();
-                routeBuilder.Changed?.Invoke();
+                routeBuilder.Changed?.Invoke(false);
             }
         }
 

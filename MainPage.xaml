@@ -78,9 +78,7 @@
                         <PathIcon HorizontalAlignment="Center" Data="M 6.426 0.7 L 0.63 11.9 L 4.046 11.9 L 6.426 7.433 L 8.792 11.9 L 12.18 11.9 L 6.426 0.7 Z M 12.18 11.9 L 10.5 15.252 L 8.792 11.9 L 6.202 11.9 L 10.5 20.3 L 14.77 11.9 L 12.18 11.9 Z" />
                     </Border>
                 </ToggleButton>
-                <ToggleButton
-                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.IsNotNull(ViewModel.Track)}">
+                <ToggleButton IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}" IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.IsNotNull(ViewModel.Track)}">
                     <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="T" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
@@ -91,8 +89,8 @@
                                 Margin="-8,-6,-8,-6"
                                 VerticalAlignment="Bottom"
                                 Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
-                                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.TrackIsCalculating)}"
-                                IsIndeterminate="True" />
+                                IsIndeterminate="True"
+                                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.TrackIsCalculating)}" />
                         </Grid>
                     </ToggleButton.Content>
                 </ToggleButton>
@@ -115,8 +113,8 @@
                                 Margin="-8,-6,-8,-6"
                                 VerticalAlignment="Bottom"
                                 Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
-                                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.InfoIsLoading)}"
-                                IsIndeterminate="True" />
+                                IsIndeterminate="True"
+                                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.InfoIsLoading)}" />
                         </Grid>
                     </ToggleButton.Content>
                 </ToggleButton>
@@ -250,7 +248,7 @@
 
         </Grid>
 
-        <!--  TrackControl Grid.Row=1 Grid.Column=1  -->
+        <controls:Profile Grid.Row="1" Grid.Column="1" />
 
     </Grid>
 

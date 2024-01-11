@@ -126,23 +126,26 @@
         <Border
             maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.HoverPoint)}"
             maps:MapControl.NormalizedAnchorPoint=".5 .5"
-            UseLayoutRounding="false"
             Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.HoverPoint)}">
             <Grid>
                 <Ellipse
-                    Width="10"
-                    Height="10"
-                    Fill="Black" />
+                    Width="14"
+                    Height="14"
+                    Stroke="Black"
+                    StrokeThickness="2" />
                 <Ellipse
-                    Width="7"
-                    Height="7"
-                    Fill="White" />
+                    Width="12"
+                    Height="12"
+                    Stroke="White"
+                    StrokeThickness="1.5" />
             </Grid>
         </Border>
 
         <!--  HoverPointValues  -->
         <controls:MapHoverPointValues
-            Enabled="{x:Bind Mode=OneWay, Path=ViewModel.MapHoverPointValuesEnabled}"
+            maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.HoverPoint)}"
+            maps:MapControl.NormalizedAnchorPoint="0 1"
+            Enabled="{x:Bind Mode=TwoWay, Path=ViewModel.MapHoverPointValuesEnabled}"
             Point="{x:Bind Mode=OneWay, Path=ViewModel.HoverPoint}"
             Track="{x:Bind Mode=OneWay, Path=ViewModel.Track}" />
 

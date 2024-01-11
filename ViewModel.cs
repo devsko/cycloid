@@ -30,6 +30,7 @@ public partial class ViewModel : ObservableObject
     private string _status;
 
     public event Action<Track, Track> TrackChanged;
+    public event Action<TrackPoint, TrackPoint> HoverPointChanged;
 
     public ViewModel()
     {
@@ -70,6 +71,11 @@ public partial class ViewModel : ObservableObject
         TrackChanged?.Invoke(oldValue, newValue);
     }
 
+    partial void OnHoverPointChanged(TrackPoint oldValue, TrackPoint newValue)
+    {
+        HoverPointChanged?.Invoke(oldValue, newValue);
+    }
+
     private void RouteBuilder_CalculationStarting(RouteSection _)
     {
         TrackIsCalculating = true;
@@ -80,9 +86,9 @@ public partial class ViewModel : ObservableObject
         TrackIsCalculating = false;
     }
 
-    private void RouteBuilder_Changed()
+    private void RouteBuilder_Changed(bool initialization)
     {
-        if (!IsCaptured)
+        if (!initialization && !IsCaptured)
         {
             SaveTrackAsync().FireAndForget();
         }

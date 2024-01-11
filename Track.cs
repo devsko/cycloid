@@ -34,7 +34,17 @@ public partial class Track : ObservableObject
         Loaded?.Invoke();
     }
 
-    public string FilePosition(TrackPoint point) => $"22,8 / 1";
+    public string FilePosition(TrackPoint point)
+    {
+        if (point.Distance == 0 && Points.Count == 0)
+        {
+            return "";
+        }
+
+        (int fileId, float distance) = Points.FilePosition(point);
+
+        return $"{fileId} / {distance / 1_000:N1}";
+    }
 
     public string DistanceFromStart(TrackPoint point) => "100 km";
 

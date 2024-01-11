@@ -20,9 +20,12 @@ partial class Track
         }
 
         public RouteSection Section { get; set; }
-        public int StartIndex { get; set; }
+        public int StartIndex { get; set; } = -1;
         public TrackPoint.CommonValues Start { get; set; }
         public TrackPoint[] Points { get; set; }
+        public float MinAltitude { get; set; } = float.PositiveInfinity;
+        public float MaxAltitude { get; set; } = float.NegativeInfinity;
+        public int FileId { get; set; }
         public bool Linked { get; set; }
 
         public TrackPoint.CommonValues Values => Points is { Length: > 0 } ? Points[^1].Values : default;
