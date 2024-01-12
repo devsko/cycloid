@@ -33,7 +33,7 @@ public class Strava
         return loggedIn ? cookies.ToArray() : null;
     }
 
-    public async Task<bool> InitializeHeatmapAsync()
+    public async Task<bool> InitializeHeatmapAsync(bool clearCookies)
     {
         using HttpBaseProtocolFilter filter = new();
         using HttpClient client = new(filter);
@@ -44,7 +44,7 @@ public class Strava
             return true;
         }
 
-        using PopupBrowser browser = new();
+        using PopupBrowser browser = new() { ClearCookies = clearCookies };
 
         if ((await LoginAsync(browser)).Success)
         {

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Windows.Devices.Geolocation;
+using System.Threading.Tasks;
 using Windows.Services.Maps;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -17,9 +17,14 @@ public sealed partial class MainPage : Page
 
     private void Page_Loaded(object _1, RoutedEventArgs _2)
     {
-        Map.SetCenterAsync("Stampfl Samerberg", 8).FireAndForget();
         ViewModel.ToggleHeatmapVisibleAsync().FireAndForget();
-        ViewModel.OpenLastTrackAsync().FireAndForget();
+        InitialSceneAsync().FireAndForget();
+
+        async Task InitialSceneAsync()
+        {
+            await Map.SetCenterAsync("Stampfl Samerberg", 8);
+            await ViewModel.OpenLastTrackAsync();
+        }
     }
 
     private void ViewModel_TrackChanged(Track _, Track track)
@@ -31,7 +36,7 @@ public sealed partial class MainPage : Page
     {
         if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
         {
-            MapLocationFinderResult result = await MapLocationFinder.FindLocationsAsync(sender.Text, new Geopoint(new BasicGeoposition { Latitude = 47.5, Longitude = 12 }));
+            MapLocationFinderResult result = await MapLocationFinder.FindLocationsAsync(sender.Text, Map.Center);
             if (result.Status == MapLocationFinderStatus.Success)
             {
                 sender.ItemsSource = result.Locations;

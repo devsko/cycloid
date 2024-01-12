@@ -60,6 +60,7 @@
         x:Name="MapControl"
         ActualCameraChanged="MapControl_ActualCameraChanged"
         Loaded="MapControl_Loaded"
+        LosingFocus="MapControl_LosingFocus"
         MapContextRequested="MapControl_MapContextRequested"
         MapServiceToken="{cycloid:ConfigurationValue Key=Bing:ServiceApiKey}"
         MapTapped="MapControl_MapTapped"
@@ -126,18 +127,19 @@
         <Border
             maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.HoverPoint)}"
             maps:MapControl.NormalizedAnchorPoint=".5 .5"
+            UseLayoutRounding="False"
             Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.HoverPoint)}">
             <Grid>
                 <Ellipse
-                    Width="14"
-                    Height="14"
-                    Stroke="Black"
-                    StrokeThickness="2" />
+                    Width="15"
+                    Height="15"
+                    Stroke="DarkBlue"
+                    StrokeThickness="4" />
                 <Ellipse
-                    Width="12"
-                    Height="12"
+                    Width="11"
+                    Height="11"
                     Stroke="White"
-                    StrokeThickness="1.5" />
+                    StrokeThickness="2" />
             </Grid>
         </Border>
 

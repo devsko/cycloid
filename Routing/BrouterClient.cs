@@ -17,7 +17,11 @@ namespace cycloid.Routing;
 
 public partial class BrouterClient
 {
-    private readonly HttpClient _http = new() { BaseAddress = new Uri("https://bikerouter.de/brouter-engine/brouter/") };
+    private readonly HttpClient _http = new() 
+    { 
+        BaseAddress = new Uri("https://bikerouter.de/brouter-engine/brouter/"), 
+        Timeout = Timeout.InfiniteTimeSpan 
+    };
     private readonly ConcurrentDictionary<Profile, Task<string>> _profiles = new();
 
     public async Task<Feature> GetRouteAsync(MapPoint from, MapPoint to, IEnumerable<NoGoArea> noGoAreas, Profile profile, Action retryCallback, CancellationToken cancellationToken)

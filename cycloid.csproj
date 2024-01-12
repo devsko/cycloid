@@ -198,25 +198,25 @@
       <Version>3.6.4</Version>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Labs.Uwp.TransitionHelper">
-      <Version>0.1.231204-build.1603</Version>
+      <Version>0.1.240109-build.1615</Version>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm">
       <Version>8.2.2</Version>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Uwp.Animations">
-      <Version>8.0.230907</Version>
+      <Version>8.0.240109</Version>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Uwp.Extensions">
-      <Version>8.0.230907</Version>
+      <Version>8.0.240109</Version>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Uwp.Media">
-      <Version>8.0.230907</Version>
+      <Version>8.0.240109</Version>
     </PackageReference>
     <PackageReference Include="GeoJSON.Text">
       <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Data.Sqlite">
-      <Version>8.0.0</Version>
+      <Version>8.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets">
       <Version>8.0.0</Version>
@@ -230,6 +230,9 @@
     <PackageReference Include="Microsoft.VisualStudio.Threading">
       <Version>17.8.14</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.Web.WebView2">
+      <Version>1.0.2210.55</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
     </PackageReference>
@@ -239,7 +242,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
-      <Version>8.0.0</Version>
+      <Version>8.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

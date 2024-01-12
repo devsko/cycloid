@@ -56,7 +56,8 @@ public class Throttle<TValue, TState>(Func<TValue, TState, CancellationToken, Ta
                 {
                     await App.Current.ShowExceptionAsync(ex);
                 }
-
+                
+                // Do NOT cancel the delay when another Next() happens. That's the throttling.
                 await Task.Delay(_delay);
 
                 _isBusy = false;
@@ -64,5 +65,12 @@ public class Throttle<TValue, TState>(Func<TValue, TState, CancellationToken, Ta
             }
             while (_hasValue);
         }
+    }
+
+    internal void Clear()
+    {
+        _hasValue = false;
+        _value = default;
+        _cts.Cancel();
     }
 }

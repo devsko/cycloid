@@ -26,6 +26,8 @@ public class PopupBrowser : Control, IDisposable
     private TaskCompletionSource<bool> _navigationTcs;
     private Func<Uri, bool, bool> _onNavigation;
 
+    public bool ClearCookies { get; set; }
+
     public PopupBrowser()
     {
         DefaultStyleKey = typeof(PopupBrowser);
@@ -148,8 +150,10 @@ public class PopupBrowser : Control, IDisposable
     private void WebView_CoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
     {
         _webView.CoreWebView2.ContentLoading += WebView_ContentLoading;
-
-        //_webView.CoreWebView2.CookieManager.DeleteAllCookies();
+        if (ClearCookies)
+        {
+            _webView.CoreWebView2.CookieManager.DeleteAllCookies();
+        }
     }
 
     private void WebView_ContentLoading(CoreWebView2 sender, CoreWebView2ContentLoadingEventArgs args)

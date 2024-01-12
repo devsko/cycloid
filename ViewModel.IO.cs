@@ -76,7 +76,10 @@ partial class ViewModel
             return;
         }
 
-        StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
+        if (StorageApplicationPermissions.FutureAccessList.ContainsItem("LatTrack"))
+        {
+            StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
+        }
 
         Track = new Track(file);
         Status = $"{Track.Name} created";

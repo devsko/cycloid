@@ -19,7 +19,6 @@ partial class Profile
     private void ResetTrack()
     {
         Graph.Points.Clear();
-        FileSplits.Children.Clear();
 
         _trackStartDistance = float.PositiveInfinity;
         _trackEndDistance = -1;

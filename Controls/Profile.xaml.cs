@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.WinUI;
 using Windows.Foundation;
@@ -35,6 +36,10 @@ public sealed partial class Profile : UserControl
     private const float GraphTopMarginRatio = .1f;
     private const float HorizontalRulerTickMinimumGap = 50;
     private const float VerticalRulerTickMinimumGap = 25;
+
+    private readonly Throttle<PointerRoutedEventArgs, Profile> _pointerMovedThrottle = new(
+        static (e, @this) => @this.ThrottledPointerMoved(e), 
+        TimeSpan.FromMilliseconds(100));
 
     [ObservableProperty]
     private double _horizontalZoom = 1;
@@ -100,19 +105,24 @@ public sealed partial class Profile : UserControl
     //    }
     //}
 
+    // OnSectionAdded
+    // OnTrackPoiAdded
+    // OnCurrentPointChanged
+
+
     private ViewModel ViewModel => (ViewModel)this.FindResource(nameof(ViewModel));
 
     partial void OnHorizontalZoomChanged(double _)
     {
         if (ViewModel.Track is not null)
         {
-            ProcessChange(Change.Zoom);
+            ProcessChangeAsync(Change.Zoom).FireAndForget();
         }
     }
 
     private double GetOffset(TrackPoint point) => point.IsValid ? point.Distance * _horizontalScale - _scrollerOffset : 0;
 
-    private void ProcessChange(Change change)
+    private async Task ProcessChangeAsync(Change change)
     {
         while (change != 0)
         {
@@ -174,21 +184,24 @@ public sealed partial class Profile : UserControl
             {
                 change &= ~Change._EnsureGraph;
 
-                if (ViewModel.Track.Points.Count > 0)
+                using (await ViewModel.Track.RouteBuilder.ChangeLock.EnterAsync(default))
                 {
-                    EnsureTrack();
-                    EnsureSection();
-                    EnsureHorizontalRuler();
-
-                    float maxElevation = ViewModel.Track.Points
-                        .Enumerate((float)(_scrollerOffset / _horizontalScale), (float)((ActualWidth + _scrollerOffset) / _horizontalScale))
-                        .Max(point => point.Altitude);
-
-                    if (_maxElevation != maxElevation)
+                    if (ViewModel.Track.Points.Count > 0)
                     {
-                        _maxElevation = maxElevation;
-                        _elevationDiff = maxElevation - ViewModel.Track.Points.MinAltitude;
-                        change |= Change.MaxElevation;
+                        EnsureTrack();
+                        EnsureSection();
+                        EnsureHorizontalRuler();
+
+                        float maxElevation = ViewModel.Track.Points
+                            .Enumerate((float)(_scrollerOffset / _horizontalScale), (float)((ActualWidth + _scrollerOffset) / _horizontalScale))
+                            .Max(point => point.Altitude);
+
+                        if (_maxElevation != maxElevation)
+                        {
+                            _maxElevation = maxElevation;
+                            _elevationDiff = maxElevation - ViewModel.Track.Points.MinAltitude;
+                            change |= Change.MaxElevation;
+                        }
                     }
                 }
             }
@@ -274,7 +287,7 @@ public sealed partial class Profile : UserControl
             ResetTrack();
         }
 
-        ProcessChange(Change.Scroll);
+        ProcessChangeAsync(Change.Scroll).FireAndForget();
 
         Point pointer = new(
             Window.Current.CoreWindow.PointerPosition.X - Window.Current.Bounds.X,
@@ -292,7 +305,7 @@ public sealed partial class Profile : UserControl
         if (_isOuterSizeChange)
         {
             _isOuterSizeChange = false;
-            ProcessChange(ViewModel.Track is null ? Change.VerticalSize : Change.Zoom | Change.VerticalSize);
+            ProcessChangeAsync(ViewModel.Track is null ? Change.VerticalSize : Change.Zoom | Change.VerticalSize).FireAndForget();
         }
     }
 
@@ -300,13 +313,19 @@ public sealed partial class Profile : UserControl
     {
         if (ViewModel.Track is not null)
         {
-            HoverPointValues.Enabled = true;
-            ViewModel.HoverPoint = ViewModel.Track.Points.Search((float)(e.GetCurrentPoint(Root).Position.X / _horizontalScale)).Point;
+            _pointerMovedThrottle.Next(e, this);
         }
+    }
+
+    private void ThrottledPointerMoved(PointerRoutedEventArgs e)
+    {
+        HoverPointValues.Enabled = true;
+        ViewModel.HoverPoint = ViewModel.Track.Points.Search((float)(e.GetCurrentPoint(Root).Position.X / _horizontalScale)).Point;
     }
 
     private void Root_PointerExited(object sender, PointerRoutedEventArgs e)
     {
+        _pointerMovedThrottle.Clear();
         ViewModel.HoverPoint = TrackPoint.Invalid;
         HoverPointValues.Enabled = false;
     }
@@ -339,7 +358,7 @@ public sealed partial class Profile : UserControl
         _horizontalSize = 0;
         _maxElevation = 0;
         _elevationDiff = 0;
-        ProcessChange(Change.Track);
+        ProcessChangeAsync(Change.Track).FireAndForget();
         if (oldTrack is not null)
         {
             oldTrack.RouteBuilder.Changed -= RouteBuilder_Changed;
@@ -357,6 +376,6 @@ public sealed partial class Profile : UserControl
 
     private void RouteBuilder_Changed(bool _)
     {
-        ProcessChange(Change.Track);
+        ProcessChangeAsync(Change.Track).FireAndForget();
     }
 }

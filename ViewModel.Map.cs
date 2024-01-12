@@ -64,7 +64,7 @@ partial class ViewModel
         }
         else
         {
-            HeatmapVisible = await Strava.InitializeHeatmapAsync();
+            HeatmapVisible = await Strava.InitializeHeatmapAsync(clearCookies: false);
             // Notify property changed again to convinvce the toggle button
             OnPropertyChanged(nameof(HeatmapVisible));
         }

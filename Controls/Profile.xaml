@@ -46,11 +46,6 @@
                         <RectangleGeometry x:Name="GraphBottom" Transform="{StaticResource GraphBottomTransform}" />
                     </Path.Data>
                 </Path>
-                <Path Stroke="{ThemeResource TrackGraphOutline}" StrokeThickness=".5">
-                    <Path.Data>
-                        <GeometryGroup x:Name="FileSplits" Transform="{StaticResource GraphBottomTransform}" />
-                    </Path.Data>
-                </Path>
                 <Path Fill="{ThemeResource SectionGraphFill}">
                     <Path.Data>
                         <PathGeometry Transform="{StaticResource GraphTransform}">

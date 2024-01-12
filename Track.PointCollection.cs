@@ -98,6 +98,11 @@ partial class Track
         public (TrackPoint Point, Index Index) Search(float distance)
         {
             Index index = GetIndex(distance, out bool exactMatch);
+            if (!index.IsValid)
+            {
+                return (TrackPoint.Invalid, index);
+            }
+
             Segment segment = _segments[index.SegmentIndex];
 
             if (index.PointIndex >= segment.Points.Length)
@@ -111,7 +116,7 @@ partial class Track
             if (!exactMatch && index != default)
             {
                 TrackPoint previous = this[Decrement(index)];
-                point = TrackPoint.Lerp(previous, point, (point.Distance - distance) / (point.Distance - previous.Distance));
+                point = TrackPoint.Lerp(previous, point, (distance - previous.Distance) / (point.Distance - previous.Distance));
             }
 
             return (point, index);
@@ -122,15 +127,10 @@ partial class Track
             using (await _routeBuilder.ChangeLock.EnterAsync(cancellationToken))
             {
                 return 
-                    (
-                        _segments
-                            .Select(segment => segment.Section.End)
-                            .Prepend(_segments[0].Section.Start)
-                            .ToArray(),
-                        _segments
-                            .Select(segment => segment.Points)
-                            .ToArray()
-                    );
+                (
+                    _routeBuilder.Points.ToArray(),
+                    _segments.Select(segment => segment.Points).ToArray()
+                );
             }
         }
 
@@ -176,7 +176,7 @@ partial class Track
             if (_segments.Count == 0)
             {
                 exactMatch = true;
-                return default;
+                return Index.Invalid;
             }
 
             int segmentIndex = 0;
@@ -266,7 +266,7 @@ partial class Track
 
         private void RouteBuilder_CalculationFinished(RouteSection section, RouteResult result)
         {
-            if (!section.IsCanceled && result.IsValid)
+            if (!section.IsCanceled)
             {
                 Segment segment = _segments.Find(section);
 
@@ -274,7 +274,10 @@ partial class Track
                 bool calcMinAltitude = MinAltitude == segment.MinAltitude;
                 bool calcMaxAltitude = MaxAltitude == segment.MaxAltitude;
 
-                (segment.Points, segment.MinAltitude, segment.MaxAltitude) = TrackPointConverter.Convert(result.Points, result.PointCount);
+                (segment.Points, segment.MinAltitude, segment.MaxAltitude) =
+                    result.IsValid
+                    ? TrackPointConverter.Convert(result.Points, result.PointCount)
+                    : ConvertDirectRoute(section);
 
                 Total += segment.Values;
                 if (segment.MinAltitude < MinAltitude)
@@ -294,11 +297,23 @@ partial class Track
 
                 _segments.Update(segment);
             }
+
+            static (TrackPoint[] points, float minAltitude, float maxAltitude) ConvertDirectRoute(RouteSection section)
+            {
+                return TrackPointConverter.Convert(
+                [
+                    new RoutePoint(section.Start.Location.Latitude, section.Start.Location.Longitude, 0, TimeSpan.Zero),
+                    new RoutePoint(section.End.Location.Latitude, section.End.Location.Longitude, 0, TimeSpan.FromHours(section.DirectDistance / 1_000 / 20))
+                ], 2);
+            }
         }
 
         private void RouteBuilder_FileSplitChanged(WayPoint wayPoint)
         {
-            _segments.UpdateFileId(_segments.Find(wayPoint));
+            if (wayPoint != _routeBuilder.Points[^1])
+            {
+                _segments.UpdateFileId(_segments.Find(wayPoint));
+            }
         }
     }
 }

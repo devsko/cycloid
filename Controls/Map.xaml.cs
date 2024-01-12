@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI;
@@ -39,6 +40,8 @@ public sealed partial class Map : UserControl
     }
 
     private ViewModel ViewModel => (ViewModel)this.FindResource(nameof(ViewModel));
+
+    public Geopoint Center => MapControl.Center;
 
     public async Task SetCenterAsync(string address, int zoom = 10)
     {
@@ -328,5 +331,15 @@ public sealed partial class Map : UserControl
     {
         PointerPanel.IsEnabled = false;
         EndDrag();
+    }
+
+    private void MapControl_LosingFocus(UIElement _, LosingFocusEventArgs args)
+    {
+        // WORKAROUND: Focus gets lost (to root scroller) when paning the map
+
+        if (ViewModel.IsCaptured)
+        {
+            args.TryCancel();
+        }
     }
 }
