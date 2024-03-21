@@ -127,12 +127,9 @@ public partial class RouteBuilder
 
                     if (startPosition is not null && endPosition is not null)
                     {
-                        TimeSpan duration = TimeSpan.FromHours(section.DirectDistance / 1_000 / 20);
-                        return new RouteResult(
-                        [
-                            new RoutePoint((float)startPosition.Latitude, (float)startPosition.Longitude, (float)(startPosition.Altitude ?? 0), TimeSpan.Zero),
-                        new RoutePoint((float)endPosition.Latitude, (float)endPosition.Longitude, (float)(endPosition.Altitude ?? 0), duration)
-                        ], 2/*, (long)section.DirectDistance, (long)duration.TotalSeconds*/);
+                        return TrackPointConverter.Convert(
+                            RoutePoint.FromPosition(startPosition, TimeSpan.Zero), 
+                            RoutePoint.FromPosition(endPosition, TimeSpan.FromHours(section.DirectDistance / 1_000 / 20)));
                     }
                 }
                 else
@@ -159,7 +156,7 @@ public partial class RouteBuilder
 
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        return new RouteResult(points, positions.Count/*, length, duration*/);
+                        return TrackPointConverter.Convert(points, positions.Count);
                     }
                 }
             }
@@ -308,10 +305,14 @@ public partial class RouteBuilder
                 _sections.Add(point, section);
                 SectionAdded?.Invoke(section, startIndex);
 
-                RoutePoint[] points = routePoints ?? [new RoutePoint(point.Location.Latitude, point.Location.Longitude, 0, TimeSpan.Zero), new RoutePoint(wayPoint.Location.Latitude, wayPoint.Location.Longitude, 0, TimeSpan.Zero)];
+                RouteResult result = routePoints is null
+                    ? TrackPointConverter.Convert(
+                        RoutePoint.FromMapPoint(point.Location, 0, TimeSpan.Zero), 
+                        RoutePoint.FromMapPoint(wayPoint.Location, 0, TimeSpan.Zero))
+                    : TrackPointConverter.Convert(routePoints, routePoints.Length);
 
                 CalculationStarting?.Invoke(section);
-                CalculationFinished?.Invoke(section, new RouteResult { Points = points, PointCount = points.Length });
+                CalculationFinished?.Invoke(section, result);
             }
         }
 

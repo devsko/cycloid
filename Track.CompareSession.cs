@@ -36,7 +36,7 @@ partial class Track
                 bool isDiff = false;
                 int diffStartIndex;
 
-                foreach (var point in result.Points)
+                foreach (TrackPoint point in result.Points)
                 {
                     if (i >= points.Length)
                     {

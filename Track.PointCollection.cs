@@ -290,10 +290,14 @@ partial class Track
                 bool calcMinAltitude = MinAltitude == segment.MinAltitude;
                 bool calcMaxAltitude = MaxAltitude == segment.MaxAltitude;
 
-                (segment.Points, segment.MinAltitude, segment.MaxAltitude) =
-                    result.IsValid
-                    ? TrackPointConverter.Convert(result.Points, result.PointCount)
-                    : ConvertDirectRoute(section);
+                if (!result.IsValid)
+                {
+                    result = TrackPointConverter.Convert(
+                        RoutePoint.FromMapPoint(section.Start.Location, 0, TimeSpan.Zero), 
+                        RoutePoint.FromMapPoint(section.End.Location, 0, TimeSpan.FromHours(section.DirectDistance / 1_000 / 20)));
+                }
+
+                (segment.Points, segment.MinAltitude, segment.MaxAltitude) = (result.Points, result.MinAltitude, result.MaxAltitude);
 
                 Total += segment.Values;
                 if (segment.MinAltitude < MinAltitude)
@@ -312,15 +316,6 @@ partial class Track
                 }
 
                 _segments.Update(segment);
-            }
-
-            static (TrackPoint[] points, float minAltitude, float maxAltitude) ConvertDirectRoute(RouteSection section)
-            {
-                return TrackPointConverter.Convert(
-                [
-                    new RoutePoint(section.Start.Location.Latitude, section.Start.Location.Longitude, 0, TimeSpan.Zero),
-                    new RoutePoint(section.End.Location.Latitude, section.End.Location.Longitude, 0, TimeSpan.FromHours(section.DirectDistance / 1_000 / 20))
-                ], 2);
             }
         }
 

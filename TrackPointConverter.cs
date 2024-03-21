@@ -6,7 +6,12 @@ namespace cycloid;
 
 public static class TrackPointConverter
 {
-    public static (TrackPoint[] TrackPoints, float MinAltitude, float MaxAltitude) Convert(IEnumerable<RoutePoint> points, int count)
+    public static RouteResult Convert(RoutePoint start, RoutePoint end)
+    {
+        return Convert([start, end], 2);
+    }
+
+    public static RouteResult Convert(IEnumerable<RoutePoint> points, int count)
     {
         if (count < 2)
         {
@@ -22,7 +27,7 @@ public static class TrackPointConverter
             trackPoints[i++] = trackPoint;
         }
 
-        return (trackPoints, minAltitude, maxAltitude);
+        return new RouteResult(trackPoints, minAltitude, maxAltitude);
 
         IEnumerable<TrackPoint> Convert(IEnumerable<RoutePoint> points)
         {
