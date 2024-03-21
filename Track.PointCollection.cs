@@ -75,9 +75,9 @@ partial class Track
             }
         }
 
-        public (int FileId, float distance) FilePosition(TrackPoint point)
+        public (int FileId, float distance) FilePosition(float distance)
         {
-            (_, Index index) = Search(point.Distance);
+            (_, Index index) = Search(distance);
             
             int fileId = _segments[index.SegmentIndex].FileId;
 
@@ -92,7 +92,7 @@ partial class Track
                 }
             }
 
-            return (fileId, fileSplitDistance - point.Distance);
+            return (fileId, fileSplitDistance - distance);
         }
 
         public (TrackPoint Point, Index Index) Search(float distance)
@@ -138,15 +138,7 @@ partial class Track
         {
             using (await _routeBuilder.ChangeLock.EnterAsync(default))
             {
-                MapPoint[][] segmentPoints = new MapPoint[_segments.Count][];
-                int i = 0;
-                foreach (Segment segment in _segments)
-                {
-                    segmentPoints[i] = segment.Points.Select(point => new MapPoint(point.Latitude, point.Longitude)).ToArray();
-                    i++;
-                }
-
-                return new CompareSession(_routeBuilder, segmentPoints);
+                return new CompareSession(_routeBuilder, _segments.Select(segment => segment.Points).ToArray());
             }
         }
 

@@ -69,7 +69,7 @@ partial class Map
     private DragState _dragStateTo;
     private DragState _dragStateFrom;
 
-    public void Connect(Track track)
+    private void Connect(Track track)
     {
         track.Loaded += Track_Loaded;
 
@@ -83,7 +83,7 @@ partial class Map
         track.RouteBuilder.FileSplitChanged += RouteBuilder_FileSplitChanged;
     }
 
-    public void Disconnect(Track track)
+    private void Disconnect(Track track)
     {
         track.Loaded -= Track_Loaded;
 
@@ -185,7 +185,7 @@ partial class Map
         }
         else if (!_dragStateTo.Added(section) && !_dragStateFrom.Added(section))
         {
-            _routingLayer.MapElements.Add(new MapPolyline()
+            _routingLayer.MapElements.Add(new MapPolyline
             {
                 MapStyleSheetEntry = "Routing.Line",
                 MapStyleSheetEntryState = "Routing.new",

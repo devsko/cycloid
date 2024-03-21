@@ -16,11 +16,11 @@ public static class Convert
 
     private static readonly Geopoint _emptyGeopoint = new(new BasicGeoposition());
 
+    private static readonly (Brush Positive, Brush Negative) _differenceBrushes = (new SolidColorBrush(Colors.Red), new SolidColorBrush(Colors.Green));
     private static readonly (Brush[] Ascending, Brush[] Descending) _gradientBrushes = CreateGradientBrushes();
 
     private static (Brush[], Brush[]) CreateGradientBrushes()
     {
-
         Vector3[] stopsAscending =
         [
             new(0x80, 0x80, 0x80), // gray
@@ -70,6 +70,24 @@ public static class Convert
         gradient = Math.Clamp(gradient, -_maxGradient, _maxGradient);
 
         return (gradient >= 0 ? _gradientBrushes.Ascending : _gradientBrushes.Descending)[(int)((Math.Abs(gradient)) / _maxGradient * (_gradientSteps - 1))];
+    }
+
+    public static Brush DifferenceBrush(float value)
+    {
+        if (Math.Abs(value) < 1)
+        {
+            return null;
+        }
+        else if (value > 0)
+        {
+            return _differenceBrushes.Positive;
+        }
+        else if (value < 0)
+        {
+            return _differenceBrushes.Negative;
+        }
+
+        return null;
     }
 
     public static Geopoint ToGeopoint(TrackPoint point) => point.IsValid ? new Geopoint((BasicGeoposition)point) : _emptyGeopoint;

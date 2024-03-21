@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -24,6 +25,13 @@ partial class ViewModel
 
     [ObservableProperty]
     private int _bikerPower;
+
+    public event Action<Track.CompareSession, Track.CompareSession> CompareSessionChanged;
+
+    partial void OnCompareSessionChanged(Track.CompareSession oldValue, Track.CompareSession newValue)
+    {
+        CompareSessionChanged?.Invoke(oldValue, newValue);
+    }
 
     [RelayCommand(CanExecute = nameof(CanRecalculate))]
     public async Task RecalculateAsync()

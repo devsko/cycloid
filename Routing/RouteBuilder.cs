@@ -292,6 +292,11 @@ public partial class RouteBuilder
         SectionRemoved?.Invoke(section, startIndex);
     }
 
+    public int GetSectionIndex(RouteSection section)
+    {
+        return Points.IndexOf(section.Start);
+    }
+
     public void Initialize(IEnumerable<(WayPoint WayPoint, RoutePoint[] RoutePoints)> data)
     {
         foreach ((WayPoint wayPoint, RoutePoint[] routePoints) in data)

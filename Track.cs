@@ -32,25 +32,25 @@ public partial class Track : ObservableObject
         Loaded?.Invoke();
     }
 
-    public string FilePosition(TrackPoint point)
+    public string FilePosition(float distance)
     {
-        if (point.Distance == 0 && Points.Count == 0)
+        if (distance == 0 && Points.Count == 0)
         {
             return "";
         }
 
-        (int fileId, float distance) = Points.FilePosition(point);
+        (int fileId, float fileDistance) = Points.FilePosition(distance);
 
-        return $"{fileId} / {distance / 1_000:N1}";
+        return $"{fileId} / {fileDistance / 1_000:N1}";
     }
 
     // TODO Track.DistanceFromStart/TimeFromStart/DistanceToEnd/TimeToEnd
 
-    public string DistanceFromStart(TrackPoint point) => "100 km";
+    public string DistanceFromStart(float distance) => "100 km";
 
-    public string TimeFromStart(TrackPoint point) => "12:34";
+    public string TimeFromStart(TimeSpan time) => "12:34";
 
-    public string DistanceToEnd(TrackPoint point) => "100 km";
+    public string DistanceToEnd(float distance) => "100 km";
 
-    public string TimeToEnd(TrackPoint point) => "12:34";
+    public string TimeToEnd(TimeSpan time) => "12:34";
 }

@@ -55,6 +55,11 @@ partial class ViewModel
                     "fillColor": "#C0800000",
                     "strokeColor": "#C0400000"
                   },
+                  "diff": {
+                    "fillColor": "#C0FF0000",
+                    "strokeColor": "#C000FF00",
+                    "strokeWidthScale": 6
+                  },
                   "hover": {
                     "scale": 0.65
                   }

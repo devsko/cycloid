@@ -59,4 +59,9 @@ public sealed partial class MainPage : Page
             Map.SetCenterAsync(sender.Text).FireAndForget();
         }
     }
+
+    private void Differences_SelectionChanged(object _1, SelectionChangedEventArgs _2)
+    {
+        Map.ZoomTrackDifference(((TrackDifference)Differences.SelectedItem));
+    }
 }

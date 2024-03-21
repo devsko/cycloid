@@ -47,13 +47,13 @@ public partial class PointValuesControl : PointControl
         PropertyChanged?.Invoke(this, _isVisibleChangedArgs);
     }
 
-    protected string FilePosition(TrackPoint point) => Track?.FilePosition(point);
+    protected string FilePosition(TrackPoint point) => Track?.FilePosition(point.Distance);
 
-    protected string DistanceFromStart(TrackPoint point) => Track?.DistanceFromStart(point);
+    protected string DistanceFromStart(TrackPoint point) => Track?.DistanceFromStart(point.Distance);
 
-    protected string TimeFromStart(TrackPoint point) => Track?.TimeFromStart(point);
+    protected string TimeFromStart(TrackPoint point) => Track?.TimeFromStart(point.Time);
 
-    protected string DistanceToEnd(TrackPoint point) => Track?.DistanceToEnd(point);
+    protected string DistanceToEnd(TrackPoint point) => Track?.DistanceToEnd(point.Distance);
 
-    protected string TimeToEnd(TrackPoint point) => Track?.TimeToEnd(point);
+    protected string TimeToEnd(TrackPoint point) => Track?.TimeToEnd(point.Time);
 }

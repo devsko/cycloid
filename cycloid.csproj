@@ -61,6 +61,7 @@
     </Compile>
     <Compile Include="Behaviors\DragableBehavior.cs" />
     <Compile Include="Behaviors\PropertyChangedTrigger.cs" />
+    <Compile Include="Controls\Map.CompareSessionConnector.cs" />
     <Compile Include="Track.Index.cs" />
     <Compile Include="Track.CompareSession.cs" />
     <Compile Include="Controls\Bing.xaml.cs">

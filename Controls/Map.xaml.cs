@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI;
@@ -31,6 +31,7 @@ public sealed partial class Map : UserControl
     private MapTileSource _heatmap;
     private MapTileSource _osm;
     private MapElementsLayer _routingLayer;
+    private MapElementsLayer _differenceLayer;
     private MapElementsLayer _poisLayer;
     private MapElementsLayer _infoLayer;
 
@@ -55,6 +56,15 @@ public sealed partial class Map : UserControl
     public async Task SetCenterAsync(Geopoint point, int zoom = 10)
     {
         await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Bow);
+    }
+
+    public void ZoomTrackDifference(TrackDifference difference)
+    {
+        GeoboundingBox bounds = GeoboundingBox.TryCompute(GetDifferenceLine(difference).Path.Positions);
+        if (bounds is not null)
+        {
+            MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.Linear).AsTask().FireAndForget();
+        }
     }
 
     // WORKAROUND Change the view slightly to update moved child controls.
@@ -96,6 +106,7 @@ public sealed partial class Map : UserControl
     private void MapControl_Loaded(object _1, RoutedEventArgs _2)
     {
         ViewModel.TrackChanged += ViewModel_TrackChanged;
+        ViewModel.CompareSessionChanged += ViewModel_CompareSessionChanged;
         ViewModel.HoverPointChanged += ViewModel_HoverPointChanged;
         ViewModel.DragWayPointStarting += ViewModel_DragWayPointStarting;
         ViewModel.DragNewWayPointStarting += ViewModel_DragNewWayPointStarting;
@@ -104,27 +115,25 @@ public sealed partial class Map : UserControl
 
         MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
 
-        // Heatmap
         _heatmap = (MapTileSource)MapControl.Resources["Heatmap"];
         MapControl.Resources.Remove("Heatmap");
         MapControl.TileSources.Add(_heatmap);
 
-        // Osm
         _osm = (MapTileSource)MapControl.Resources["Osm"];
         MapControl.Resources.Remove("Osm");
         MapControl.TileSources.Add(_osm);
 
-        // RoutingLayer
-        _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
-        MapControl.Layers.Add(_routingLayer);
-
-        // PoisLayer
         _poisLayer = (MapElementsLayer)MapControl.Resources["PoisLayer"];
         MapControl.Layers.Add(_poisLayer);
 
-        // InfoLayer
         _infoLayer = (MapElementsLayer)MapControl.Resources["InfoLayer"];
         MapControl.Layers.Add(_infoLayer);
+
+        _differenceLayer = (MapElementsLayer)MapControl.Resources["DifferenceLayer"];
+        MapControl.Layers.Add(_differenceLayer);
+
+        _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
+        MapControl.Layers.Add(_routingLayer);
     }
 
     private void MapControl_ActualCameraChanged(MapControl _, MapActualCameraChangedEventArgs args)
@@ -293,6 +302,20 @@ public sealed partial class Map : UserControl
         if (newTrack is not null)
         {
             Connect(newTrack);
+        }
+    }
+
+    private void ViewModel_CompareSessionChanged(Track.CompareSession oldCompareSession, Track.CompareSession newCompareSession)
+    {
+        _differenceLayer.MapElements.Clear();
+
+        if (oldCompareSession is not null)
+        {
+            Disconnect(oldCompareSession);
+        }
+        if (newCompareSession is not null)
+        {
+            Connect(newCompareSession);
         }
     }
 
