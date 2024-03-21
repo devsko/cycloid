@@ -41,7 +41,7 @@ public partial class BrouterClient
 
                 return result?.Features.FirstOrDefault();
             }
-            else if (++retryCount > 3 || response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+            else if (++retryCount > 3 || !await CanRetryAsync(response).ConfigureAwait(false))
             {
                 return null;
             }
@@ -69,7 +69,7 @@ public partial class BrouterClient
 
                 return (result?.Features.FirstOrDefault()?.Geometry as LineString)?.Coordinates[0];
             }
-            else if (++retryCount > 3 || response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+            else if (++retryCount > 3 || !await CanRetryAsync(response).ConfigureAwait(false))
             {
                 return null;
             }
@@ -101,9 +101,28 @@ public partial class BrouterClient
             return result.ProfileId;
         }
     }
+
+    private async Task<bool> CanRetryAsync(HttpResponseMessage response)
+    {
+        if (response.StatusCode is HttpStatusCode.NotFound)
+        {
+            return false;
+        }
+
+        string content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        return content.StartsWith("operation killed by thread-priority-watchdog");
+    }
 }
 
-public readonly record struct Profile(int DownhillCost, float DownhillCutoff, int UphillCost, float UphillCutoff, int BikerPower);
+public readonly record struct Profile(int DownhillCost, float DownhillCutoff, int UphillCost, float UphillCutoff, int BikerPower)
+{
+    public const int DefaultDownhillCost = 80;
+    public const float DefaultDownhillCutoff = .5f;
+    public const int DefaultUphillCost = 100;
+    public const float DefaultUphillCutoff = 3.6f;
+    public const int DefaultBikerPower = 170;
+}
 public readonly record struct NoGoArea(MapPoint Center, ulong Radius);
 
 public class ProfileResponse

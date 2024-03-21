@@ -20,17 +20,18 @@ public partial class RouteBuilder
     public BrouterClient Client { get; } = new();
     public Profile Profile { get; set; } = new()
     {
-        DownhillCost = 80,
-        DownhillCutoff = 0.5f,
-        UphillCost = 100,
-        UphillCutoff = 3.6f,
-        BikerPower = 170,
+        DownhillCost = Profile.DefaultDownhillCost,
+        DownhillCutoff = Profile.DefaultDownhillCutoff,
+        UphillCost = Profile.DefaultUphillCost,
+        UphillCutoff = Profile.DefaultUphillCutoff,
+        BikerPower = Profile.DefaultBikerPower,
     };
 
     public event Action<RouteSection, int> SectionAdded;
     public event Action<RouteSection, int> SectionRemoved;
 
     public event Action<RouteSection> CalculationStarting;
+    public event Action<RouteSection> CalculationDelayed;
     public event Action<RouteSection> CalculationRetry;
     public event Action<RouteSection, RouteResult> CalculationFinished;
 
@@ -86,15 +87,21 @@ public partial class RouteBuilder
 
     public void StartCalculation(RouteSection section)
     {
-        CalculateAsync().FireAndForget();
+        CalculateAsync(section).FireAndForget();
+    }
 
-        async Task CalculateAsync()
+    public async Task RecalculateAllAsync()
+    {
+        DelayCalculation = false;
+        await Task.WhenAll(_sections.Values.Select(CalculateAsync));
+    }
+
+    private async Task CalculateAsync(RouteSection section)
+    {
+        section.ResetCancellation();
+        using (await ChangeLock.EnterCalculationAsync(section.CancellationToken))
         {
-            section.ResetCancellation();
-            using (await ChangeLock.EnterCalculationAsync(section.CancellationToken))
-            {
-                CalculationFinished?.Invoke(section, await GetResultAsync(section.CancellationToken));
-            }
+            CalculationFinished?.Invoke(section, await GetResultAsync(section.CancellationToken));
         }
 
         async Task<RouteResult> GetResultAsync(CancellationToken cancellationToken)
@@ -105,6 +112,7 @@ public partial class RouteBuilder
             {
                 if (section.DirectDistance > 25_000)
                 {
+                    CalculationDelayed?.Invoke(section);
                     await _delayCalculationTaskSource.Task.WithCancellation(cancellationToken);
                 }
 
@@ -123,7 +131,7 @@ public partial class RouteBuilder
                         return new RouteResult(
                         [
                             new RoutePoint((float)startPosition.Latitude, (float)startPosition.Longitude, (float)(startPosition.Altitude ?? 0), TimeSpan.Zero),
-                            new RoutePoint((float)endPosition.Latitude, (float)endPosition.Longitude, (float)(endPosition.Altitude ?? 0), duration)
+                        new RoutePoint((float)endPosition.Latitude, (float)endPosition.Longitude, (float)(endPosition.Altitude ?? 0), duration)
                         ], 2/*, (long)section.DirectDistance, (long)duration.TotalSeconds*/);
                     }
                 }
@@ -302,6 +310,7 @@ public partial class RouteBuilder
 
                 RoutePoint[] points = routePoints ?? [new RoutePoint(point.Location.Latitude, point.Location.Longitude, 0, TimeSpan.Zero), new RoutePoint(wayPoint.Location.Latitude, wayPoint.Location.Longitude, 0, TimeSpan.Zero)];
 
+                CalculationStarting?.Invoke(section);
                 CalculationFinished?.Invoke(section, new RouteResult { Points = points, PointCount = points.Length });
             }
         }

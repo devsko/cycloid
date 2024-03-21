@@ -134,6 +134,22 @@ partial class Track
             }
         }
 
+        public async Task<CompareSession> StartCompareSessionAsync()
+        {
+            using (await _routeBuilder.ChangeLock.EnterAsync(default))
+            {
+                MapPoint[][] segmentPoints = new MapPoint[_segments.Count][];
+                int i = 0;
+                foreach (Segment segment in _segments)
+                {
+                    segmentPoints[i] = segment.Points.Select(point => new MapPoint(point.Latitude, point.Longitude)).ToArray();
+                    i++;
+                }
+
+                return new CompareSession(_routeBuilder, segmentPoints);
+            }
+        }
+
         public IEnumerator<TrackPoint> GetEnumerator()
         {
             foreach ((Segment segment, TrackPoint point, _) in Enumerate())

@@ -145,54 +145,116 @@
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="Edit" />
                         </mux:TabViewItem.IconSource>
-                        <Grid ColumnSpacing="10" RowSpacing="5">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="2*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                HorizontalTextAlignment="End"
-                                Text="Distance" />
-                            <TextBlock
-                                Grid.Row="1"
-                                Grid.Column="0"
-                                HorizontalTextAlignment="End"
-                                Text="Time" />
-                            <TextBlock
-                                Grid.Row="2"
-                                Grid.Column="0"
-                                HorizontalTextAlignment="End"
-                                Text="Ascent" />
-                            <TextBlock
-                                Grid.Row="3"
-                                Grid.Column="0"
-                                HorizontalTextAlignment="End"
-                                Text="Descent" />
-                            <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="1"
-                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(ViewModel.Track.Points.Total.Distance)}" />
-                            <TextBlock
-                                Grid.Row="1"
-                                Grid.Column="1"
-                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.Track.Points.Total.Time)}" />
-                            <TextBlock
-                                Grid.Row="2"
-                                Grid.Column="1"
-                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Ascent)}" />
-                            <TextBlock
-                                Grid.Row="3"
-                                Grid.Column="1"
-                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Descent)}" />
-                        </Grid>
+                        <StackPanel Orientation="Vertical" Spacing="15">
+                            <Grid ColumnSpacing="10" RowSpacing="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="2*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    HorizontalTextAlignment="End"
+                                    Text="Distance" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    HorizontalTextAlignment="End"
+                                    Text="Time" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    HorizontalTextAlignment="End"
+                                    Text="Ascent" />
+                                <TextBlock
+                                    Grid.Row="3"
+                                    Grid.Column="0"
+                                    HorizontalTextAlignment="End"
+                                    Text="Descent" />
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(ViewModel.Track.Points.Total.Distance)}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.Track.Points.Total.Time)}" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Ascent)}" />
+                                <TextBlock
+                                    Grid.Row="3"
+                                    Grid.Column="1"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Descent)}" />
+                            </Grid>
+                            <Grid ColumnSpacing="10" RowSpacing="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    HorizontalTextAlignment="End"
+                                    Text="Down Cost/Cutoff" />
+                                <TextBox
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    MinWidth="0"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.DownhillCost}" />
+                                <TextBox
+                                    Grid.Row="0"
+                                    Grid.Column="2"
+                                    MinWidth="0"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.DownhillCutoff}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    HorizontalTextAlignment="End"
+                                    Text="Up Cost/Cutoff" />
+                                <TextBox
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    MinWidth="0"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.UphillCost}" />
+                                <TextBox
+                                    Grid.Row="1"
+                                    Grid.Column="2"
+                                    MinWidth="0"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.UphillCutoff}" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    HorizontalTextAlignment="End"
+                                    Text="Power" />
+                                <TextBox
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Grid.ColumnSpan="2"
+                                    MinWidth="0"
+                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.BikerPower}" />
+                            </Grid>
+                            <Button
+                                HorizontalAlignment="Stretch"
+                                Command="{x:Bind Mode=OneTime, Path=ViewModel.RecalculateCommand}"
+                                Content="Calculate" />
+                        </StackPanel>
                     </mux:TabViewItem>
                     <mux:TabViewItem Header="Sections" IsClosable="false">
                         <mux:TabViewItem.IconSource>

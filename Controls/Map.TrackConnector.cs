@@ -43,6 +43,17 @@ partial class Map
             return false;
         }
 
+        //public bool Delayed(RouteSection section)
+        //{
+        //    if (section == _newSection)
+        //    {
+        //        line.Tag = _oldSection;
+        //        this = default;
+        //        return true;
+        //    }
+        //    return false;
+        //}
+
         public bool Calculated(RouteSection section)
         {
             if (section == _newSection)
@@ -66,6 +77,7 @@ partial class Map
         track.RouteBuilder.SectionAdded += RouteBuilder_SectionAdded;
         track.RouteBuilder.SectionRemoved += RouteBuilder_SectionRemoved;
         track.RouteBuilder.CalculationStarting += RouteBuilder_CalculationStarting;
+        //track.RouteBuilder.CalculationDelayed += RouteBuilder_CalculationDelayed;
         track.RouteBuilder.CalculationRetry += RouteBuilder_CalculationRetry;
         track.RouteBuilder.CalculationFinished += RouteBuilder_CalculationFinished;
         track.RouteBuilder.FileSplitChanged += RouteBuilder_FileSplitChanged;
@@ -79,6 +91,7 @@ partial class Map
         track.RouteBuilder.SectionAdded -= RouteBuilder_SectionAdded;
         track.RouteBuilder.SectionRemoved -= RouteBuilder_SectionRemoved;
         track.RouteBuilder.CalculationStarting -= RouteBuilder_CalculationStarting;
+        //track.RouteBuilder.CalculationDelayed -= RouteBuilder_CalculationDelayed;
         track.RouteBuilder.CalculationRetry -= RouteBuilder_CalculationRetry;
         track.RouteBuilder.CalculationFinished -= RouteBuilder_CalculationFinished;
         track.RouteBuilder.FileSplitChanged -= RouteBuilder_FileSplitChanged;
@@ -170,8 +183,7 @@ partial class Map
             _dragStateFrom = new DragState(line, false);
             _dragStateFrom.Added(section);
         }
-        else if (!_dragStateTo.Added(section) &&
-            !_dragStateFrom.Added(section))
+        else if (!_dragStateTo.Added(section) && !_dragStateFrom.Added(section))
         {
             _routingLayer.MapElements.Add(new MapPolyline()
             {
@@ -185,8 +197,7 @@ partial class Map
 
     private void RouteBuilder_SectionRemoved(RouteSection section, int index)
     {
-        if (!_dragStateTo.Removed(section) &&
-            !_dragStateFrom.Removed(section))
+        if (!_dragStateTo.Removed(section) && !_dragStateFrom.Removed(section))
         {
             _routingLayer.MapElements.Remove(GetSectionLine(section));
         }
@@ -204,6 +215,14 @@ partial class Map
             GetSectionLine(section).MapStyleSheetEntryState = "Routing.calculating";
         }
     }
+
+    //private void RouteBuilder_CalculationDelayed(RouteSection section)
+    //{
+    //    if (_dragStateTo.Delayed(section) || _dragStateFrom.Delayed(section))
+    //    {
+
+    //    }
+    //}
 
     private void RouteBuilder_CalculationRetry(RouteSection section)
     {

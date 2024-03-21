@@ -48,8 +48,8 @@ partial class ViewModel
                     "strokeColor": "#C0400040"
                   },
                   "retry": {
-                    "fillColor": "#C0805200",
-                    "strokeColor": "#C0402900"
+                    "fillColor": "#C0DA3B01",
+                    "strokeColor": "#C06D1D01"
                   },
                   "error": {
                     "fillColor": "#C0800000",

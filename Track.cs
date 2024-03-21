@@ -10,13 +10,6 @@ namespace cycloid;
 
 public partial class Track : ObservableObject
 {
-    public readonly record struct Index(int SegmentIndex, int PointIndex)
-    {
-        public static readonly Index Invalid = new(-1, -1);
-
-        public bool IsValid => this != Invalid;
-    }
-
     public IStorageFile File { get; }
 
     public RouteBuilder RouteBuilder { get; } = new();
@@ -50,6 +43,8 @@ public partial class Track : ObservableObject
 
         return $"{fileId} / {distance / 1_000:N1}";
     }
+
+    // TODO Track.DistanceFromStart/TimeFromStart/DistanceToEnd/TimeToEnd
 
     public string DistanceFromStart(TrackPoint point) => "100 km";
 

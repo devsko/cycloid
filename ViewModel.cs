@@ -15,10 +15,12 @@ public partial class ViewModel : ObservableObject
     public Osm Osm { get; } = new();
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RecalculateCommand))]
     private Track _track;
 
     [ObservableProperty]
-    private bool _trackIsCalculating;
+    [NotifyPropertyChangedFor(nameof(TrackIsCalculating))]
+    private int _trackCalculationCounter;
 
     [ObservableProperty]
     private TrackPoint _currentPoint = TrackPoint.Invalid;
@@ -41,6 +43,8 @@ public partial class ViewModel : ObservableObject
             throw new InvalidOperationException();
         }
     }
+
+    public bool TrackIsCalculating => TrackCalculationCounter > 0;
 
     public bool ProfileHoverPointValuesEnabled
     {
@@ -78,12 +82,12 @@ public partial class ViewModel : ObservableObject
 
     private void RouteBuilder_CalculationStarting(RouteSection _)
     {
-        TrackIsCalculating = true;
+        TrackCalculationCounter++;
     }
 
     private void RouteBuilder_CalculationFinished(RouteSection _1, RouteResult _2)
     {
-        TrackIsCalculating = false;
+        TrackCalculationCounter--;
     }
 
     private void RouteBuilder_Changed(bool initialization)

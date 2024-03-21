@@ -57,6 +57,11 @@ partial class ViewModel
 
         Stopwatch watch = Stopwatch.StartNew();
         await Track.LoadAsync();
+        DownhillCost = Track.RouteBuilder.Profile.DownhillCost;
+        DownhillCutoff = Track.RouteBuilder.Profile.DownhillCutoff;
+        UphillCost = Track.RouteBuilder.Profile.UphillCost;
+        UphillCutoff = Track.RouteBuilder.Profile.UphillCutoff;
+        BikerPower = Track.RouteBuilder.Profile.BikerPower;
         Status = $"{Track.Name} opened ({watch.ElapsedMilliseconds} ms)";
     }
 
@@ -76,7 +81,7 @@ partial class ViewModel
             return;
         }
 
-        if (StorageApplicationPermissions.FutureAccessList.ContainsItem("LatTrack"))
+        if (StorageApplicationPermissions.FutureAccessList.ContainsItem("LastTrack"))
         {
             StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
         }
@@ -85,18 +90,23 @@ partial class ViewModel
         Status = $"{Track.Name} created";
     }
 
+    private int _saveCounter;
+
     [RelayCommand]
     public async Task SaveTrackAsync()
     {
         if (Track is not null)
-        {
+        {   
             _saveTrackCts?.Cancel();
             _saveTrackCts = new CancellationTokenSource();
             try
             {
                 Stopwatch watch = Stopwatch.StartNew();
-                await Serializer.SaveAsync(Track, _saveTrackCts.Token);
-                Status = $"{Track.Name} saved ({watch.ElapsedMilliseconds} ms)";
+
+                await App.Current.ShowExceptionAsync("SAVE!");
+                //await Serializer.SaveAsync(Track, _saveTrackCts.Token);
+
+                Status = $"{Track.Name} saved ({watch.ElapsedMilliseconds} ms) {++_saveCounter}";
 
                 StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", Track.File);
             }

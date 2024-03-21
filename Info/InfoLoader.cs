@@ -1,7 +1,32 @@
+// Types of POI https://wiki.openstreetmap.org/wiki/Key:amenity
+
+// drinking_water
+// toilets
+// shower
+// shelter
+
+// atm|bank
+// fuel
+// fast_food
+// cafe
+// pub
+// restaurant
+// nightclub
+
+// https://wiki.openstreetmap.org/wiki/Key:shop
+
+// bakery|pastry
+// food|greengrocer|health_food
+// supermarket|convenience|dairy|farm
+// ice_cream
+// bicycle
+
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Windows.Devices.Geolocation;
 
@@ -17,9 +42,7 @@ public class InfoLoader
     private readonly BitArray _requested = new((_maxLatitude - _minLatitude) * (_maxLongitude - _minLongitude));
     private readonly OsmClient _client = new();
 
-#pragma warning disable CS8425 // Async-iterator member has one or more parameters of type 'CancellationToken' but none of them is decorated with the 'EnumeratorCancellation' attribute, so the cancellation token parameter from the generated 'IAsyncEnumerable<>.GetAsyncEnumerator' will be unconsumed
-    public async IAsyncEnumerable<Geopoint[]> GetAdditionalWaterPointsAsync(Geopath region, CancellationToken cancellationToken)
-#pragma warning restore CS8425 // Async-iterator member has one or more parameters of type 'CancellationToken' but none of them is decorated with the 'EnumeratorCancellation' attribute, so the cancellation token parameter from the generated 'IAsyncEnumerable<>.GetAsyncEnumerator' will be unconsumed
+    public async IAsyncEnumerable<Geopoint[]> GetAdditionalWaterPointsAsync(Geopath region, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         int minLatitude = Math.Max(region.Positions.Min(p => (int)Math.Floor(p.Latitude)), _minLatitude);
         int maxLatitude = Math.Min(region.Positions.Max(p => (int)Math.Ceiling(p.Latitude)), _maxLatitude) - 1;

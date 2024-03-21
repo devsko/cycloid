@@ -5,6 +5,7 @@ namespace cycloid.Serizalization;
 
 public class TrackFile
 {
+    public Profile? Profile { get; set; }
     public WayPoint[] WayPoints { get; set; }
     public byte[][] TrackPoints { get; set; }
     public GpxFile[] GpxFiles { get; set; }
@@ -13,6 +14,15 @@ public class TrackFile
 
 public class GpxFile
 {
+}
+
+public struct Profile
+{
+    public int DownhillCost { get; set; }
+    public float DownhillCuttoff { get; set; }
+    public int UphillCost { get; set; }
+    public float UphillCuttoff { get; set; }
+    public int BikerPower { get; set; }
 }
 
 public struct Point
@@ -38,6 +48,9 @@ public struct PointOfInterest
 }
 
 [JsonSerializable(typeof(TrackFile))]
+[JsonSourceGenerationOptions(
+    WriteIndented = true, 
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault)]
 public partial class PoiContext : JsonSerializerContext
 {
 }

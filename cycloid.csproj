@@ -19,6 +19,7 @@
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <NoWarn>;2008;MSB3277</NoWarn>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
@@ -60,6 +61,8 @@
     </Compile>
     <Compile Include="Behaviors\DragableBehavior.cs" />
     <Compile Include="Behaviors\PropertyChangedTrigger.cs" />
+    <Compile Include="Track.Index.cs" />
+    <Compile Include="Track.CompareSession.cs" />
     <Compile Include="Controls\Bing.xaml.cs">
       <DependentUpon>Bing.xaml</DependentUpon>
     </Compile>
@@ -124,6 +127,7 @@
     <Compile Include="TrackPoint.cs" />
     <Compile Include="TrackPoint.CommonValues.cs" />
     <Compile Include="ViewModel.Bing.cs" />
+    <Compile Include="ViewModel.ChangeSession.cs" />
     <Compile Include="ViewModel.cs" />
     <Compile Include="Format.cs" />
     <Compile Include="ViewModel.IO.cs" />
@@ -195,10 +199,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CliWrap">
-      <Version>3.6.4</Version>
+      <Version>3.6.6</Version>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Labs.Uwp.TransitionHelper">
-      <Version>0.1.240109-build.1615</Version>
+      <Version>0.1.240305-build.1659</Version>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm">
       <Version>8.2.2</Version>
@@ -216,7 +220,7 @@
       <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Data.Sqlite">
-      <Version>8.0.1</Version>
+      <Version>8.0.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets">
       <Version>8.0.0</Version>
@@ -228,10 +232,10 @@
       <Version>2.8.6</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Threading">
-      <Version>17.8.14</Version>
+      <Version>17.9.28</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Web.WebView2">
-      <Version>1.0.2210.55</Version>
+      <Version>1.0.2365.46</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
@@ -242,7 +246,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
-      <Version>8.0.1</Version>
+      <Version>8.0.3</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

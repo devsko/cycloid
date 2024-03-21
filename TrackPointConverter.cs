@@ -17,7 +17,7 @@ public static class TrackPointConverter
         float minAltitude = float.MaxValue;
         float maxAltitude = float.MinValue;
         int i = 0;
-        foreach (var trackPoint in Convert(points))
+        foreach (TrackPoint trackPoint in Convert(points))
         {
             trackPoints[i++] = trackPoint;
         }

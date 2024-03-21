@@ -17,6 +17,17 @@ public static class Serializer
     {
         TrackFile trackFile = await DeserializeAsync();
 
+        if (trackFile.Profile is Profile profile)
+        {
+            track.RouteBuilder.Profile = new Routing.Profile
+            {
+                DownhillCost = profile.DownhillCost,
+                DownhillCutoff = profile.DownhillCuttoff,
+                UphillCost = profile.UphillCost,
+                UphillCutoff = profile.UphillCuttoff,
+                BikerPower = profile.BikerPower
+            };
+        }
         track.RouteBuilder.Initialize(trackFile.WayPoints.Select((wayPoint, i) => (
             new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute, wayPoint.IsFileSplit),
             Deserialize(i > 0 ? trackFile.TrackPoints[i - 1] : null)
@@ -58,9 +69,18 @@ public static class Serializer
         await TaskScheduler.Default;
 
         (cycloid.WayPoint[] wayPoints, TrackPoint[][] trackPoints) = await track.Points.GetSegmentsAsync(cancellationToken).ConfigureAwait(false);
+        Routing.Profile profile = track.RouteBuilder.Profile;
 
         TrackFile trackFile = new()
         {
+            Profile = new Profile 
+            { 
+                DownhillCost = profile.DownhillCost, 
+                DownhillCuttoff = profile.DownhillCutoff, 
+                UphillCost = profile.UphillCost, 
+                UphillCuttoff = profile.UphillCutoff, 
+                BikerPower = profile.BikerPower 
+            },
             WayPoints = wayPoints.Select(wayPoint => 
                 new WayPoint
                 {
