@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
-using cycloid.Serizalization;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
@@ -56,12 +55,16 @@ partial class ViewModel
         Track = new Track(file);
 
         Stopwatch watch = Stopwatch.StartNew();
+        
         await Track.LoadAsync();
+        TrackIsInitialized = true;
+
         DownhillCost = Track.RouteBuilder.Profile.DownhillCost;
         DownhillCutoff = Track.RouteBuilder.Profile.DownhillCutoff;
         UphillCost = Track.RouteBuilder.Profile.UphillCost;
         UphillCutoff = Track.RouteBuilder.Profile.UphillCutoff;
         BikerPower = Track.RouteBuilder.Profile.BikerPower;
+        
         Status = $"{Track.Name} opened ({watch.ElapsedMilliseconds} ms)";
     }
 
@@ -87,6 +90,8 @@ partial class ViewModel
         }
 
         Track = new Track(file);
+        TrackIsInitialized = true;
+
         Status = $"{Track.Name} created";
     }
 

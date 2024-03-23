@@ -128,7 +128,7 @@
     <Compile Include="TrackPoint.cs" />
     <Compile Include="TrackPoint.CommonValues.cs" />
     <Compile Include="ViewModel.Bing.cs" />
-    <Compile Include="ViewModel.ChangeSession.cs" />
+    <Compile Include="ViewModel.CompareSession.cs" />
     <Compile Include="ViewModel.cs" />
     <Compile Include="Format.cs" />
     <Compile Include="ViewModel.IO.cs" />

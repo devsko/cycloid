@@ -13,22 +13,22 @@ partial class Track
 {
     public partial class PointCollection : ObservableObject, IEnumerable<TrackPoint>
     {
-        private readonly RouteBuilder _routeBuilder;
+        private readonly Track _track;
         private readonly SegmentCollection _segments;
         
         private TrackPoint.CommonValues _total;
         private float _minAltitude = float.PositiveInfinity;
         private float _maxAltitude = float.NegativeInfinity;
 
-        public PointCollection(RouteBuilder routeBuilder)
+        public PointCollection(Track track)
         {
-            _routeBuilder = routeBuilder;
+            _track = track;
             _segments = new SegmentCollection(this);
 
-            routeBuilder.SectionAdded += RouteBuilder_SectionAdded;
-            routeBuilder.SectionRemoved += RouteBuilder_SectionRemoved;
-            routeBuilder.CalculationFinished += RouteBuilder_CalculationFinished;
-            routeBuilder.FileSplitChanged += RouteBuilder_FileSplitChanged;
+            track.RouteBuilder.SectionAdded += RouteBuilder_SectionAdded;
+            track.RouteBuilder.SectionRemoved += RouteBuilder_SectionRemoved;
+            track.RouteBuilder.CalculationFinished += RouteBuilder_CalculationFinished;
+            track.RouteBuilder.FileSplitChanged += RouteBuilder_FileSplitChanged;
         }
 
         public TrackPoint.CommonValues Total
@@ -122,23 +122,15 @@ partial class Track
             return (point, index);
         }
 
-        public async Task<(WayPoint[], TrackPoint[][])> GetSegmentsAsync(CancellationToken cancellationToken)
+        public async Task<(WayPoint[] WayPoints, TrackPoint[][] TrackPoints)> GetSegmentsAsync(CancellationToken cancellationToken)
         {
-            using (await _routeBuilder.ChangeLock.EnterAsync(cancellationToken))
+            using (await _track.RouteBuilder.ChangeLock.EnterAsync(cancellationToken))
             {
                 return 
                 (
-                    _routeBuilder.Points.ToArray(),
+                    _track.RouteBuilder.Points.ToArray(),
                     _segments.Select(segment => segment.Points).ToArray()
                 );
-            }
-        }
-
-        public async Task<CompareSession> StartCompareSessionAsync()
-        {
-            using (await _routeBuilder.ChangeLock.EnterAsync(default))
-            {
-                return new CompareSession(_routeBuilder, _segments.Select(segment => segment.Points).ToArray());
             }
         }
 
@@ -313,7 +305,7 @@ partial class Track
 
         private void RouteBuilder_FileSplitChanged(WayPoint wayPoint)
         {
-            if (wayPoint != _routeBuilder.Points[^1])
+            if (wayPoint != _track.RouteBuilder.Points[^1])
             {
                 _segments.UpdateFileId(_segments.Find(wayPoint));
             }

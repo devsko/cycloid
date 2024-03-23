@@ -40,6 +40,7 @@ partial class Map
             case NotifyCollectionChangedAction.Replace:
                 break;
             case NotifyCollectionChangedAction.Reset:
+                _differenceLayer.MapElements.Clear();
                 break;
         }
     }

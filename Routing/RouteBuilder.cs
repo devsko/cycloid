@@ -11,21 +11,14 @@ namespace cycloid.Routing;
 
 public partial class RouteBuilder
 {
-    private readonly Dictionary<WayPoint, RouteSection> _sections = [];
-    private TaskCompletionSource<bool> _delayCalculationTaskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly Dictionary<WayPoint, RouteSection> _sections;
+    private TaskCompletionSource<bool> _delayCalculationTaskSource;
 
     public ChangeLocker ChangeLock { get; }
-    public ObservableCollection<WayPoint> Points { get; } = [];
-    public ObservableCollection<NoGoArea> NoGoAreas { get; } = [];
-    public BrouterClient Client { get; } = new();
-    public Profile Profile { get; set; } = new()
-    {
-        DownhillCost = Profile.DefaultDownhillCost,
-        DownhillCutoff = Profile.DefaultDownhillCutoff,
-        UphillCost = Profile.DefaultUphillCost,
-        UphillCutoff = Profile.DefaultUphillCutoff,
-        BikerPower = Profile.DefaultBikerPower,
-    };
+    public ObservableCollection<WayPoint> Points { get; }
+    public ObservableCollection<NoGoArea> NoGoAreas { get; }
+    public BrouterClient Client { get; }
+    public Profile Profile { get; set; }
 
     public event Action<RouteSection, int> SectionAdded;
     public event Action<RouteSection, int> SectionRemoved;
@@ -40,6 +33,19 @@ public partial class RouteBuilder
 
     public RouteBuilder()
     {
+        _sections = [];
+        _delayCalculationTaskSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        Points = [];
+        NoGoAreas = [];
+        Client = new BrouterClient();
+        Profile = new Profile
+        {
+            DownhillCost = Profile.DefaultDownhillCost,
+            DownhillCutoff = Profile.DefaultDownhillCutoff,
+            UphillCost = Profile.DefaultUphillCost,
+            UphillCutoff = Profile.DefaultUphillCutoff,
+            BikerPower = Profile.DefaultBikerPower,
+        };
         ChangeLock = new ChangeLocker(this);
         DelayCalculation = false;
     }

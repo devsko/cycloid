@@ -19,6 +19,10 @@ public partial class ViewModel : ObservableObject
     private Track _track;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RecalculateCommand))]
+    private bool _trackIsInitialized;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TrackIsCalculating))]
     private int _trackCalculationCounter;
 
@@ -54,6 +58,7 @@ public partial class ViewModel : ObservableObject
 
     partial void OnTrackChanged(Track oldValue, Track newValue)
     {
+        TrackIsInitialized = false;
         CurrentPoint = TrackPoint.Invalid;
         HoverPoint = TrackPoint.Invalid;
 

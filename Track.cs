@@ -12,7 +12,7 @@ public partial class Track : ObservableObject
 {
     public IStorageFile File { get; }
 
-    public RouteBuilder RouteBuilder { get; } = new();
+    public RouteBuilder RouteBuilder { get; }
 
     public PointCollection Points { get; }
 
@@ -21,7 +21,8 @@ public partial class Track : ObservableObject
     public Track(IStorageFile file)
     {
         File = file;
-        Points = new PointCollection(RouteBuilder);
+        RouteBuilder = new RouteBuilder();
+        Points = new PointCollection(this);
     }
 
     public string Name => File is null ? "" : Path.GetFileNameWithoutExtension(File.Name);
