@@ -108,9 +108,9 @@ partial class Map
         _dragStateTo = _dragStateFrom = default;
     }
 
-    private MapIcon GetWayPointIcon(WayPoint point) => _routingLayer.MapElements.OfType<MapIcon>().First(element => (WayPoint)element.Tag == point);
+    private MapIcon GetWayPointIcon(WayPoint point) => _routingLayer.MapElements.OfType<MapIcon>().FirstOrDefault(element => (WayPoint)element.Tag == point);
 
-    private MapPolyline GetSectionLine(RouteSection section) => _routingLayer.MapElements.OfType<MapPolyline>().First(line => (RouteSection)line.Tag == section);
+    private MapPolyline GetSectionLine(RouteSection section) => _routingLayer.MapElements.OfType<MapPolyline>().FirstOrDefault(line => (RouteSection)line.Tag == section);
 
     private void Track_Loaded()
     {
@@ -147,8 +147,7 @@ partial class Map
                         ViewModel.HoveredWayPoint = null;
                     }
                     MapIcon icon = GetWayPointIcon(wayPoint);
-                    icon.Visible = false;
-                    _routingLayer.MapElements.Remove(GetWayPointIcon(wayPoint));
+                    _routingLayer.MapElements.Remove(icon);
                 }
                 break;
             case NotifyCollectionChangedAction.Replace:
@@ -249,6 +248,14 @@ partial class Map
                     line.Path = new Geopath([(BasicGeoposition)section.Start.Location, (BasicGeoposition)section.End.Location]);
                 }
                 line.MapStyleSheetEntryState = "Routing.error";
+            }
+        }
+        else
+        {
+            MapPolyline line = GetSectionLine(section);
+            if (line is not null)
+            {
+                line.MapStyleSheetEntryState = "";
             }
         }
     }

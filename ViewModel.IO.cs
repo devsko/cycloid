@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using cycloid.Serizalization;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
@@ -31,7 +32,7 @@ partial class ViewModel
         }
 
         StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", file);
-        await  OpenTrackFileAsync(file);
+        await OpenTrackFileAsync(file);
     }
 
     public async Task OpenLastTrackAsync()
@@ -95,8 +96,6 @@ partial class ViewModel
         Status = $"{Track.Name} created";
     }
 
-    private int _saveCounter;
-
     [RelayCommand]
     public async Task SaveTrackAsync()
     {
@@ -108,10 +107,9 @@ partial class ViewModel
             {
                 Stopwatch watch = Stopwatch.StartNew();
 
-                await App.Current.ShowExceptionAsync("SAVE!");
-                //await Serializer.SaveAsync(Track, _saveTrackCts.Token);
+                await Serializer.SaveAsync(Track, _saveTrackCts.Token);
 
-                Status = $"{Track.Name} saved ({watch.ElapsedMilliseconds} ms) {++_saveCounter}";
+                Status = $"{Track.Name} saved ({watch.ElapsedMilliseconds} ms)";
 
                 StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", Track.File);
             }

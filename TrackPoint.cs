@@ -83,10 +83,5 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
 
     public bool Equals(TrackPoint other) =>
         other._latitude == _latitude &&
-        other._longitude == _longitude &&
-        other._altitude == _altitude;
-
-    public bool LocationEquals(TrackPoint other) =>
-        other._latitude == _latitude &&
         other._longitude == _longitude;
 }

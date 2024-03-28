@@ -44,7 +44,7 @@ public sealed partial class Map : UserControl
 
     public Geopoint Center => MapControl.Center;
 
-    public async Task SetCenterAsync(string address, int zoom = 10)
+    public async Task SetCenterAsync(string address, int zoom = 9)
     {
         Geopoint point = await ViewModel.GetLocationAsync(address, MapControl.Center);
         if (point is not null)
@@ -53,17 +53,21 @@ public sealed partial class Map : UserControl
         }
     }
 
-    public async Task SetCenterAsync(Geopoint point, int zoom = 10)
+    public async Task SetCenterAsync(Geopoint point, int zoom = 9)
     {
         await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Bow);
     }
 
     public void ZoomTrackDifference(TrackDifference difference)
     {
-        GeoboundingBox bounds = GeoboundingBox.TryCompute(GetDifferenceLine(difference).Path.Positions);
-        if (bounds is not null)
+        MapPolyline differenceLine = GetDifferenceLine(difference);
+        if (differenceLine is not null)
         {
-            MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.Linear).AsTask().FireAndForget();
+            GeoboundingBox bounds = GeoboundingBox.TryCompute(differenceLine.Path.Positions);
+            if (bounds is not null)
+            {
+                MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.Linear).AsTask().FireAndForget();
+            }
         }
     }
 

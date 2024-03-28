@@ -150,6 +150,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition />
                             </Grid.RowDefinitions>
                             <Grid
@@ -262,14 +263,29 @@
                                     MinWidth="0"
                                     Text="{x:Bind Mode=TwoWay, Path=ViewModel.BikerPower}" />
                             </Grid>
-                            <Button
-                                Grid.Row="2"
-                                HorizontalAlignment="Stretch"
-                                Command="{x:Bind Mode=OneTime, Path=ViewModel.RecalculateCommand}"
-                                Content="Calculate" />
+                            <Grid Grid.Row="2" ColumnSpacing="5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Button
+                                    Grid.Column="0"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.RecalculateCommand}"
+                                    Content="{x:Bind Mode=OneWay, Path=ViewModel.RecalculateCommandName}" />
+                                <Button
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.CancelCommand}"
+                                    Content="Cancel" />
+                            </Grid>
+                            <TextBlock
+                                Grid.Row="3"
+                                HorizontalTextAlignment="Center"
+                                Text="{x:Bind Mode=OneWay, Path=ViewModel.CompareSessionState}" />
                             <ListView
                                 x:Name="Differences"
-                                Grid.Row="3"
+                                Grid.Row="4"
                                 ItemsSource="{x:Bind Mode=OneWay, Path=ViewModel.CompareSession.Differences}"
                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
                                 ScrollViewer.VerticalScrollMode="Auto"
@@ -277,17 +293,17 @@
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="cycloid:TrackDifference">
                                         <Grid>
-                                            <TextBlock Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(Length)}" />
+                                            <TextBlock Text="{x:Bind Mode=OneTime, Path=cycloid:Format.ShortDistance(Length)}" />
                                             <TextBlock HorizontalAlignment="Right">
                                                 <Run
                                                     FontWeight="Bold"
-                                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(DistanceDiff)}"
-                                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(DistanceDiff)}" />
+                                                    Foreground="{x:Bind Mode=OneTime, Path=cycloid:Convert.DifferenceBrush(DistanceDiff)}"
+                                                    Text="{x:Bind Mode=OneTime, Path=cycloid:Format.ShortDistance(DistanceDiff)}" />
                                                 <Run>/</Run>
                                                 <Run
                                                     FontWeight="Bold"
-                                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(AscentDiff)}"
-                                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(AscentDiff)}" />
+                                                    Foreground="{x:Bind Mode=OneTime, Path=cycloid:Convert.DifferenceBrush(AscentDiff)}"
+                                                    Text="{x:Bind Mode=OneTime, Path=cycloid:Format.ShortDistance(AscentDiff)}" />
                                             </TextBlock>
                                         </Grid>
                                     </DataTemplate>

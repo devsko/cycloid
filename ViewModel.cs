@@ -24,6 +24,7 @@ public partial class ViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TrackIsCalculating))]
+    [NotifyPropertyChangedFor(nameof(CompareSessionState))]
     private int _trackCalculationCounter;
 
     [ObservableProperty]

@@ -28,9 +28,9 @@ public static class Serializer
                 BikerPower = profile.BikerPower
             };
         }
-        track.RouteBuilder.Initialize(trackFile.WayPoints.Select((wayPoint, i) => (
+        await track.RouteBuilder.InitializeAsync(trackFile.WayPoints.Select((wayPoint, i) => (
             new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute, wayPoint.IsFileSplit),
-            Deserialize(i > 0 ? trackFile.TrackPoints[i - 1] : null)
+            Deserialize(i == 0 ? null : trackFile.TrackPoints[i - 1])
         )));
 
         async Task<TrackFile> DeserializeAsync()

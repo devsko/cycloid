@@ -92,7 +92,7 @@
                 MapElementPointerEntered="RoutingLayer_MapElementPointerEntered"
                 MapElementPointerExited="RoutingLayer_MapElementPointerExited"
                 Visible="{x:Bind Mode=OneWay, Path=ViewModel.TrackVisible}" />
-            <maps:MapElementsLayer x:Name="DifferenceLayer" />
+            <maps:MapElementsLayer x:Name="DifferenceLayer" Visible="{x:Bind Mode=OneWay, Path=ViewModel.TrackVisible}" />
             <maps:MapElementsLayer x:Name="PoisLayer" Visible="{x:Bind Mode=OneWay, Path=ViewModel.PoisVisible}" />
             <maps:MapElementsLayer x:Name="InfoLayer" Visible="{x:Bind Mode=OneWay, Path=ViewModel.InfoVisible}" />
         </maps:MapControl.Resources>

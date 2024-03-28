@@ -96,10 +96,22 @@ public partial class RouteBuilder
         CalculateAsync(section).FireAndForget();
     }
 
-    public async Task RecalculateAllAsync()
+    public async Task RecalculateAllAsync(CancellationToken cancellationToken)
     {
         DelayCalculation = false;
-        await Task.WhenAll(_sections.Values.Select(CalculateAsync));
+        using (cancellationToken.Register(state => CancelAll((RouteBuilder)state), this, false))
+        {
+            await Task.WhenAll(_sections.Values.Select(CalculateAsync));
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+
+        static void CancelAll(RouteBuilder routeBuiler)
+        {
+            foreach (RouteSection section in routeBuiler._sections.Values)
+            {
+                section.Cancel();
+            }
+        }
     }
 
     private async Task CalculateAsync(RouteSection section)
@@ -303,30 +315,46 @@ public partial class RouteBuilder
         return Points.IndexOf(section.Start);
     }
 
-    public void Initialize(IEnumerable<(WayPoint WayPoint, RoutePoint[] RoutePoints)> data)
+    public async Task InitializeAsync(IEnumerable<(WayPoint WayPoint, RoutePoint[] RoutePoints)> data)
     {
-        foreach ((WayPoint wayPoint, RoutePoint[] routePoints) in data)
+        bool wasEmpty;
+        using (await ChangeLock.EnterAsync(default))
         {
-            Points.Add(wayPoint);
-            if (Points.Count > 1)
+            wasEmpty = _sections.Count == 0;
+
+            while (_sections.Count > 0)
             {
-                int startIndex = Points.Count - 2;
-                WayPoint point = Points[startIndex];
-                RouteSection section = new(point, wayPoint);
-                _sections.Add(point, section);
-                SectionAdded?.Invoke(section, startIndex);
+                RemoveSection(0);
+                Points.RemoveAt(0);
+            }
+            if (Points.Count == 1)
+            {
+                Points.RemoveAt(0);
+            }
 
-                RouteResult result = routePoints is null
-                    ? TrackPointConverter.Convert(
-                        RoutePoint.FromMapPoint(point.Location, 0, TimeSpan.Zero), 
-                        RoutePoint.FromMapPoint(wayPoint.Location, 0, TimeSpan.Zero))
-                    : TrackPointConverter.Convert(routePoints, routePoints.Length);
+            foreach ((WayPoint wayPoint, RoutePoint[] routePoints) in data)
+            {
+                Points.Add(wayPoint);
+                if (Points.Count > 1)
+                {
+                    int startIndex = Points.Count - 2;
+                    WayPoint point = Points[startIndex];
+                    RouteSection section = new(point, wayPoint);
+                    _sections.Add(point, section);
+                    SectionAdded?.Invoke(section, startIndex);
 
-                CalculationStarting?.Invoke(section);
-                CalculationFinished?.Invoke(section, result);
+                    RouteResult result = routePoints is null
+                        ? TrackPointConverter.Convert(
+                            RoutePoint.FromMapPoint(point.Location, 0, TimeSpan.Zero),
+                            RoutePoint.FromMapPoint(wayPoint.Location, 0, TimeSpan.Zero))
+                        : TrackPointConverter.Convert(routePoints, routePoints.Length);
+
+                    CalculationStarting?.Invoke(section);
+                    CalculationFinished?.Invoke(section, result);
+                }
             }
         }
 
-        Changed?.Invoke(true);
+        Changed?.Invoke(wasEmpty);
     }
 }
