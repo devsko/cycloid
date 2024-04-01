@@ -2,13 +2,14 @@ using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using cycloid.Info;
 using cycloid.Routing;
 
 namespace cycloid;
 
 partial class ViewModel
 {
-    public const double MinInfoZoomLevel = 12;
+    public const double MinInfoZoomLevel = 13;
 
     [ObservableProperty]
     private bool _heatmapVisible;
@@ -48,10 +49,23 @@ partial class ViewModel
     public event Action<RouteSection> DragNewWayPointStarting;
     public event Action DragWayPointStarted;
     public event Action DragWayPointEnded;
+    public event Action<InfoCategory, bool> InfoCategoryVisibilityChanged;
 
     public bool InfoEnabled => MapZoomLevel >= MinInfoZoomLevel;
 
-    public bool InfoVisible => InfoShouldVisible && InfoEnabled;
+    public bool InfoVisible
+    {
+        get => InfoShouldVisible && InfoEnabled;
+        set
+        {
+            if (InfoEnabled)
+            {
+                InfoShouldVisible = value;
+            }
+            // Notify property changed again to convinvce the toggle button
+            OnPropertyChanged(nameof(InfoVisible));
+        }
+    }
 
     public bool IsCaptured => _capturedWayPoint is not null;
 
@@ -205,5 +219,10 @@ partial class ViewModel
         {
             Track.RouteBuilder.SetIsDirectRoute(HoveredSection, !HoveredSection.IsDirectRoute);
         }
+    }
+
+    public void SetInfoCategoryVisibility(InfoCategory category, bool value)
+    {
+        InfoCategoryVisibilityChanged?.Invoke(category, value);
     }
 }

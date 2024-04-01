@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,7 +46,7 @@ public sealed partial class Map : UserControl
 
     public Geopoint Center => MapControl.Center;
 
-    public async Task SetCenterAsync(string address, int zoom = 9)
+    public async Task SetCenterAsync(string address, int zoom = 12)
     {
         Geopoint point = await ViewModel.GetLocationAsync(address, MapControl.Center);
         if (point is not null)
@@ -53,7 +55,7 @@ public sealed partial class Map : UserControl
         }
     }
 
-    public async Task SetCenterAsync(Geopoint point, int zoom = 9)
+    public async Task SetCenterAsync(Geopoint point, int zoom = 12)
     {
         await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Bow);
     }
@@ -116,6 +118,7 @@ public sealed partial class Map : UserControl
         ViewModel.DragNewWayPointStarting += ViewModel_DragNewWayPointStarting;
         ViewModel.DragWayPointStarted += ViewModel_DragWayPointStarted;
         ViewModel.DragWayPointEnded += ViewModel_DragWayPointEnded;
+        ViewModel.InfoCategoryVisibilityChanged += ViewModel_InfoCategoryVisibilityChanged;
 
         MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
 
@@ -155,16 +158,27 @@ public sealed partial class Map : UserControl
                 Geopath region = MapControl.GetVisibleRegion(MapVisibleRegionKind.Near);
                 if (region is not null)
                 {
-                    await foreach (Geopoint[] locations in _infos.GetAdditionalWaterPointsAsync(region, cancellationToken))
+                    int i = 0;
+                    Stopwatch watch = Stopwatch.StartNew();
+
+                    await foreach (IEnumerable<InfoPoint> infoPoints in _infos.GetAdditionalInfoPointsAsync(region, cancellationToken))
                     {
-                        foreach (Geopoint location in locations)
+                        foreach (InfoPoint infoPoint in infoPoints)
                         {
                             _infoLayer.MapElements.Add(new MapIcon
                             {
-                                Location = location,
-                                MapStyleSheetEntry = "Info.Water"
+                                Location = new Geopoint(infoPoint.Location),
+                                MapStyleSheetEntry = $"Info.{infoPoint.Type}",
+                                Title = infoPoint.Name,
+                                Tag = infoPoint.Category,
                             });
+                            i++;
                         }
+                    }
+
+                    if (i > 0)
+                    {
+                        ViewModel.Status = $"{i} info points loaded ({watch.ElapsedMilliseconds} ms)";
                     }
                 }
             }
@@ -358,6 +372,20 @@ public sealed partial class Map : UserControl
     {
         PointerPanel.IsEnabled = false;
         EndDrag();
+    }
+
+    private void ViewModel_InfoCategoryVisibilityChanged(InfoCategory category, bool value)
+    {
+        IEnumerable<MapIcon> icons = _infoLayer.MapElements.Cast<MapIcon>();
+        if (category is not null)
+        {
+            icons = icons.Where(icon => icon.Tag.Equals(category));
+        }
+
+        foreach (MapIcon icon in icons)
+        {
+            icon.Visible = value;
+        }
     }
 
     private void MapControl_LosingFocus(UIElement _, LosingFocusEventArgs args)

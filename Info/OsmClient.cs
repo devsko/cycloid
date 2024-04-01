@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -12,13 +13,39 @@ namespace cycloid.Info;
 public class OsmClient
 {
     private readonly HttpClient _http = new() { BaseAddress = new Uri("https://overpass-api.de/api/interpreter/") };
-    public async Task<OverpassPoint[]> GetPointsAsync(int bottom, int left, string amenity, CancellationToken cancellationToken)
+    private readonly string _query = CreateQuery();
+
+    private static string CreateQuery()
     {
-        string content = FormattableString.Invariant($"""
-            [out:json][timeout:900];
-            node[amenity={amenity}]({bottom},{left},{bottom + 1},{left + 1});
-            out skel geom qt;
-            """);
+        StringBuilder query = new();
+        AddFilter("mountain_pass=yes");
+        foreach (string amenity in Enum.GetNames(typeof(OverpassAmenities)))
+        {
+            AddFilter($"amenity={amenity}");
+        }
+        foreach (string shop in Enum.GetNames(typeof(OverpassShops)))
+        {
+            AddFilter($"shop={shop}");
+        }
+
+        return query.ToString();
+
+        void AddFilter(string filter)
+        {
+            query.AppendLine($"node[{filter}];");
+            query.AppendLine($"way[{filter}];");
+        }
+    }
+
+    public async Task<OverpassPoint[]> GetPointsAsync(int bottom, int left, CancellationToken cancellationToken)
+    {
+        string content = $"""
+            [out:json][timeout:900][bbox:{bottom},{left},{bottom + 1},{left + 1}];
+            (
+            {_query}
+            );
+            out geom qt;
+            """;
 
         int retryCount = 0;
         while (true)
@@ -30,7 +57,7 @@ public class OsmClient
 
                 OverpassResponse overpass = await JsonSerializer.DeserializeAsync(stream, OsmContext.Default.OverpassResponse, cancellationToken);
 
-                return overpass.Elements;
+                return overpass.elements;
             }
             else if (++retryCount > 3 || response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
@@ -42,10 +69,44 @@ public class OsmClient
     }
 }
 
-public record struct OverpassResponse([property:JsonPropertyName("elements")] OverpassPoint[] Elements);
-public record struct OverpassPoint([property: JsonPropertyName("id")] long Id, [property: JsonPropertyName("lat")] float Lat, [property: JsonPropertyName("lon")] float Lon);
+public record struct OverpassResponse(OverpassPoint[] elements);
+public record struct OverpassPoint(float lat, float lon, OverpassTags tags, OverpassBounds? bounds);
+public record struct OverpassTags(OverpassAmenities? amenity, OverpassShops? shop, string name, string ele, OverpassBool? mountain_pass);
+public record struct OverpassBounds(float minlat, float maxlat, float minlon, float maxlon);
 
+public enum OverpassAmenities
+{
+    drinking_water,
+    toilets,
+    fuel,
+    fast_food,
+    ice_cream,
+    cafe,
+    bar,
+    pub,
+    restaurant,
+}
+
+public enum OverpassShops
+{
+    bakery,
+    pastry,
+    food,
+    greengrocer,
+    health_food,
+    supermarket,
+}
+
+public enum OverpassBool
+{
+    yes,
+    no,
+}
 
 [JsonSerializable(typeof(OverpassResponse))]
+[JsonSourceGenerationOptions(
+    Converters = [typeof(OverpassEnumConverter<OverpassAmenities>), typeof(OverpassEnumConverter<OverpassShops>)],
+    UseStringEnumConverter = true, 
+    NumberHandling = JsonNumberHandling.AllowReadingFromString)]
 public partial class OsmContext : JsonSerializerContext
 { }

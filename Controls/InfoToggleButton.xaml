@@ -1,0 +1,46 @@
+﻿<UserControl
+    x:Class="cycloid.Controls.InfoToggleButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cycloid="using:cycloid"
+    xmlns:info="using:cycloid.Info"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <x:Double x:Key="SplitButtonSecondaryButtonSize">22</x:Double>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <mux:ToggleSplitButton
+        Height="32.8"
+        IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.InfoVisible}"
+        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.InfoEnabled}">
+        <mux:ToggleSplitButton.Flyout>
+            <Flyout>
+                <StackPanel x:Name="CheckBoxContainer">
+                    <CheckBox Content="All" />
+                    <CheckBox Margin="10,0,0,0" Content="Water" Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Water}" />
+                    <CheckBox Margin="10,0,0,0" Content="Geo" Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Geo}" />
+                    <CheckBox Margin="10,0,0,0" Content="Food" Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Food}" />
+                    <CheckBox Margin="10,0,0,0" Content="Shop" Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Shop}" />
+                </StackPanel>
+            </Flyout>
+        </mux:ToggleSplitButton.Flyout>
+        <mux:ToggleSplitButton.KeyboardAccelerators>
+            <KeyboardAccelerator Key="I" Modifiers="Control" />
+        </mux:ToggleSplitButton.KeyboardAccelerators>
+        <mux:ToggleSplitButton.Content>
+            <Grid>
+                <SymbolIcon Symbol="OutlineStar" />
+                <mux:ProgressBar
+                    Margin="-8,-6,-8,-6"
+                    VerticalAlignment="Bottom"
+                    Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
+                    IsIndeterminate="True"
+                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.InfoIsLoading)}" />
+            </Grid>
+        </mux:ToggleSplitButton.Content>
+    </mux:ToggleSplitButton>
+
+</UserControl>

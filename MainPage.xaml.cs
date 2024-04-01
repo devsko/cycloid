@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Windows.Globalization.NumberFormatting;
 using Windows.Services.Maps;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -13,6 +14,19 @@ public sealed partial class MainPage : Page
     public MainPage()
     {
         InitializeComponent();
+
+        // Workaround: Cannot create IncrementNumberRounder as XAML resource
+        DecimalFormatter cutoffFormatter = new()
+        {
+            IntegerDigits = 1,
+            FractionDigits = 1,
+            NumberRounder = new IncrementNumberRounder
+            {
+                Increment = .1,
+                RoundingAlgorithm = RoundingAlgorithm.RoundHalfUp,
+            },
+        };
+        DownhillCutoff.NumberFormatter = UphillCutoff.NumberFormatter = cutoffFormatter;
     }
 
     private void Page_Loaded(object _1, RoutedEventArgs _2)
@@ -32,8 +46,16 @@ public sealed partial class MainPage : Page
         ApplicationView.GetForCurrentView().Title = track is null ? string.Empty : track.Name;
     }
 
+    private bool _ignoreTextChange;
+
     private async void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
+        if (_ignoreTextChange)
+        {
+            _ignoreTextChange = false;
+            return;
+        }
+
         if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
         {
             MapLocationFinderResult result = await MapLocationFinder.FindLocationsAsync(sender.Text, Map.Center);
@@ -42,6 +64,12 @@ public sealed partial class MainPage : Page
                 sender.ItemsSource = result.Locations;
             }
         }
+    }
+
+    private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+    {
+        _ignoreTextChange = true;
+        sender.Text = ((MapLocation)args.SelectedItem).DisplayName;
     }
 
     private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)

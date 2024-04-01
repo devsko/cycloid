@@ -3,9 +3,9 @@
 // drinking_water
 // toilets
 // shower
-// shelter
+// (shelter)
 
-// atm|bank
+// (atm|bank)
 // fuel
 // fast_food
 // cafe
@@ -17,7 +17,7 @@
 
 // bakery|pastry
 // food|greengrocer|health_food
-// supermarket|convenience|dairy|farm
+// supermarket|(convenience)|(dairy)|(farm)
 // ice_cream
 // bicycle
 
@@ -42,7 +42,7 @@ public class InfoLoader
     private readonly BitArray _requested = new((_maxLatitude - _minLatitude) * (_maxLongitude - _minLongitude));
     private readonly OsmClient _client = new();
 
-    public async IAsyncEnumerable<Geopoint[]> GetAdditionalWaterPointsAsync(Geopath region, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<IEnumerable<InfoPoint>> GetAdditionalInfoPointsAsync(Geopath region, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         int minLatitude = Math.Max(region.Positions.Min(p => (int)Math.Floor(p.Latitude)), _minLatitude);
         int maxLatitude = Math.Min(region.Positions.Max(p => (int)Math.Ceiling(p.Latitude)), _maxLatitude) - 1;
@@ -57,9 +57,11 @@ public class InfoLoader
 
                 if (!_requested[index])
                 {
-                    Geopoint[] points = (await _client.GetPointsAsync(latitude, longitude, "drinking_water", cancellationToken))
-                        .Select(p => new Geopoint(new BasicGeoposition { Latitude = p.Lat, Longitude = p.Lon }))
-                        .ToArray();
+                    IEnumerable<InfoPoint> points = (await _client.GetPointsAsync(latitude, longitude, cancellationToken))
+                        .Select(InfoPoint.FromOverpassPoint);
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     _requested[index] = true;
 
                     yield return points;

@@ -14,6 +14,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
                     <cycloid:ViewModel x:Name="ViewModel" TrackChanged="ViewModel_TrackChanged" />
+                    <!--  Workaround: NumberBox controls are too wide  -->
+                    <x:Double x:Key="TextControlThemeMinWidth">0</x:Double>
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -25,7 +27,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="210" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
@@ -66,8 +68,17 @@
                     Label="Wahoo" />
             </StackPanel>
 
-            <StackPanel
+            <AutoSuggestBox
                 Grid.Row="1"
+                DisplayMemberPath="DisplayName"
+                PlaceholderText="Search a location"
+                QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                TextChanged="AutoSuggestBox_TextChanged"
+                TextMemberPath="DisplayName" />
+
+            <StackPanel
+                Grid.Row="2"
                 Orientation="Horizontal"
                 Spacing="5">
                 <ToggleButton Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}" IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
@@ -102,42 +113,18 @@
                         <KeyboardAccelerator Key="P" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
                 </ToggleButton>
-                <ToggleButton IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.InfoShouldVisible}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.InfoEnabled}">
-                    <ToggleButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="I" Modifiers="Control" />
-                    </ToggleButton.KeyboardAccelerators>
-                    <ToggleButton.Content>
-                        <Grid>
-                            <SymbolIcon Symbol="OutlineStar" />
-                            <mux:ProgressBar
-                                Margin="-8,-6,-8,-6"
-                                VerticalAlignment="Bottom"
-                                Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
-                                IsIndeterminate="True"
-                                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.InfoIsLoading)}" />
-                        </Grid>
-                    </ToggleButton.Content>
-                </ToggleButton>
+                <controls:InfoToggleButton />
             </StackPanel>
 
             <ComboBox
-                Grid.Row="2"
-                Width="210"
+                Grid.Row="3"
+                HorizontalAlignment="Stretch"
                 DisplayMemberPath="Name"
                 ItemsSource="{x:Bind Mode=OneTime, Path=cycloid:ViewModel.MapStyleAndColors}"
                 SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.MapStyleAndColor}" />
 
-            <AutoSuggestBox
-                Grid.Row="3"
-                DisplayMemberPath="DisplayName"
-                QueryIcon="Find"
-                QuerySubmitted="AutoSuggestBox_QuerySubmitted"
-                TextChanged="AutoSuggestBox_TextChanged"
-                TextMemberPath="DisplayName" />
-
             <mux:TabView
                 Grid.Row="4"
-                Width="210"
                 IsAddTabButtonVisible="False"
                 TabWidthMode="Compact">
                 <mux:TabView.TabItems>
@@ -224,44 +211,55 @@
                                     VerticalAlignment="Center"
                                     HorizontalTextAlignment="End"
                                     Text="Down Cost/Cutoff" />
-                                <TextBox
+                                <mux:NumberBox
                                     Grid.Row="0"
                                     Grid.Column="1"
-                                    MinWidth="0"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.DownhillCost}" />
-                                <TextBox
+                                    LargeChange="5"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.DownhillCost}" />
+                                <mux:NumberBox
+                                    x:Name="DownhillCutoff"
                                     Grid.Row="0"
                                     Grid.Column="2"
-                                    MinWidth="0"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.DownhillCutoff}" />
+                                    LargeChange="1"
+                                    Minimum="0"
+                                    SmallChange="0.1"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.DownhillCutoff}" />
                                 <TextBlock
                                     Grid.Row="1"
                                     Grid.Column="0"
                                     VerticalAlignment="Center"
                                     HorizontalTextAlignment="End"
                                     Text="Up Cost/Cutoff" />
-                                <TextBox
+                                <mux:NumberBox
                                     Grid.Row="1"
                                     Grid.Column="1"
-                                    MinWidth="0"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.UphillCost}" />
-                                <TextBox
+                                    LargeChange="5"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.UphillCost}" />
+                                <mux:NumberBox
+                                    x:Name="UphillCutoff"
                                     Grid.Row="1"
                                     Grid.Column="2"
-                                    MinWidth="0"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.UphillCutoff}" />
+                                    LargeChange="1"
+                                    Minimum="0"
+                                    SmallChange="0.1"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.UphillCutoff}" />
                                 <TextBlock
                                     Grid.Row="2"
                                     Grid.Column="0"
                                     VerticalAlignment="Center"
                                     HorizontalTextAlignment="End"
                                     Text="Power" />
-                                <TextBox
+                                <mux:NumberBox
                                     Grid.Row="2"
                                     Grid.Column="1"
-                                    Grid.ColumnSpan="2"
-                                    MinWidth="0"
-                                    Text="{x:Bind Mode=TwoWay, Path=ViewModel.BikerPower}" />
+                                    LargeChange="20"
+                                    Minimum="0"
+                                    SmallChange="5"
+                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.BikerPower}" />
                             </Grid>
                             <Grid Grid.Row="2" ColumnSpacing="5">
                                 <Grid.ColumnDefinitions>

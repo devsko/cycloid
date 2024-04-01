@@ -61,7 +61,12 @@
     </Compile>
     <Compile Include="Behaviors\DragableBehavior.cs" />
     <Compile Include="Behaviors\PropertyChangedTrigger.cs" />
+    <Compile Include="Controls\InfoToggleButton.xaml.cs">
+      <DependentUpon>InfoToggleButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Map.CompareSessionConnector.cs" />
+    <Compile Include="Info\AmenitiesConverter.cs" />
+    <Compile Include="Info\InfoPoint.cs" />
     <Compile Include="Track.Index.cs" />
     <Compile Include="Track.CompareSession.cs" />
     <Compile Include="Controls\Bing.xaml.cs">
@@ -162,6 +167,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\Compass.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\InfoToggleButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

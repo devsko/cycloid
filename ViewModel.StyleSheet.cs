@@ -65,15 +65,66 @@ partial class ViewModel
                   }
                 },
                 "Info": {
-                  "Water": {
-                    "fillColor": "#80FFFFFF", 
-                    "iconColor": "#FF0000BF", 
+                  "Base": {
+                    "parent": "userPoint", 
                     "iconScale": 1.2, 
-                    "scale": 0.85, 
-                    "shape": {
-                      "icon": "brewery"
-                    },
-                    "strokeColor": "#00000000"
+                    "scale": 0.9
+                  },
+                  "GeoBase": {
+                    "parent": "Info.Base", 
+                    "fillColor": "#C0FFFFFF", 
+                    "iconColor": "#FF004200"
+                  },
+                  "WaterBase": {
+                    "parent": "Info.Base", 
+                    "fillColor": "#C0FFFFFF", 
+                    "iconColor": "#FF0000BF"
+                  },
+                  "ShopBase": {
+                    "parent": "Info.Base", 
+                    "fillColor": "#C0F0E036", 
+                    "iconColor": "#FF871113"
+                  },
+                  "FoodBase": {
+                    "parent": "Info.Base", 
+                    "fillColor": "#C085F0EE", 
+                    "iconColor": "#FF2E084A"
+                  },
+                  "Restaurant": {
+                    "parent": "Info.FoodBase", 
+                    "shape-icon": "knifeAndFork"
+                  },
+                  "FastFood": {
+                    "parent": "Info.FoodBase", 
+                    "shape-icon": "car"
+                  },
+                  "Bar": {
+                    "parent": "Info.FoodBase", 
+                    "shape-icon": "mug"
+                  },
+                  "FuelStation": {
+                    "parent": "Info.ShopBase", 
+                    "shape-icon": "gasPump"
+                  },
+                  "Bakery": {
+                    "parent": "Info.ShopBase", 
+                    "shape-icon": "cupcake"
+                  },
+                  "Supermarket": {
+                    "parent": "Info.ShopBase", 
+                    "shape-icon": "shoppingCart"
+                  },
+                  "MountainPass": {
+                    "parent": "Info.GeoBase", 
+                    "shape-icon": "naturalPlace"
+                  },
+                  "Toilet": {
+                    "parent": "Info.WaterBase", 
+                    "shape-icon": "toilet"
+                  },
+                  "Water": {
+                    "parent": "Info.WaterBase", 
+                    "shape-icon": "brewery"
                   }
                 }
               }
