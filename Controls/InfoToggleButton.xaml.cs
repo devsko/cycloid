@@ -39,12 +39,12 @@ public sealed partial class InfoToggleButton : UserControl
         _isRecursion = true;
         if (checkBox is { Tag: InfoCategory category })
         {
-            ViewModel.SetInfoCategoryVisibility(category, value);
+            ViewModel.SetInfoCategoryVisible(category, value);
             _allCheckBox.IsChecked = _checkBoxes.Any(checkBox => checkBox.IsChecked == !value) ? null : value;
         }
         else
         {
-            ViewModel.SetInfoCategoryVisibility(null, value);
+            ViewModel.SetInfoCategoryVisible(null, value);
             Array.ForEach(_checkBoxes, checkBox => checkBox.IsChecked = value);
         }
         _isRecursion = false;

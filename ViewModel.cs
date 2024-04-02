@@ -6,13 +6,20 @@ using cycloid.Routing;
 
 namespace cycloid;
 
+public enum Modes
+{
+    Edit,
+    Sections,
+    POIs,
+    Train,
+}
+
 public partial class ViewModel : ObservableObject
 {
     private readonly SynchronizationContext _synchronizationContext;
 
-    public Strava Strava { get; } = new();
-
-    public Osm Osm { get; } = new();
+    [ObservableProperty]
+    private Modes _mode;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RecalculateCommand))]
@@ -23,19 +30,24 @@ public partial class ViewModel : ObservableObject
     private bool _trackIsInitialized;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(TrackIsCalculating))]
-    [NotifyPropertyChangedFor(nameof(CompareSessionState))]
-    private int _trackCalculationCounter;
-
-    [ObservableProperty]
     private TrackPoint _currentPoint = TrackPoint.Invalid;
 
     [ObservableProperty]
     private TrackPoint _hoverPoint = TrackPoint.Invalid;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ProfileHoverPointValuesEnabled))]
+    private bool _mapHoverPointValuesEnabled;
+
+    [ObservableProperty]
     private string _status;
 
+    public Strava Strava { get; } = new();
+
+    public Osm Osm { get; } = new();
+
+
+    public event Action<Modes, Modes> ModeChanged;
     public event Action<Track, Track> TrackChanged;
     public event Action<TrackPoint, TrackPoint> HoverPointChanged;
 
@@ -49,63 +61,50 @@ public partial class ViewModel : ObservableObject
         }
     }
 
-    public bool TrackIsCalculating => TrackCalculationCounter > 0;
-
     public bool ProfileHoverPointValuesEnabled
     {
         get => !MapHoverPointValuesEnabled;
         set => MapHoverPointValuesEnabled = !value;
     }
 
+    partial void OnModeChanged(Modes oldValue, Modes newValue)
+    {
+        ModeChanged?.Invoke(oldValue, newValue);
+    }
+
     partial void OnTrackChanged(Track oldValue, Track newValue)
     {
+        if (oldValue is not null)
+        {
+            DisconnectRouting(oldValue);
+        }
+
         TrackIsInitialized = false;
         CurrentPoint = TrackPoint.Invalid;
         HoverPoint = TrackPoint.Invalid;
 
-        if (oldValue is not null)
-        {
-            oldValue.RouteBuilder.CalculationStarting -= RouteBuilder_CalculationStarting;
-            oldValue.RouteBuilder.CalculationFinished -= RouteBuilder_CalculationFinished;
-            oldValue.RouteBuilder.Changed -= RouteBuilder_Changed;
-            oldValue.RouteBuilder.FileSplitChanged -= RouteBuilder_FileSplitChanged;
-        }
         if (newValue is not null)
         {
-            newValue.RouteBuilder.CalculationStarting += RouteBuilder_CalculationStarting;
-            newValue.RouteBuilder.CalculationFinished += RouteBuilder_CalculationFinished;
-            newValue.RouteBuilder.Changed += RouteBuilder_Changed;
-            newValue.RouteBuilder.FileSplitChanged += RouteBuilder_FileSplitChanged;
+            ConnectRouting(newValue);
         }
 
         TrackChanged?.Invoke(oldValue, newValue);
     }
 
-    partial void OnHoverPointChanged(TrackPoint oldValue, TrackPoint newValue)
+    partial void OnTrackIsInitializedChanged(bool value)
     {
-        HoverPointChanged?.Invoke(oldValue, newValue);
-    }
-
-    private void RouteBuilder_CalculationStarting(RouteSection _)
-    {
-        TrackCalculationCounter++;
-    }
-
-    private void RouteBuilder_CalculationFinished(RouteSection _1, RouteResult _2)
-    {
-        TrackCalculationCounter--;
-    }
-
-    private void RouteBuilder_Changed(bool initialization)
-    {
-        if (!initialization && !IsCaptured)
+        if (value)
         {
-            SaveTrackAsync().FireAndForget();
+            DownhillCost = Track.RouteBuilder.Profile.DownhillCost;
+            DownhillCutoff = Track.RouteBuilder.Profile.DownhillCutoff;
+            UphillCost = Track.RouteBuilder.Profile.UphillCost;
+            UphillCutoff = Track.RouteBuilder.Profile.UphillCutoff;
+            BikerPower = Track.RouteBuilder.Profile.BikerPower;
         }
     }
 
-    private void RouteBuilder_FileSplitChanged(WayPoint wayPoint)
+    partial void OnHoverPointChanged(TrackPoint oldValue, TrackPoint newValue)
     {
-        SaveTrackAsync().FireAndForget();
+        HoverPointChanged?.Invoke(oldValue, newValue);
     }
 }

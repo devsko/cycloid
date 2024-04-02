@@ -6,30 +6,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI;
 using cycloid.Info;
-using cycloid.Routing;
 using Windows.Devices.Geolocation;
-using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Maps;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 
 namespace cycloid.Controls;
 
 public sealed partial class Map : UserControl
 {
-    private readonly Throttle<PointerRoutedEventArgs, Map> _pointerMovedThrottle = new(
-        static (e, @this) => @this.ThrottledPointerPanelPointerMoved(e),
-        TimeSpan.FromMilliseconds(100));
-
-    private readonly Throttle<MapActualCameraChangedEventArgs, Map> _actualCameraChangedThrottle = new(
-        static (e, @this, cancellationToken) => @this.ThrottledActualCameraChangedAsync(e, cancellationToken),
+    private readonly Throttle<object, Map> _loadInfosThrottle = new(
+        static (_, @this, cancellationToken) => @this.LoadInfosAsync(cancellationToken),
         TimeSpan.FromSeconds(2));
 
-    private readonly InfoLoader _infos = new();
+    private readonly InfoLoader _infoLoader = new();
     private MapTileSource _heatmap;
     private MapTileSource _osm;
     private MapElementsLayer _routingLayer;
@@ -95,22 +88,49 @@ public sealed partial class Map : UserControl
             => Math.Abs(value1 - value2) < 1e-4;
     }
 
-    private bool IsFileSplit(WayPoint wayPoint)
+    private async Task LoadInfosAsync(CancellationToken cancellationToken)
     {
-        return wayPoint is { IsFileSplit: true };
+        ViewModel.InfoIsLoading = true;
+        try
+        {
+            Geopath region = MapControl.GetVisibleRegion(MapVisibleRegionKind.Near);
+            if (region is not null)
+            {
+                int i = 0;
+                Stopwatch watch = Stopwatch.StartNew();
+
+                await foreach (IEnumerable<InfoPoint> infoPoints in _infoLoader.GetAdditionalInfoPointsAsync(region, cancellationToken))
+                {
+                    foreach (InfoPoint infoPoint in infoPoints)
+                    {
+                        _infoLayer.MapElements.Add(new MapIcon
+                        {
+                            Location = new Geopoint(infoPoint.Location),
+                            MapStyleSheetEntry = $"Info.{infoPoint.Type}",
+                            Title = infoPoint.Name,
+                            Tag = infoPoint.Category,
+                            Visible = ViewModel.GetInfoCategoryVisible(infoPoint.Category),
+                        });
+                        i++;
+                    }
+                }
+
+                if (i > 0)
+                {
+                    ViewModel.Status = $"{i} info points loaded ({watch.ElapsedMilliseconds} ms)";
+                }
+            }
+        }
+        finally
+        {
+            ViewModel.InfoIsLoading = false;
+        }
     }
-
-    private Visibility VisibleIfNotIsFileSplit(WayPoint wayPoint) => !IsFileSplit(wayPoint) ? Visibility.Visible : Visibility.Collapsed;
-
-    private bool IsDirectRoute(RouteSection section)
-    {
-        return section is { IsDirectRoute: true };
-    }
-
-    private Visibility VisibleIfNotIsDirectRoute(RouteSection section) => !IsDirectRoute(section) ? Visibility.Visible : Visibility.Collapsed;
 
     private void MapControl_Loaded(object _1, RoutedEventArgs _2)
     {
+        ViewModel.ModeChanged += ViewModel_ModeChanged;
+        ViewModel.InfoVisibleChanged += ViewModel_InfoVisibleChanged;
         ViewModel.TrackChanged += ViewModel_TrackChanged;
         ViewModel.CompareSessionChanged += ViewModel_CompareSessionChanged;
         ViewModel.HoverPointChanged += ViewModel_HoverPointChanged;
@@ -118,7 +138,7 @@ public sealed partial class Map : UserControl
         ViewModel.DragNewWayPointStarting += ViewModel_DragNewWayPointStarting;
         ViewModel.DragWayPointStarted += ViewModel_DragWayPointStarted;
         ViewModel.DragWayPointEnded += ViewModel_DragWayPointEnded;
-        ViewModel.InfoCategoryVisibilityChanged += ViewModel_InfoCategoryVisibilityChanged;
+        ViewModel.InfoCategoryVisibleChanged += ViewModel_InfoCategoryVisibleChanged;
 
         MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
 
@@ -141,115 +161,44 @@ public sealed partial class Map : UserControl
 
         _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
         MapControl.Layers.Add(_routingLayer);
+
+        foreach (InfoCategory category in InfoCategory.All.Where(c => !c.Hide))
+        {
+            MenuFlyoutSubItem subItem = new MenuFlyoutSubItem { Text = category.Name };
+            foreach (InfoType type in category.Types)
+            {
+                subItem.Items.Add(new MenuFlyoutItem { Text = type.ToString() });
+            }
+            AddPoiButton.Items.Add(subItem);
+        }
     }
 
-    private void MapControl_ActualCameraChanged(MapControl _, MapActualCameraChangedEventArgs args)
-    {
-        _actualCameraChangedThrottle.Next(args, this);
-    }
-
-    private async Task ThrottledActualCameraChangedAsync(MapActualCameraChangedEventArgs _, CancellationToken cancellationToken)
+    private void MapControl_ActualCameraChanged(MapControl _1, MapActualCameraChangedEventArgs _2)
     {
         if (ViewModel.InfoVisible)
         {
-            ViewModel.InfoIsLoading = true;
-            try
-            {
-                Geopath region = MapControl.GetVisibleRegion(MapVisibleRegionKind.Near);
-                if (region is not null)
-                {
-                    int i = 0;
-                    Stopwatch watch = Stopwatch.StartNew();
-
-                    await foreach (IEnumerable<InfoPoint> infoPoints in _infos.GetAdditionalInfoPointsAsync(region, cancellationToken))
-                    {
-                        foreach (InfoPoint infoPoint in infoPoints)
-                        {
-                            _infoLayer.MapElements.Add(new MapIcon
-                            {
-                                Location = new Geopoint(infoPoint.Location),
-                                MapStyleSheetEntry = $"Info.{infoPoint.Type}",
-                                Title = infoPoint.Name,
-                                Tag = infoPoint.Category,
-                            });
-                            i++;
-                        }
-                    }
-
-                    if (i > 0)
-                    {
-                        ViewModel.Status = $"{i} info points loaded ({watch.ElapsedMilliseconds} ms)";
-                    }
-                }
-            }
-            finally
-            {
-                ViewModel.InfoIsLoading = false;
-            }
+            _loadInfosThrottle.Next(null, this);
         }
     }
 
-    private void RoutingLayer_MapElementPointerEntered(MapElementsLayer _, MapElementsLayerPointerEnteredEventArgs args)
+    private void MapControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        System.Diagnostics.Debug.Assert(ViewModel.HoveredWayPoint is null && ViewModel.HoveredSection is null);
-
-        if (args.MapElement is MapIcon { Tag: WayPoint wayPoint })
+        if (ViewModel.Mode == Modes.Edit)
         {
-            args.MapElement.MapStyleSheetEntryState = "Routing.hover";
-            ViewModel.HoveredWayPoint = wayPoint;
-        }
-        else if (args.MapElement is MapPolyline { Tag: RouteSection section })
-        {
-            args.MapElement.MapStyleSheetEntryState = "Routing.hovered";
-            ViewModel.HoveredSection = section;
-        }
-    }
-
-    private void RoutingLayer_MapElementPointerExited(MapElementsLayer _, MapElementsLayerPointerExitedEventArgs args)
-    {
-        args.MapElement.MapStyleSheetEntryState = "";
-
-        ViewModel.HoveredWayPoint = null;
-        ViewModel.HoveredSection = null;
-    }
-
-    private void RoutingLayer_MapElementClick(MapElementsLayer _, MapElementsLayerClickEventArgs args)
-    {
-        // No way to find out if it is a middle button click for delete. Use Ctrl-Click as workaround
-
-        //bool ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-
-        if (!ViewModel.IsCaptured)
-        {
-            if (ViewModel.HoveredWayPoint is not null)
+            if (HandleRoutingKey(e.Key))
             {
-                // PROBLEM: MapControl_MapTapped is raised additionaly. After deleting the waypoint there is no way to detect it was just element clicked
-                //if (ctrl)
-                //{
-                //    ViewModel.DeleteWayPointAsync().FireAndForget();
-                //}
-                //else
-                {
-                    ViewModel.StartDragWayPoint();
-                }
+                e.Handled = true;
             }
-            else if (ViewModel.HoveredSection is not null)
-            {
-                ViewModel.StartDragNewWayPointAsync((MapPoint)args.Location.Position).FireAndForget();
-            }
-        }
-    }
-
-    private void ThrottledPointerPanelPointerMoved(PointerRoutedEventArgs e)
-    {
-        if (MapControl.TryGetLocationFromOffset(e.GetCurrentPoint(MapControl).Position, out Geopoint location))
-        {
-            ViewModel.ContinueDragWayPointAsync((MapPoint)location.Position).FireAndForget();
         }
     }
 
     private void MapControl_MapTapped(MapControl _, MapInputEventArgs args)
     {
+        if (ViewModel.Mode != Modes.Edit)
+        {
+            return;
+        }
+
         // This is raised ADDITIONALY to MapElementClick!
         if (ViewModel.HoveredWayPoint is not null || ViewModel.HoveredSection is not null)
         {
@@ -266,47 +215,99 @@ public sealed partial class Map : UserControl
 
     private void MapControl_MapContextRequested(MapControl sender, MapContextRequestedEventArgs args)
     {
-        MapCommandBarFlyout menu;
+        MapMenuFlyout menu;
         MapPoint location = (MapPoint)args.Location.Position;
         if (ViewModel.Track is null)
         {
             menu = MapNoTrackMenu;
         }
-        else if (ViewModel.HoveredWayPoint is not null)
+        else if (ViewModel.Mode == Modes.Edit)
         {
-            menu = MapEditPointMenu;
+            if (ViewModel.HoveredWayPoint is not null)
+            {
+                menu = MapEditPointMenu;
+            }
+            else if (ViewModel.HoveredSection is not null)
+            {
+                menu = MapEditSectionMenu;
+            }
+            else
+            {
+                menu = MapEditMenu;
+            }
         }
-        else if (ViewModel.HoveredSection is not null)
+        else if (ViewModel.Mode is Modes.Sections or Modes.POIs)
         {
-            menu = MapEditSectionMenu;
+            menu = MapPointMenu;
         }
         else
         {
-            menu = MapEditMenu;
+            menu = MapTrainMenu;
         }
 
         menu.ShowAt(MapControl, location, args.Position);
     }
 
-    private void MapControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    private void MapControl_LosingFocus(UIElement _, LosingFocusEventArgs args)
     {
-        if (e.Key == VirtualKey.Escape)
+        // WORKAROUND: Focus gets lost (to root scroller) when paning the map
+
+        if (ViewModel.IsCaptured)
         {
-            ViewModel.CancelDragWayPointAsync().FireAndForget();
-            e.Handled = true;
+            args.TryCancel();
         }
     }
 
     private void PointerPanel_Tapped(object _, TappedRoutedEventArgs e)
     {
-        ViewModel.EndDragWayPoint();
+        if (ViewModel.Mode == Modes.Edit)
+        {
+            HandleRoutingPanelTapped();
+        }
+
         e.Handled = true;
     }
 
     private void PointerPanel_PointerMoved(object _, PointerRoutedEventArgs e)
     {
-        _pointerMovedThrottle.Next(e, this);
+        if (ViewModel.Mode == Modes.Edit)
+        {
+            HandleRoutingPanelPointerMoved(e.GetCurrentPoint(MapControl).Position);
+        }
+
         e.Handled = true;
+    }
+
+    private void ViewModel_ModeChanged(Modes oldMode, Modes newMode)
+    {
+        bool isEditMode = newMode == Modes.Edit;
+        if (isEditMode != (oldMode == Modes.Edit))
+        {
+            foreach (MapElement element in _routingLayer.MapElements)
+            {
+                if (element is MapIcon)
+                {
+                    element.Visible = isEditMode;
+                }
+                else
+                {
+                    element.IsEnabled = isEditMode;
+                }
+            }
+        }
+    }
+
+    private void ViewModel_InfoVisibleChanged(bool oldVisible, bool newVisible)
+    {
+        if (newVisible)
+        {
+            _loadInfosThrottle.Next(null, this);
+        }
+        else
+        {
+            _infoLayer.MapElements.Clear();
+            _infoLoader.Reset();
+        }
     }
 
     private void ViewModel_TrackChanged(Track oldTrack, Track newTrack)
@@ -315,25 +316,11 @@ public sealed partial class Map : UserControl
 
         if (oldTrack is not null)
         {
-            Disconnect(oldTrack);
+            DisconnectRouting(oldTrack);
         }
         if (newTrack is not null)
         {
-            Connect(newTrack);
-        }
-    }
-
-    private void ViewModel_CompareSessionChanged(Track.CompareSession oldCompareSession, Track.CompareSession newCompareSession)
-    {
-        _differenceLayer.MapElements.Clear();
-
-        if (oldCompareSession is not null)
-        {
-            Disconnect(oldCompareSession);
-        }
-        if (newCompareSession is not null)
-        {
-            Connect(newCompareSession);
+            ConnectRouting(newTrack);
         }
     }
 
@@ -342,39 +329,7 @@ public sealed partial class Map : UserControl
         Nudge();
     }
 
-    private void ViewModel_DragWayPointStarting(WayPoint wayPoint)
-    {
-        BeginDrag(ViewModel.Track.RouteBuilder.GetSections(wayPoint));
-    }
-
-    private void ViewModel_DragNewWayPointStarting(RouteSection section)
-    {
-        BeginDrag((section, section));
-    }
-
-    private void ViewModel_DragWayPointStarted()
-    {
-        PointerPanel.IsEnabled = true;
-
-        GeneralTransform transform = Window.Current.Content.TransformToVisual(MapControl);
-        Rect window = Window.Current.CoreWindow.Bounds;
-        Point pointer = CoreWindow.GetForCurrentThread().PointerPosition;
-        pointer = new Point(pointer.X - window.X, pointer.Y - window.Y);
-        
-        if (transform.TryTransform(pointer, out pointer) &&
-            MapControl.TryGetLocationFromOffset(pointer, out Geopoint location))
-        {
-            ViewModel.ContinueDragWayPointAsync((MapPoint)location.Position).FireAndForget();
-        }
-    }
-
-    private void ViewModel_DragWayPointEnded()
-    {
-        PointerPanel.IsEnabled = false;
-        EndDrag();
-    }
-
-    private void ViewModel_InfoCategoryVisibilityChanged(InfoCategory category, bool value)
+    private void ViewModel_InfoCategoryVisibleChanged(InfoCategory category, bool value)
     {
         IEnumerable<MapIcon> icons = _infoLayer.MapElements.Cast<MapIcon>();
         if (category is not null)
@@ -385,16 +340,6 @@ public sealed partial class Map : UserControl
         foreach (MapIcon icon in icons)
         {
             icon.Visible = value;
-        }
-    }
-
-    private void MapControl_LosingFocus(UIElement _, LosingFocusEventArgs args)
-    {
-        // WORKAROUND: Focus gets lost (to root scroller) when paning the map
-
-        if (ViewModel.IsCaptured)
-        {
-            args.TryCancel();
         }
     }
 }

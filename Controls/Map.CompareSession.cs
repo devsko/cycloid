@@ -7,14 +7,26 @@ namespace cycloid.Controls;
 
 partial class Map
 {
-    private void Connect(Track.CompareSession compareSession)
+    private MapPolyline GetDifferenceLine(TrackDifference difference) => _differenceLayer.MapElements.OfType<MapPolyline>().FirstOrDefault(line => (TrackDifference)line.Tag == difference);
+
+    private int GetDifferenceLineIndex(TrackDifference difference)
     {
-        compareSession.Differences.CollectionChanged += Differences_CollectionChanged;
+        (MapElement line, int index) result = _differenceLayer.MapElements.Select((line, index) => (line, index)).FirstOrDefault(tuple => (TrackDifference)tuple.line.Tag == difference);
+        return result.line is null ? -1 : result.index;
     }
 
-    private void Disconnect(Track.CompareSession compareSession)
+    private void ViewModel_CompareSessionChanged(Track.CompareSession oldCompareSession, Track.CompareSession newCompareSession)
     {
-        compareSession.Differences.CollectionChanged -= Differences_CollectionChanged;
+        _differenceLayer.MapElements.Clear();
+
+        if (oldCompareSession is not null)
+        {
+            oldCompareSession.Differences.CollectionChanged -= Differences_CollectionChanged;
+        }
+        if (newCompareSession is not null)
+        {
+            newCompareSession.Differences.CollectionChanged += Differences_CollectionChanged;
+        }
     }
 
     private void Differences_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -51,13 +63,5 @@ partial class Map
                 _differenceLayer.MapElements.Clear();
                 break;
         }
-    }
-
-    private MapPolyline GetDifferenceLine(TrackDifference difference) => _differenceLayer.MapElements.OfType<MapPolyline>().FirstOrDefault(line => (TrackDifference)line.Tag == difference);
-
-    private int GetDifferenceLineIndex(TrackDifference difference)
-    {
-        (MapElement line, int index) result = _differenceLayer.MapElements.Select((line, index) => (line, index)).FirstOrDefault(tuple => (TrackDifference)tuple.line.Tag == difference);
-        return result.line is null ? -1 : result.index;
     }
 }

@@ -60,12 +60,6 @@ partial class ViewModel
         await Track.LoadAsync();
         TrackIsInitialized = true;
 
-        DownhillCost = Track.RouteBuilder.Profile.DownhillCost;
-        DownhillCutoff = Track.RouteBuilder.Profile.DownhillCutoff;
-        UphillCost = Track.RouteBuilder.Profile.UphillCost;
-        UphillCutoff = Track.RouteBuilder.Profile.UphillCutoff;
-        BikerPower = Track.RouteBuilder.Profile.BikerPower;
-        
         Status = $"{Track.Name} opened ({watch.ElapsedMilliseconds} ms)";
     }
 

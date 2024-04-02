@@ -7,53 +7,91 @@
     xmlns:maps="using:Windows.UI.Xaml.Controls.Maps">
 
     <UserControl.Resources>
-        <controls:MapCommandBarFlyout x:Name="MapNoTrackMenu" />
-        <controls:MapCommandBarFlyout x:Name="MapEditMenu">
-            <AppBarButton
+
+        <Style
+            x:Key="LocationMenuItemStyle"
+            BasedOn="{StaticResource DefaultMenuFlyoutItemStyle}"
+            TargetType="MenuFlyoutItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuFlyoutItem">
+                        <Grid
+                            x:Name="LayoutRoot"
+                            Margin="{StaticResource MenuFlyoutItemMargin}"
+                            Padding="{StaticResource MenuFlyoutItemThemePaddingNarrow}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                x:Name="TextBlock"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Foreground="{TemplateBinding Foreground}"
+                                Text="{TemplateBinding Text}"
+                                TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}">
+                            </TextBlock>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <controls:MapMenuFlyout x:Name="MapNoTrackMenu" />
+        <controls:MapMenuFlyout x:Name="MapEditMenu">
+            <MenuFlyoutItem
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.AddDestinationCommand}"
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
-                Label="Add new destination" />
-            <AppBarButton
+                Text="Add new destination" />
+            <MenuFlyoutItem
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.AddWayPointCommand}"
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
-                Label="Add waypoint" />
-            <AppBarButton
+                Text="Add waypoint" />
+            <MenuFlyoutItem
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.AddStartCommand}"
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
-                Label="Add new start" />
-            <AppBarSeparator />
-            <AppBarButton Label="Add forbidden area" />
-        </controls:MapCommandBarFlyout>
-        <controls:MapCommandBarFlyout x:Name="MapEditPointMenu">
-            <AppBarButton Command="{x:Bind Mode=OneTime, Path=ViewModel.StartDragWayPointCommand}" Label="Move waypoint" />
-            <AppBarButton Command="{x:Bind Mode=OneTime, Path=ViewModel.DeleteWayPointCommand}" Label="Delete waypoint" />
-            <AppBarSeparator />
-            <AppBarButton
+                Text="Add new start" />
+            <MenuFlyoutSeparator />
+            <MenuFlyoutItem IsEnabled="False" Text="Add forbidden area" />
+        </controls:MapMenuFlyout>
+        <controls:MapMenuFlyout x:Name="MapEditPointMenu">
+            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.StartDragWayPointCommand}" Text="Move waypoint" />
+            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.DeleteWayPointCommand}" Text="Delete waypoint" />
+            <MenuFlyoutSeparator />
+            <MenuFlyoutItem
                 x:Name="SplitGpxHere"
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.TogglePointIsFileSplitCommand}"
-                Label="Split GPX here"
+                Text="Split GPX here"
                 Visibility="{x:Bind Mode=OneWay, Path=VisibleIfNotIsFileSplit(ViewModel.HoveredWayPoint)}" />
-            <AppBarButton
+            <MenuFlyoutItem
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.TogglePointIsFileSplitCommand}"
-                Label="Don't split GPX here"
+                Text="Don't split GPX here"
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(SplitGpxHere.Visibility)}" />
-        </controls:MapCommandBarFlyout>
-        <controls:MapCommandBarFlyout x:Name="MapEditSectionMenu">
-            <AppBarButton
+        </controls:MapMenuFlyout>
+        <controls:MapMenuFlyout x:Name="MapEditSectionMenu">
+            <MenuFlyoutItem
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.StartDragNewWayPointCommand}"
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
-                Label="Add new waypoint" />
-            <AppBarSeparator />
-            <AppBarButton
+                Text="Add new waypoint" />
+            <MenuFlyoutSeparator />
+            <MenuFlyoutItem
                 x:Name="DirectRoute"
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleSectionIsDirectRouteCommand}"
-                Label="Direct route"
+                Text="Direct route"
                 Visibility="{x:Bind Mode=OneWay, Path=VisibleIfNotIsDirectRoute(ViewModel.HoveredSection)}" />
-            <AppBarButton
+            <MenuFlyoutItem
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleSectionIsDirectRouteCommand}"
-                Label="Follow routing"
+                Text="Follow routing"
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(DirectRoute.Visibility)}" />
-        </controls:MapCommandBarFlyout>
+        </controls:MapMenuFlyout>
+        <controls:MapMenuFlyout x:Name="MapPointMenu">
+            <MenuFlyoutItem Text="Add Section" />
+            <MenuFlyoutSubItem x:Name="AddPoiButton" Text="Add POI" />
+        </controls:MapMenuFlyout>
+        <controls:MapMenuFlyout x:Name="MapTrainMenu" />
     </UserControl.Resources>
 
     <maps:MapControl

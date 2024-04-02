@@ -124,11 +124,13 @@
                 SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.MapStyleAndColor}" />
 
             <mux:TabView
+                x:Name="TabView"
                 Grid.Row="4"
+                SelectedItem="{x:Bind Mode=TwoWay, Path=GetTabItem(ViewModel.Mode), BindBack=GetMode}"
                 IsAddTabButtonVisible="False"
                 TabWidthMode="Compact">
                 <mux:TabView.TabItems>
-                    <mux:TabViewItem Header="Edit" IsClosable="false">
+                    <mux:TabViewItem Header="Edit" IsClosable="false" Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Edit}">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="Edit" />
                         </mux:TabViewItem.IconSource>
@@ -309,17 +311,17 @@
                             </ListView>
                         </Grid>
                     </mux:TabViewItem>
-                    <mux:TabViewItem Header="Sections" IsClosable="false">
+                    <mux:TabViewItem Header="Sections" IsClosable="false" Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Sections}">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="FullScreen" />
                         </mux:TabViewItem.IconSource>
                     </mux:TabViewItem>
-                    <mux:TabViewItem Header="POI" IsClosable="false">
+                    <mux:TabViewItem Header="POIs" IsClosable="false" Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.POIs}">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="MapPin" />
                         </mux:TabViewItem.IconSource>
                     </mux:TabViewItem>
-                    <mux:TabViewItem Header="Train" IsClosable="false">
+                    <mux:TabViewItem Header="Train" IsClosable="false" Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Train}">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="Play" />
                         </mux:TabViewItem.IconSource>

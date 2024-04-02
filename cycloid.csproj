@@ -64,7 +64,8 @@
     <Compile Include="Controls\InfoToggleButton.xaml.cs">
       <DependentUpon>InfoToggleButton.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Map.CompareSessionConnector.cs" />
+    <Compile Include="Controls\Map.CompareSession.cs" />
+    <Compile Include="Controls\Map.Routing.cs" />
     <Compile Include="Info\AmenitiesConverter.cs" />
     <Compile Include="Info\InfoPoint.cs" />
     <Compile Include="Track.Index.cs" />
@@ -75,8 +76,7 @@
     <Compile Include="Controls\Compass.xaml.cs">
       <DependentUpon>Compass.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Map.TrackConnector.cs" />
-    <Compile Include="Controls\MapCommandBarFlyout.cs" />
+    <Compile Include="Controls\MapMenuFlyout.cs" />
     <Compile Include="Controls\MapCurrentPointValues.xaml.cs">
       <DependentUpon>MapCurrentPointValues.xaml</DependentUpon>
     </Compile>
@@ -138,7 +138,7 @@
     <Compile Include="Format.cs" />
     <Compile Include="ViewModel.IO.cs" />
     <Compile Include="ViewModel.Map.cs" />
-    <Compile Include="ViewModel.MapStyleAndColor.cs" />
+    <Compile Include="ViewModel.Routing.cs" />
     <Compile Include="ViewModel.StyleSheet.cs" />
     <Compile Include="WayPoint.cs" />
   </ItemGroup>

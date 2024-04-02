@@ -1,15 +1,31 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using cycloid.Info;
-using cycloid.Routing;
+using Windows.UI.Xaml.Controls.Maps;
 
 namespace cycloid;
 
+public readonly record struct MapStyleAndColor(string Name, MapStyleSheet StyleSheet, bool Osm = false);
+
 partial class ViewModel
 {
+    public static readonly MapStyleAndColor[] MapStyleAndColors =
+    [
+        new("Aerial", MapStyleSheet.Combine([MapStyleSheet.Aerial(), StyleSheet.Extension])),
+        new("Aerial with roads", MapStyleSheet.Combine([MapStyleSheet.AerialWithOverlay(), StyleSheet.Extension])),
+        new("OSM", MapStyleSheet.Combine([StyleSheet.Empty, StyleSheet.Extension]), Osm: true),
+        new("Road (Dark)", MapStyleSheet.Combine([MapStyleSheet.RoadDark(), StyleSheet.Extension])),
+        new("Road (Light)", MapStyleSheet.Combine([MapStyleSheet.RoadLight(), StyleSheet.Extension])),
+    ];
+
     public const double MinInfoZoomLevel = 13;
+
+    [ObservableProperty]
+    private MapStyleAndColor _mapStyleAndColor = MapStyleAndColors[0];
 
     [ObservableProperty]
     private bool _heatmapVisible;
@@ -28,28 +44,14 @@ partial class ViewModel
     private bool _infoIsLoading;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ProfileHoverPointValuesEnabled))]
-    private bool _mapHoverPointValuesEnabled;
-
-    [ObservableProperty]
-    private WayPoint _hoveredWayPoint;
-
-    [ObservableProperty]
-    private RouteSection _hoveredSection;
-
-    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(InfoEnabled))]
     [NotifyPropertyChangedFor(nameof(InfoVisible))]
     private double _mapZoomLevel;
 
-    private WayPoint _capturedWayPoint;
-    private MapPoint _capturedWayPointOriginalLocation;
+    private readonly Dictionary<InfoCategory, bool> _infoCategories = InfoCategory.All.ToDictionary(category => category, _ => true);
 
-    public event Action<WayPoint> DragWayPointStarting;
-    public event Action<RouteSection> DragNewWayPointStarting;
-    public event Action DragWayPointStarted;
-    public event Action DragWayPointEnded;
-    public event Action<InfoCategory, bool> InfoCategoryVisibilityChanged;
+    public event Action<bool, bool> InfoVisibleChanged;
+    public event Action<InfoCategory, bool> InfoCategoryVisibleChanged;
 
     public bool InfoEnabled => MapZoomLevel >= MinInfoZoomLevel;
 
@@ -67,7 +69,10 @@ partial class ViewModel
         }
     }
 
-    public bool IsCaptured => _capturedWayPoint is not null;
+    partial void OnInfoShouldVisibleChanged(bool oldValue, bool newValue)
+    {
+        InfoVisibleChanged?.Invoke(oldValue, newValue);
+    }
 
     [RelayCommand]
     public async Task ToggleHeatmapVisibleAsync()
@@ -84,145 +89,24 @@ partial class ViewModel
         }
     }
 
-    [RelayCommand]
-    public async Task AddDestinationAsync(MapPoint location)
+    public void SetInfoCategoryVisible(InfoCategory category, bool value)
     {
-        if (Track is not null && !IsCaptured)
+        if (category is null)
         {
-            await Track.RouteBuilder.AddLastPointAsync(new WayPoint(location, false, false));
-        }
-    }
-
-    [RelayCommand]
-    public async Task AddStartAsync(MapPoint location)
-    {
-        if (Track is not null && !IsCaptured)
-        {
-            await Track.RouteBuilder.AddFirstPointAsync(new WayPoint(location, false, false));
-        }
-    }
-
-    [RelayCommand]
-    public async Task AddWayPointAsync(MapPoint location)
-    {
-        if (Track is not null && !IsCaptured)
-        {
-            RouteSection nearestSection = null;
-            float smallestDistance = float.PositiveInfinity;
-            foreach (RouteSection section in Track.RouteBuilder.Sections)
+            foreach (InfoCategory c in InfoCategory.All)
             {
-                float distance = GeoCalculation.MinimalDistance(section.Start.Location, section.End.Location, location);
-                if (distance < smallestDistance)
-                {
-                    smallestDistance = distance;
-                    nearestSection = section;
-                }
-            }
-
-            if (nearestSection is not null)
-            {
-                await Track.RouteBuilder.InsertPointAsync(location, nearestSection);
+                _infoCategories[c] = value;
             }
         }
-    }
-
-    [RelayCommand]
-    public async Task DeleteWayPointAsync()
-    {
-        if (Track is not null && !IsCaptured && HoveredWayPoint is not null)
+        else
         {
-            await Track.RouteBuilder.RemovePointAsync(HoveredWayPoint);
+            _infoCategories[category] = value;
         }
+        InfoCategoryVisibleChanged?.Invoke(category, value);
     }
 
-    [RelayCommand]
-    public void StartDragWayPoint()
+    public bool GetInfoCategoryVisible(InfoCategory category)
     {
-        if (Track is not null && !IsCaptured && HoveredWayPoint is not null)
-        {
-            Track.RouteBuilder.DelayCalculation = true;
-            DragWayPointStarting?.Invoke(HoveredWayPoint);
-
-            _capturedWayPoint = HoveredWayPoint;
-            _capturedWayPointOriginalLocation = HoveredWayPoint.Location;
-            DragWayPointStarted?.Invoke();
-        }
-    }
-
-    [RelayCommand]
-    public async Task StartDragNewWayPointAsync(MapPoint location)
-    {
-        if (Track is not null && !IsCaptured && HoveredSection is not null)
-        {
-            Track.RouteBuilder.DelayCalculation = true;
-            DragNewWayPointStarting?.Invoke(HoveredSection);
-            
-            _capturedWayPoint = await Track.RouteBuilder.InsertPointAsync(location, HoveredSection);
-            _capturedWayPointOriginalLocation = MapPoint.Invalid;
-            DragWayPointStarted?.Invoke();
-        }
-    }
-
-    public async Task ContinueDragWayPointAsync(MapPoint location)
-    {
-        if (Track is not null && IsCaptured)
-        {
-            _capturedWayPoint = await Track.RouteBuilder.MovePointAsync(_capturedWayPoint, location);
-        }
-    }
-
-    public void EndDragWayPoint()
-    {
-        if (Track is not null && IsCaptured)
-        {
-            DragWayPointEnded?.Invoke();
-            _capturedWayPoint = null;
-            Track.RouteBuilder.DelayCalculation = false;
-            
-            SaveTrackAsync().FireAndForget();
-        }
-    }
-
-    public async Task CancelDragWayPointAsync()
-    {
-        if (Track is not null && IsCaptured)
-        {
-            DragWayPointEnded?.Invoke();
-
-            if (_capturedWayPointOriginalLocation.IsValid)
-            {
-                await Track.RouteBuilder.MovePointAsync(_capturedWayPoint, _capturedWayPointOriginalLocation);
-            }
-            else
-            {
-                await Track.RouteBuilder.RemovePointAsync(_capturedWayPoint);
-            }
-
-            _capturedWayPoint = null;
-            Track.RouteBuilder.DelayCalculation = false;
-        }
-    }
-
-    [RelayCommand]
-    public void TogglePointIsFileSplit()
-    {
-        if (Track is not null && HoveredWayPoint is not null)
-        {
-            Track.RouteBuilder.SetFileSplit(HoveredWayPoint, !HoveredWayPoint.IsFileSplit);
-        }
-    }
-
-    [RelayCommand]
-    public void ToggleSectionIsDirectRoute()
-    {
-        if (Track is not null && HoveredSection is not null)
-        {
-            Track.RouteBuilder.SetIsDirectRoute(HoveredSection, !HoveredSection.IsDirectRoute);
-        }
-    }
-
-    public void SetInfoCategoryVisibility(InfoCategory category, bool value)
-    {
-        InfoCategoryVisibilityChanged?.Invoke(category, value);
+        return _infoCategories[category];
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace cycloid.Info;
 
@@ -49,11 +50,18 @@ public record struct InfoPoint(MapPoint Location, string Name, InfoCategory Cate
 
 public class InfoCategory
 {
-    public static readonly InfoCategory Geo = new();
-    public static readonly InfoCategory Water = new();
-    public static readonly InfoCategory Food = new();
-    public static readonly InfoCategory Shop = new();
-    public static readonly InfoCategory Sleep = new();
+    public static readonly InfoCategory Geo = new() { Hide = true };
+    public static readonly InfoCategory Water = new() { Name = "Water", Types = [InfoType.Water, InfoType.Toilet] };
+    public static readonly InfoCategory Food = new() { Name = "Food", Types = [InfoType.FastFood, InfoType.Bar, InfoType.Restaurant] };
+    public static readonly InfoCategory Shop = new() { Name = "Shop", Types = [InfoType.Supermarket, InfoType.Bakery, InfoType.FuelStation] };
+    public static readonly InfoCategory Sleep = new() { Name = "Sleep", Types = [] };
+
+    public static readonly IEnumerable<InfoCategory> All = [Geo, Water, Food, Shop, Sleep];
+
+    public bool Hide { get; init; }
+    public string Name { get; init; }
+    public InfoType[] Types { get; init; }
+    
     private InfoCategory()
     { }
 }

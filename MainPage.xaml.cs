@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Controls;
 using Windows.Globalization.NumberFormatting;
 using Windows.Services.Maps;
 using Windows.UI.ViewManagement;
@@ -27,6 +29,16 @@ public sealed partial class MainPage : Page
             },
         };
         DownhillCutoff.NumberFormatter = UphillCutoff.NumberFormatter = cutoffFormatter;
+    }
+
+    private TabViewItem GetTabItem(Modes mode)
+    {
+        return TabView.TabItems.Cast<TabViewItem>().First(item => item.Tag.Equals(mode));
+    }
+
+    private void GetMode(object item)
+    {
+        ViewModel.Mode = (Modes)((TabViewItem)item).Tag;
     }
 
     private void Page_Loaded(object _1, RoutedEventArgs _2)

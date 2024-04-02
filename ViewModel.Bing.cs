@@ -9,14 +9,14 @@ namespace cycloid;
 
 partial class ViewModel
 {
-    private readonly Throttle<TrackPoint, ViewModel> _bingThrottle = new(GetAddressAsync, TimeSpan.FromSeconds(5));
+    private readonly Throttle<TrackPoint, ViewModel> _getAddressThrottle = new(GetAddressAsync, TimeSpan.FromSeconds(5));
 
     [ObservableProperty]
     private string _currentPointAddress;
 
     partial void OnCurrentPointChanged(TrackPoint value)
     {
-        _bingThrottle.Next(value, this);
+        _getAddressThrottle.Next(value, this);
     }
 
     private static async Task GetAddressAsync(TrackPoint point, ViewModel @this, CancellationToken _)

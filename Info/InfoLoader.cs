@@ -69,4 +69,9 @@ public class InfoLoader
             }
         }
     }
+
+    public void Reset()
+    {
+        _requested.SetAll(false);
+    }
 }

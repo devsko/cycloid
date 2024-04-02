@@ -39,6 +39,8 @@ partial class ViewModel
 
     private Routing.Profile _originalProfile;
 
+    public event Action<Track.CompareSession, Track.CompareSession> CompareSessionChanged;
+
     public string CompareSessionState => 
         CompareSession is null 
         ? "" 
@@ -51,8 +53,6 @@ partial class ViewModel
         (RecalculationComplete ? "" : $" ({CompareSession.OriginalSegmentsCount - TrackCalculationCounter} / {CompareSession.OriginalSegmentsCount})");
 
     public string RecalculateCommandName => RecalculationComplete ? "Accept" : "Recalculate";
-
-    public event Action<Track.CompareSession, Track.CompareSession> CompareSessionChanged;
 
     partial void OnCompareSessionChanged(Track.CompareSession oldValue, Track.CompareSession newValue)
     {

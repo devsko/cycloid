@@ -1,11 +1,17 @@
-using System;
 using System.Collections.Specialized;
+using System;
+using System.Diagnostics;
 using System.Linq;
 using cycloid.Routing;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
+using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Maps;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Input;
 
 namespace cycloid.Controls;
 
@@ -66,10 +72,25 @@ partial class Map
         }
     }
 
+    private readonly Throttle<Point, Map> _dragWayPointThrottle = new(
+        static (point, @this) => @this.DragWayPoint(point),
+        TimeSpan.FromMilliseconds(100));
+
     private DragState _dragStateTo;
     private DragState _dragStateFrom;
 
-    private void Connect(Track track)
+    public void BeginDrag((RouteSection To, RouteSection From) sections)
+    {
+        _dragStateTo = sections.To == null ? default : new DragState(GetSectionLine(sections.To), true);
+        _dragStateFrom = sections.From == null ? default : new DragState(GetSectionLine(sections.From), false);
+    }
+
+    public void EndDrag()
+    {
+        _dragStateTo = _dragStateFrom = default;
+    }
+
+    private void ConnectRouting(Track track)
     {
         track.Loaded += Track_Loaded;
 
@@ -83,7 +104,7 @@ partial class Map
         track.RouteBuilder.FileSplitChanged += RouteBuilder_FileSplitChanged;
     }
 
-    private void Disconnect(Track track)
+    private void DisconnectRouting(Track track)
     {
         track.Loaded -= Track_Loaded;
 
@@ -97,20 +118,125 @@ partial class Map
         track.RouteBuilder.FileSplitChanged -= RouteBuilder_FileSplitChanged;
     }
 
-    public void BeginDrag((RouteSection To, RouteSection From) sections)
+    private bool HandleRoutingKey(VirtualKey key)
     {
-        _dragStateTo = sections.To == null ? default : new DragState(GetSectionLine(sections.To), true);
-        _dragStateFrom = sections.From == null ? default : new DragState(GetSectionLine(sections.From), false);
+        if (key == VirtualKey.Escape)
+        {
+            ViewModel.CancelDragWayPointAsync().FireAndForget();
+            return true;
+        }
+
+        return false;
     }
 
-    public void EndDrag()
+    private void HandleRoutingPanelTapped()
     {
-        _dragStateTo = _dragStateFrom = default;
+        ViewModel.EndDragWayPoint();
+    }
+
+    private void HandleRoutingPanelPointerMoved(Point point)
+    {
+        _dragWayPointThrottle.Next(point, this);
+    }
+
+    private void DragWayPoint(Point point)
+    {
+        if (MapControl.TryGetLocationFromOffset(point, out Geopoint location))
+        {
+            ViewModel.ContinueDragWayPointAsync((MapPoint)location.Position).FireAndForget();
+        }
     }
 
     private MapIcon GetWayPointIcon(WayPoint point) => _routingLayer.MapElements.OfType<MapIcon>().FirstOrDefault(element => (WayPoint)element.Tag == point);
 
     private MapPolyline GetSectionLine(RouteSection section) => _routingLayer.MapElements.OfType<MapPolyline>().FirstOrDefault(line => (RouteSection)line.Tag == section);
+
+    private Visibility VisibleIfNotIsFileSplit(WayPoint wayPoint) => wayPoint?.IsFileSplit == false ? Visibility.Visible : Visibility.Collapsed;
+
+    private Visibility VisibleIfNotIsDirectRoute(RouteSection section) => section?.IsDirectRoute == false ? Visibility.Visible : Visibility.Collapsed;
+
+    private void RoutingLayer_MapElementPointerEntered(MapElementsLayer _, MapElementsLayerPointerEnteredEventArgs args)
+    {
+        Debug.Assert(ViewModel.HoveredWayPoint is null && ViewModel.HoveredSection is null);
+
+        if (args.MapElement is MapIcon { Tag: WayPoint wayPoint })
+        {
+            args.MapElement.MapStyleSheetEntryState = "Routing.hover";
+            ViewModel.HoveredWayPoint = wayPoint;
+        }
+        else if (args.MapElement is MapPolyline { Tag: RouteSection section })
+        {
+            args.MapElement.MapStyleSheetEntryState = "Routing.hovered";
+            ViewModel.HoveredSection = section;
+        }
+    }
+
+    private void RoutingLayer_MapElementPointerExited(MapElementsLayer _, MapElementsLayerPointerExitedEventArgs args)
+    {
+        args.MapElement.MapStyleSheetEntryState = "";
+
+        ViewModel.HoveredWayPoint = null;
+        ViewModel.HoveredSection = null;
+    }
+
+    private void RoutingLayer_MapElementClick(MapElementsLayer _, MapElementsLayerClickEventArgs args)
+    {
+        // No way to find out if it is a middle button click for delete. Use Ctrl-Click as workaround
+
+        //bool ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+
+        if (!ViewModel.IsCaptured)
+        {
+            if (ViewModel.HoveredWayPoint is not null)
+            {
+                // PROBLEM: MapControl_MapTapped is raised additionaly. After deleting the waypoint there is no way to detect it was just element clicked
+                //if (ctrl)
+                //{
+                //    ViewModel.DeleteWayPointAsync().FireAndForget();
+                //}
+                //else
+                {
+                    ViewModel.StartDragWayPoint();
+                }
+            }
+            else if (ViewModel.HoveredSection is not null)
+            {
+                ViewModel.StartDragNewWayPointAsync((MapPoint)args.Location.Position).FireAndForget();
+            }
+        }
+    }
+
+    private void ViewModel_DragWayPointStarting(WayPoint wayPoint)
+    {
+        BeginDrag(ViewModel.Track.RouteBuilder.GetSections(wayPoint));
+    }
+
+    private void ViewModel_DragNewWayPointStarting(RouteSection section)
+    {
+        BeginDrag((section, section));
+    }
+
+    private void ViewModel_DragWayPointStarted()
+    {
+        PointerPanel.IsEnabled = true;
+
+        GeneralTransform transform = Window.Current.Content.TransformToVisual(MapControl);
+        Rect window = Window.Current.CoreWindow.Bounds;
+        Point pointer = CoreWindow.GetForCurrentThread().PointerPosition;
+        pointer = new Point(pointer.X - window.X, pointer.Y - window.Y);
+
+        if (transform.TryTransform(pointer, out pointer) &&
+            MapControl.TryGetLocationFromOffset(pointer, out Geopoint location))
+        {
+            ViewModel.ContinueDragWayPointAsync((MapPoint)location.Position).FireAndForget();
+        }
+    }
+
+    private void ViewModel_DragWayPointEnded()
+    {
+        PointerPanel.IsEnabled = false;
+        EndDrag();
+    }
 
     private void Track_Loaded()
     {
@@ -172,11 +298,11 @@ partial class Map
     {
         if (DragState.IsSameSection(_dragStateTo, _dragStateFrom, section))
         {
-            MapPolyline line = new() 
-            { 
-                MapStyleSheetEntry = "Routing.Line", 
-                Tag = section, 
-                Path = new Geopath([new BasicGeoposition()]) 
+            MapPolyline line = new()
+            {
+                MapStyleSheetEntry = "Routing.Line",
+                Tag = section,
+                Path = new Geopath([new BasicGeoposition()])
             };
             _routingLayer.MapElements.Add(line);
             _dragStateFrom = new DragState(line, false);
