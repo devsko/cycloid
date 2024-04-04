@@ -75,6 +75,12 @@ partial class Track
             }
         }
 
+        public TrackPoint Last()
+        {
+            Segment segment = _segments[^1];
+            return GetPoint(segment, segment.Points[^1]);
+        }
+
         public (int FileId, float distance) FilePosition(float distance)
         {
             (_, Index index) = Search(distance);
@@ -120,6 +126,46 @@ partial class Track
             }
 
             return (point, index);
+        }
+
+        public (TrackPoint Point, float Distance)[] GetNearPoints(MapPoint location, float maxCrossTrackDistance, int minDistanceDelta)
+        {
+            IEnumerator<(Segment Segment, TrackPoint Point, Index _)> enumerator = Enumerate().GetEnumerator();
+            if (!enumerator.MoveNext())
+            {
+                return Array.Empty<(TrackPoint, float)>();
+            }
+
+            List<(TrackPoint Point, float Distance)> results = [];
+            (TrackPoint Point, float Distance)? currentResult = null;
+
+            (Segment previousSegment, TrackPoint previousPoint, _) = enumerator.Current;
+            while (enumerator.MoveNext())
+            {
+                (Segment currentSegment, TrackPoint currentPoint, _) = enumerator.Current;
+                (float? fraction, float testDistance) = GeoCalculation.CrossTrackDistance(previousPoint, currentPoint, location);
+                if (fraction is float f && testDistance < maxCrossTrackDistance)
+                {
+                    TrackPoint testPoint = TrackPoint.Lerp(previousPoint, currentPoint, f);
+                    if (currentResult is not null && (previousSegment.Start.Distance + testPoint.Distance > currentResult.Value.Point.Distance + minDistanceDelta))
+                    {
+                        results.Add(currentResult.Value);
+                        currentResult = null;
+                    }
+
+                    if (currentResult is null || testDistance < currentResult.Value.Distance)
+                    {
+                        currentResult = (GetPoint(previousSegment, testPoint), testDistance);
+                    }
+                }
+                (previousSegment, previousPoint) = (currentSegment, currentPoint);
+            }
+            if (currentResult is not null)
+            {
+                results.Add(currentResult.Value);
+            }
+
+            return [.. results];
         }
 
         public async Task<(WayPoint[] WayPoints, TrackPoint[][] TrackPoints)> GetSegmentsAsync(CancellationToken cancellationToken)

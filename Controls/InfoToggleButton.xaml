@@ -20,10 +20,22 @@
             <Flyout>
                 <StackPanel x:Name="CheckBoxContainer">
                     <CheckBox Content="All" />
-                    <CheckBox Margin="10,0,0,0" Content="Water" Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Water}" />
-                    <CheckBox Margin="10,0,0,0" Content="Geo" Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Geo}" />
-                    <CheckBox Margin="10,0,0,0" Content="Food" Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Food}" />
-                    <CheckBox Margin="10,0,0,0" Content="Shop" Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Shop}" />
+                    <CheckBox
+                        Margin="10,0,0,0"
+                        Content="Water"
+                        Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Water}" />
+                    <CheckBox
+                        Margin="10,0,0,0"
+                        Content="Food"
+                        Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Food}" />
+                    <CheckBox
+                        Margin="10,0,0,0"
+                        Content="Shop"
+                        Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Shop}" />
+                    <CheckBox
+                        Margin="10,0,0,0"
+                        Content="Section"
+                        Tag="{x:Bind Mode=OneTime, Path=info:InfoCategory.Section}" />
                 </StackPanel>
             </Flyout>
         </mux:ToggleSplitButton.Flyout>
@@ -39,6 +51,14 @@
                     Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
                     IsIndeterminate="True"
                     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.InfoIsLoading)}" />
+                <TextBlock
+                    Margin="-8,-6,-8,-6"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    FontSize="7"
+                    Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
+                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Numeric(ViewModel.Infos.ActivatedCount)}"
+                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.InfoVisible)}" />
             </Grid>
         </mux:ToggleSplitButton.Content>
     </mux:ToggleSplitButton>

@@ -25,7 +25,7 @@ public record struct InfoPoint(MapPoint Location, string Name, InfoCategory Cate
 
         (InfoCategory category, InfoType type) = ((overpass.tags.mountain_pass, overpass.tags.amenity, overpass.tags.shop)) switch
         {
-            (OverpassBool.yes, _, _) => (InfoCategory.Geo, InfoType.MountainPass),
+            (OverpassBool.yes, _, _) => (InfoCategory.Section, InfoType.MountainPass),
             (_, _, OverpassShops.bakery) => (InfoCategory.Shop, InfoType.Bakery),
             (_, _, OverpassShops.pastry) => (InfoCategory.Shop, InfoType.Bakery),
             (_, _, OverpassShops.food) => (InfoCategory.Shop, InfoType.Supermarket),
@@ -50,13 +50,13 @@ public record struct InfoPoint(MapPoint Location, string Name, InfoCategory Cate
 
 public class InfoCategory
 {
-    public static readonly InfoCategory Geo = new() { Hide = true };
+    public static readonly InfoCategory Section = new() { Hide = true, Types = [InfoType.MountainPass, InfoType.Split, InfoType.Goal] };
     public static readonly InfoCategory Water = new() { Name = "Water", Types = [InfoType.Water, InfoType.Toilet] };
     public static readonly InfoCategory Food = new() { Name = "Food", Types = [InfoType.FastFood, InfoType.Bar, InfoType.Restaurant] };
     public static readonly InfoCategory Shop = new() { Name = "Shop", Types = [InfoType.Supermarket, InfoType.Bakery, InfoType.FuelStation] };
     public static readonly InfoCategory Sleep = new() { Name = "Sleep", Types = [] };
 
-    public static readonly IEnumerable<InfoCategory> All = [Geo, Water, Food, Shop, Sleep];
+    public static readonly IEnumerable<InfoCategory> All = [Section, Water, Food, Shop, Sleep];
 
     public bool Hide { get; init; }
     public string Name { get; init; }
@@ -68,8 +68,10 @@ public class InfoCategory
 
 public enum InfoType
 {
-    // Geo
+    // Section
     MountainPass,
+    Split,
+    Goal,
     // Water
     Water,
     Toilet,

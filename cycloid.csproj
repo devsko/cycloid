@@ -67,7 +67,10 @@
     <Compile Include="Controls\Map.CompareSession.cs" />
     <Compile Include="Controls\Map.Routing.cs" />
     <Compile Include="Info\AmenitiesConverter.cs" />
+    <Compile Include="Info\InfoCache.cs" />
     <Compile Include="Info\InfoPoint.cs" />
+    <Compile Include="OnTrack.cs" />
+    <Compile Include="PointOfInterest.cs" />
     <Compile Include="Track.Index.cs" />
     <Compile Include="Track.CompareSession.cs" />
     <Compile Include="Controls\Bing.xaml.cs">
@@ -101,7 +104,6 @@
     <Compile Include="Extensions\ConfigurationValue.cs" />
     <Compile Include="External\Osm.cs" />
     <Compile Include="GeoCalculation.cs" />
-    <Compile Include="Info\InfoLoader.cs" />
     <Compile Include="Info\OsmClient.cs" />
     <Compile Include="MapPoint.cs" />
     <Compile Include="Routing\BrouterClient.cs" />
@@ -138,6 +140,7 @@
     <Compile Include="Format.cs" />
     <Compile Include="ViewModel.IO.cs" />
     <Compile Include="ViewModel.Map.cs" />
+    <Compile Include="ViewModel.Pois.cs" />
     <Compile Include="ViewModel.Routing.cs" />
     <Compile Include="ViewModel.StyleSheet.cs" />
     <Compile Include="WayPoint.cs" />

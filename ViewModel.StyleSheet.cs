@@ -70,7 +70,7 @@ partial class ViewModel
                     "iconScale": 1.2, 
                     "scale": 0.9
                   },
-                  "GeoBase": {
+                  "SectionBase": {
                     "parent": "Info.Base", 
                     "fillColor": "#C0FFFFFF", 
                     "iconColor": "#FF004200"

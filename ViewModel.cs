@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using cycloid.External;
-using cycloid.Routing;
+using cycloid.Info;
 
 namespace cycloid;
 
@@ -42,6 +42,8 @@ public partial class ViewModel : ObservableObject
     [ObservableProperty]
     private string _status;
 
+    public InfoCache Infos { get; } = new();
+
     public Strava Strava { get; } = new();
 
     public Osm Osm { get; } = new();
@@ -69,6 +71,11 @@ public partial class ViewModel : ObservableObject
 
     partial void OnModeChanged(Modes oldValue, Modes newValue)
     {
+        if (oldValue == Modes.Edit && newValue != Modes.Edit)
+        {
+            CreateAllOnTrackPoints();
+        }
+
         ModeChanged?.Invoke(oldValue, newValue);
     }
 

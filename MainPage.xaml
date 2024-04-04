@@ -126,11 +126,14 @@
             <mux:TabView
                 x:Name="TabView"
                 Grid.Row="4"
-                SelectedItem="{x:Bind Mode=TwoWay, Path=GetTabItem(ViewModel.Mode), BindBack=GetMode}"
                 IsAddTabButtonVisible="False"
+                SelectedItem="{x:Bind Mode=TwoWay, Path=GetTabItem(ViewModel.Mode), BindBack=GetMode}"
                 TabWidthMode="Compact">
                 <mux:TabView.TabItems>
-                    <mux:TabViewItem Header="Edit" IsClosable="false" Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Edit}">
+                    <mux:TabViewItem
+                        Header="Edit"
+                        IsClosable="false"
+                        Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Edit}">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="Edit" />
                         </mux:TabViewItem.IconSource>
@@ -311,17 +314,106 @@
                             </ListView>
                         </Grid>
                     </mux:TabViewItem>
-                    <mux:TabViewItem Header="Sections" IsClosable="false" Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Sections}">
+                    <mux:TabViewItem
+                        Header="Sections"
+                        IsClosable="false"
+                        Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Sections}">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="FullScreen" />
                         </mux:TabViewItem.IconSource>
+                        <ListView
+                            ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Sections}"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            ScrollViewer.VerticalScrollMode="Auto"
+                            SelectionChanged="Sections_SelectionChanged">
+                            <ListView.Resources>
+                                <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                    <Setter Property="MinHeight" Value="52" />
+                                    <Setter Property="Padding" Value="10,0,2,0" />
+                                </Style>
+                            </ListView.Resources>
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="cycloid:OnTrack">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="7*" />
+                                            <ColumnDefinition Width="5*" />
+                                            <ColumnDefinition Width="4*" />
+                                            <ColumnDefinition Width="6*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            HorizontalTextAlignment="Right"
+                                            Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}" />
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            HorizontalTextAlignment="Right"
+                                            Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Speed(Speed)}" />
+                                        <TextBlock
+                                            Grid.Column="3"
+                                            HorizontalTextAlignment="Right"
+                                            Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(Time)}" />
+                                        <TextBox
+                                            Grid.Row="1"
+                                            Grid.ColumnSpan="4"
+                                            Text="{x:Bind Mode=TwoWay, Path=Name}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                     </mux:TabViewItem>
-                    <mux:TabViewItem Header="POIs" IsClosable="false" Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.POIs}">
+                    <mux:TabViewItem
+                        Header="POIs"
+                        IsClosable="false"
+                        Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.POIs}">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="MapPin" />
                         </mux:TabViewItem.IconSource>
+                        <ListView
+                            ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Points}"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            ScrollViewer.VerticalScrollMode="Auto"
+                            SelectionChanged="Points_SelectionChanged">
+                            <ListView.Resources>
+                                <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                    <Setter Property="MinHeight" Value="52" />
+                                    <Setter Property="Padding" Value="10,0,2,0" />
+                                </Style>
+                            </ListView.Resources>
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="cycloid:OnTrack">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            HorizontalTextAlignment="Right"
+                                            Text="{x:Bind Mode=OneWay, Path=PointOfInterest.Type}" />
+                                        <TextBox
+                                            Grid.Row="1"
+                                            Grid.ColumnSpan="2"
+                                            Text="{x:Bind Mode=TwoWay, Path=Name}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                     </mux:TabViewItem>
-                    <mux:TabViewItem Header="Train" IsClosable="false" Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Train}">
+                    <mux:TabViewItem
+                        Header="Train"
+                        IsClosable="false"
+                        Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Train}">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="Play" />
                         </mux:TabViewItem.IconSource>

@@ -104,4 +104,14 @@ public sealed partial class MainPage : Page
     {
         Map.ZoomTrackDifference(((TrackDifference)Differences.SelectedItem));
     }
+
+    private void Sections_SelectionChanged(object _1, SelectionChangedEventArgs _2)
+    {
+
+    }
+
+    private void Points_SelectionChanged(object _1, SelectionChangedEventArgs _2)
+    {
+
+    }
 }

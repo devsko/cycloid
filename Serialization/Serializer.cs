@@ -17,21 +17,33 @@ public static class Serializer
     {
         TrackFile trackFile = await DeserializeAsync();
 
-        if (trackFile.Profile is Profile profile)
+        track.RouteBuilder.Profile = new Routing.Profile
         {
-            track.RouteBuilder.Profile = new Routing.Profile
-            {
-                DownhillCost = profile.DownhillCost,
-                DownhillCutoff = profile.DownhillCuttoff,
-                UphillCost = profile.UphillCost,
-                UphillCutoff = profile.UphillCuttoff,
-                BikerPower = profile.BikerPower
-            };
-        }
+            DownhillCost = trackFile.Profile.DownhillCost,
+            DownhillCutoff = trackFile.Profile.DownhillCuttoff,
+            UphillCost = trackFile.Profile.UphillCost,
+            UphillCutoff = trackFile.Profile.UphillCuttoff,
+            BikerPower = trackFile.Profile.BikerPower
+        };
+
         await track.RouteBuilder.InitializeAsync(trackFile.WayPoints.Select((wayPoint, i) => (
             new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute, wayPoint.IsFileSplit),
             Deserialize(i == 0 ? null : trackFile.TrackPoints[i - 1])
         )));
+
+        track.PointsOfInterest.AddRange(trackFile.PointsOfInterest.Select(pointOfInterest =>
+        {
+            cycloid.PointOfInterest poi = new()
+            {
+                Name = pointOfInterest.Name,
+                Type = pointOfInterest.Type,
+                Created = pointOfInterest.Created,
+                Location = new MapPoint(pointOfInterest.Location.Lat, pointOfInterest.Location.Lon),
+            };
+            poi.InitOnTrackCount(pointOfInterest.OnTrackCount, pointOfInterest.Mask);
+
+            return poi;
+        }));
 
         async Task<TrackFile> DeserializeAsync()
         {
@@ -73,15 +85,15 @@ public static class Serializer
 
         TrackFile trackFile = new()
         {
-            Profile = new Profile 
-            { 
-                DownhillCost = profile.DownhillCost, 
-                DownhillCuttoff = profile.DownhillCutoff, 
-                UphillCost = profile.UphillCost, 
-                UphillCuttoff = profile.UphillCutoff, 
-                BikerPower = profile.BikerPower 
+            Profile = new Profile
+            {
+                DownhillCost = profile.DownhillCost,
+                DownhillCuttoff = profile.DownhillCutoff,
+                UphillCost = profile.UphillCost,
+                UphillCuttoff = profile.UphillCutoff,
+                BikerPower = profile.BikerPower
             },
-            WayPoints = wayPoints.Select(wayPoint => 
+            WayPoints = wayPoints.Select(wayPoint =>
                 new WayPoint
                 {
                     Location = new Point { Lat = wayPoint.Location.Latitude, Lon = wayPoint.Location.Longitude },
@@ -91,6 +103,17 @@ public static class Serializer
                 .ToArray(),
             TrackPoints = trackPoints
                 .Select(trackPoints => Serialize(trackPoints))
+                .ToArray(),
+            PointsOfInterest = track.PointsOfInterest.Select(pointOfInterest => 
+                new PointOfInterest
+                {
+                    Created = pointOfInterest.Created,
+                    Name = pointOfInterest.Name,
+                    Type = pointOfInterest.Type,
+                    Location = new Point { Lat = pointOfInterest.Location.Latitude, Lon = pointOfInterest.Location.Longitude },
+                    OnTrackCount = pointOfInterest.OnTrackCount.Value,
+                    Mask = pointOfInterest.TrackMask,
+                })
                 .ToArray()
         };
 

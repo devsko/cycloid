@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
+    xmlns:info="using:cycloid.Info"
     xmlns:maps="using:Windows.UI.Xaml.Controls.Maps">
 
     <UserControl.Resources>
@@ -32,8 +33,7 @@
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                 Foreground="{TemplateBinding Foreground}"
                                 Text="{TemplateBinding Text}"
-                                TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}">
-                            </TextBlock>
+                                TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" />
                         </Grid>
                     </ControlTemplate>
                 </Setter.Value>
@@ -88,7 +88,11 @@
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(DirectRoute.Visibility)}" />
         </controls:MapMenuFlyout>
         <controls:MapMenuFlyout x:Name="MapPointMenu">
-            <MenuFlyoutItem Text="Add Section" />
+            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.AddPointOfInterestCommand}" Text="Add Section">
+                <MenuFlyoutItem.CommandParameter>
+                    <cycloid:PointOfInterestCommandParameter Location="{x:Bind Mode=OneWay, Path=MapPointMenu.Location}" Type="{x:Bind Mode=OneTime, Path=info:InfoType.Split}" />
+                </MenuFlyoutItem.CommandParameter>
+            </MenuFlyoutItem>
             <MenuFlyoutSubItem x:Name="AddPoiButton" Text="Add POI" />
         </controls:MapMenuFlyout>
         <controls:MapMenuFlyout x:Name="MapTrainMenu" />

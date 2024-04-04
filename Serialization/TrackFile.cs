@@ -1,19 +1,15 @@
 using System;
 using System.Text.Json.Serialization;
+using cycloid.Info;
 
 namespace cycloid.Serizalization;
 
 public class TrackFile
 {
-    public Profile? Profile { get; set; }
+    public Profile Profile { get; set; }
     public WayPoint[] WayPoints { get; set; }
     public byte[][] TrackPoints { get; set; }
-    public GpxFile[] GpxFiles { get; set; }
     public PointOfInterest[] PointsOfInterest { get; set; }
-}
-
-public class GpxFile
-{
 }
 
 public struct Profile
@@ -40,16 +36,18 @@ public struct WayPoint
 
 public struct PointOfInterest
 {
-    public Point Point { get; set; }
+    public Point Location { get; set; }
     public DateTime Created { get; set; }
     public byte Mask { get; set; }
-    public string Type { get; set; }
+    public int OnTrackCount { get; set; }
+    public InfoType Type { get; set; }
     public string Name { get; set; }
 }
 
 [JsonSerializable(typeof(TrackFile))]
 [JsonSourceGenerationOptions(
     WriteIndented = true, 
+    UseStringEnumConverter = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault)]
 public partial class PoiContext : JsonSerializerContext
 {

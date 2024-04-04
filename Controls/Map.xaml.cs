@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +21,6 @@ public sealed partial class Map : UserControl
         static (_, @this, cancellationToken) => @this.LoadInfosAsync(cancellationToken),
         TimeSpan.FromSeconds(2));
 
-    private readonly InfoLoader _infoLoader = new();
     private MapTileSource _heatmap;
     private MapTileSource _osm;
     private MapElementsLayer _routingLayer;
@@ -88,38 +86,12 @@ public sealed partial class Map : UserControl
             => Math.Abs(value1 - value2) < 1e-4;
     }
 
-    private async Task LoadInfosAsync(CancellationToken cancellationToken)
+    private async Task LoadInfosAsync(CancellationToken _)
     {
         ViewModel.InfoIsLoading = true;
         try
         {
-            Geopath region = MapControl.GetVisibleRegion(MapVisibleRegionKind.Near);
-            if (region is not null)
-            {
-                int i = 0;
-                Stopwatch watch = Stopwatch.StartNew();
-
-                await foreach (IEnumerable<InfoPoint> infoPoints in _infoLoader.GetAdditionalInfoPointsAsync(region, cancellationToken))
-                {
-                    foreach (InfoPoint infoPoint in infoPoints)
-                    {
-                        _infoLayer.MapElements.Add(new MapIcon
-                        {
-                            Location = new Geopoint(infoPoint.Location),
-                            MapStyleSheetEntry = $"Info.{infoPoint.Type}",
-                            Title = infoPoint.Name,
-                            Tag = infoPoint.Category,
-                            Visible = ViewModel.GetInfoCategoryVisible(infoPoint.Category),
-                        });
-                        i++;
-                    }
-                }
-
-                if (i > 0)
-                {
-                    ViewModel.Status = $"{i} info points loaded ({watch.ElapsedMilliseconds} ms)";
-                }
-            }
+            await ViewModel.Infos.SetCenterAsync((MapPoint)MapControl.ActualCamera.Location.Position);
         }
         finally
         {
@@ -139,6 +111,8 @@ public sealed partial class Map : UserControl
         ViewModel.DragWayPointStarted += ViewModel_DragWayPointStarted;
         ViewModel.DragWayPointEnded += ViewModel_DragWayPointEnded;
         ViewModel.InfoCategoryVisibleChanged += ViewModel_InfoCategoryVisibleChanged;
+        ViewModel.Infos.InfosActivated += Infos_InfosActivated;
+        ViewModel.Infos.InfosDeactivated += Infos_InfosDeactivated;
 
         MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
 
@@ -167,7 +141,14 @@ public sealed partial class Map : UserControl
             MenuFlyoutSubItem subItem = new MenuFlyoutSubItem { Text = category.Name };
             foreach (InfoType type in category.Types)
             {
-                subItem.Items.Add(new MenuFlyoutItem { Text = type.ToString() });
+                PointOfInterestCommandParameter parameter = new() { Type = type };
+                MapPointMenu.RegisterPropertyChangedCallback(MapMenuFlyout.LocationProperty, (sender, _) => parameter.Location = ((MapMenuFlyout)sender).Location);
+                subItem.Items.Add(new MenuFlyoutItem
+                {
+                    Text = type.ToString(),
+                    Command = ViewModel.AddPointOfInterestCommand,
+                    CommandParameter = parameter,
+                });
             }
             AddPoiButton.Items.Add(subItem);
         }
@@ -303,11 +284,6 @@ public sealed partial class Map : UserControl
         {
             _loadInfosThrottle.Next(null, this);
         }
-        else
-        {
-            _infoLayer.MapElements.Clear();
-            _infoLoader.Reset();
-        }
     }
 
     private void ViewModel_TrackChanged(Track oldTrack, Track newTrack)
@@ -340,6 +316,29 @@ public sealed partial class Map : UserControl
         foreach (MapIcon icon in icons)
         {
             icon.Visible = value;
+        }
+    }
+
+    private void Infos_InfosActivated(InfoPoint[] infoPoints)
+    {
+        foreach (InfoPoint infoPoint in infoPoints)
+        {
+            _infoLayer.MapElements.Add(new MapIcon
+            {
+                Location = new Geopoint(infoPoint.Location),
+                MapStyleSheetEntry = $"Info.{infoPoint.Type}",
+                Title = infoPoint.Name,
+                Tag = infoPoint.Category,
+                Visible = ViewModel.GetInfoCategoryVisible(infoPoint.Category),
+            });
+        }
+    }
+
+    private void Infos_InfosDeactivated(int startIndex, int length)
+    {
+        while (length-- > 0)
+        {
+            _infoLayer.MapElements.RemoveAt(startIndex);
         }
     }
 }

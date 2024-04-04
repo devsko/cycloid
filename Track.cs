@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -16,6 +17,8 @@ public partial class Track : ObservableObject
 
     public PointCollection Points { get; }
 
+    public List<PointOfInterest> PointsOfInterest { get; }
+
     public event Action Loaded;
 
     public Track(IStorageFile file)
@@ -23,6 +26,7 @@ public partial class Track : ObservableObject
         File = file;
         RouteBuilder = new RouteBuilder();
         Points = new PointCollection(this);
+        PointsOfInterest = [];
     }
 
     public string Name => File is null ? "" : Path.GetFileNameWithoutExtension(File.Name);

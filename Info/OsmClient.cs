@@ -37,15 +37,16 @@ public class OsmClient
         }
     }
 
-    public async Task<OverpassPoint[]> GetPointsAsync(int bottom, int left, CancellationToken cancellationToken)
+    public async Task<OverpassPoint[]> GetPointsAsync(MapPoint point, MapPoint size, CancellationToken cancellationToken)
     {
-        string content = $"""
-            [out:json][timeout:900][bbox:{bottom},{left},{bottom + 1},{left + 1}];
+        MapPoint point2 = point + size;
+        string content = FormattableString.Invariant($"""
+            [out:json][timeout:900][bbox:{point.Latitude},{point.Longitude},{point2.Latitude},{point2.Longitude}];
             (
             {_query}
             );
             out geom qt;
-            """;
+            """);
 
         int retryCount = 0;
         while (true)
