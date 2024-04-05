@@ -104,23 +104,29 @@ public static class GeoCalculation
     }
 
     // https://stackoverflow.com/questions/32771458/distance-from-lat-lng-point-to-minor-arc-segment
-    public static (float? Fraction, float Distance) CrossTrackDistance<T>(TrackPoint p1, TrackPoint p2, T p3) where T : IMapPoint 
-        => CrossTrackDistance((p2.Distance - p1.Distance, p1.Heading), DistanceAndHeading(p1, p3));
 
     public static (float? Fraction, float Distance) CrossTrackDistance<T1, T2>(T1 p1, T1 p2, T2 p3) where T1 : IMapPoint where T2 : IMapPoint
         => CrossTrackDistance(DistanceAndHeading(p1, p2), DistanceAndHeading(p1, p3));
 
-    public static float MinimalDistance<T1, T2>(T1 p1, T1 p2, T2 p3) where T1 : IMapPoint where T2 : IMapPoint
+    public static (float Fraction, float Distance) MinimalDistance<T1, T2>(T1 p1, T1 p2, T2 p3) where T1 : IMapPoint where T2 : IMapPoint
     {
         (double Distance, double Heading) p12 = DistanceAndHeading(p1, p2);
         (double Distance, double Heading) p13 = DistanceAndHeading(p1, p3);
         (float? fraction, float crossTrackDistance) = CrossTrackDistance(p12, p13);
-        if (fraction is not null)
+        if (fraction is float f)
         {
-            return crossTrackDistance;
+            return (f, crossTrackDistance);
         }
 
-        return MathF.Min((float)p13.Distance, Distance(p2, p3));
+        double d23 = Distance(p2, p3);
+        if (p13.Distance < d23)
+        {
+            return (0, (float)p13.Distance);
+        }
+        else
+        {
+            return (1, (float)d23);
+        }
     }
 
     private static (float? Fraction, float Distance) CrossTrackDistance((double Distance, double Heading) p12, (double Distance, double Heading) p13)
@@ -133,7 +139,8 @@ public static class GeoCalculation
 
         if (diff > 90)
         {
-            return (0, (float)p13.Distance);
+            return (null, float.MaxValue);
+            //return (0, (float)p13.Distance);
         }
 
         double dxt = Math.Asin(Math.Sin(p13.Distance / EarthRadius) * Math.Sin(ToRadians(diff))) * EarthRadius;

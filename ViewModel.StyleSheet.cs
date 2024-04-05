@@ -72,22 +72,22 @@ partial class ViewModel
                   },
                   "SectionBase": {
                     "parent": "Info.Base", 
-                    "fillColor": "#C0FFFFFF", 
+                    "fillColor": "#80FFFFFF", 
                     "iconColor": "#FF004200"
                   },
                   "WaterBase": {
                     "parent": "Info.Base", 
-                    "fillColor": "#C0FFFFFF", 
+                    "fillColor": "#80FFFFFF", 
                     "iconColor": "#FF0000BF"
                   },
                   "ShopBase": {
                     "parent": "Info.Base", 
-                    "fillColor": "#C0F0E036", 
+                    "fillColor": "#80F0E036", 
                     "iconColor": "#FF871113"
                   },
                   "FoodBase": {
                     "parent": "Info.Base", 
-                    "fillColor": "#C085F0EE", 
+                    "fillColor": "#8085F0EE", 
                     "iconColor": "#FF2E084A"
                   },
                   "Restaurant": {
@@ -115,7 +115,7 @@ partial class ViewModel
                     "shape-icon": "shoppingCart"
                   },
                   "MountainPass": {
-                    "parent": "Info.GeoBase", 
+                    "parent": "Info.SectionBase", 
                     "shape-icon": "naturalPlace"
                   },
                   "Toilet": {

@@ -19,7 +19,17 @@
         <mux:ToggleSplitButton.Flyout>
             <Flyout>
                 <StackPanel x:Name="CheckBoxContainer">
-                    <CheckBox Content="All" />
+                    <CheckBox>
+                        <CheckBox.Content>
+                            <TextBlock>
+                                <Run Text="All (" />
+                                <Run Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Numeric(ViewModel.Infos.ActivatedCount)}" />
+                                <Run Text="/" />
+                                <Run Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Numeric(ViewModel.Infos.CachedCount)}" />
+                                <Run Text=")" />
+                            </TextBlock>
+                        </CheckBox.Content>
+                    </CheckBox>
                     <CheckBox
                         Margin="10,0,0,0"
                         Content="Water"
@@ -51,14 +61,6 @@
                     Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
                     IsIndeterminate="True"
                     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.InfoIsLoading)}" />
-                <TextBlock
-                    Margin="-8,-6,-8,-6"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    FontSize="7"
-                    Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
-                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Numeric(ViewModel.Infos.ActivatedCount)}"
-                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.InfoVisible)}" />
             </Grid>
         </mux:ToggleSplitButton.Content>
     </mux:ToggleSplitButton>

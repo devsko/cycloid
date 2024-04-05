@@ -58,7 +58,7 @@ partial class ViewModel
             float smallestDistance = float.PositiveInfinity;
             foreach (RouteSection section in Track.RouteBuilder.Sections)
             {
-                float distance = GeoCalculation.MinimalDistance(section.Start.Location, section.End.Location, location);
+                (_, float distance) = GeoCalculation.MinimalDistance(section.Start.Location, section.End.Location, location);
                 if (distance < smallestDistance)
                 {
                     smallestDistance = distance;

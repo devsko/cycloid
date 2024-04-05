@@ -14,6 +14,7 @@ namespace cycloid;
 
 partial class ViewModel
 {
+    private readonly SemaphoreSlim _saveTrackSemaphore = new(1);
     private CancellationTokenSource _saveTrackCts;
 
     [RelayCommand]
@@ -117,6 +118,8 @@ partial class ViewModel
             _saveTrackCts = new CancellationTokenSource();
             try
             {
+                await _saveTrackSemaphore.WaitAsync(_saveTrackCts.Token);
+                
                 Stopwatch watch = Stopwatch.StartNew();
 
                 await Serializer.SaveAsync(Track, _saveTrackCts.Token);
@@ -127,6 +130,10 @@ partial class ViewModel
             }
             catch (OperationCanceledException)
             { }
+            finally
+            {
+                _saveTrackSemaphore.Release();
+            }
         }
     }
 }

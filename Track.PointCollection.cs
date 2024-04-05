@@ -138,25 +138,44 @@ partial class Track
 
             List<(TrackPoint Point, float Distance)> results = [];
             (TrackPoint Point, float Distance)? currentResult = null;
+            float? lastExitTrackDistance = null;
 
             (Segment previousSegment, TrackPoint previousPoint, _) = enumerator.Current;
             while (enumerator.MoveNext())
             {
                 (Segment currentSegment, TrackPoint currentPoint, _) = enumerator.Current;
-                (float? fraction, float testDistance) = GeoCalculation.CrossTrackDistance(previousPoint, currentPoint, location);
-                if (fraction is float f && testDistance < maxCrossTrackDistance)
-                {
-                    TrackPoint testPoint = TrackPoint.Lerp(previousPoint, currentPoint, f);
-                    if (currentResult is not null && (previousSegment.Start.Distance + testPoint.Distance > currentResult.Value.Point.Distance + minDistanceDelta))
-                    {
-                        results.Add(currentResult.Value);
-                        currentResult = null;
-                    }
 
-                    if (currentResult is null || testDistance < currentResult.Value.Distance)
+                (float? fraction, float testDistance) = GeoCalculation.MinimalDistance(previousPoint, currentPoint, location);
+
+                if (currentResult is not null)
+                {
+                    if (testDistance < currentResult.Value.Distance)
                     {
-                        currentResult = (GetPoint(previousSegment, testPoint), testDistance);
+                        currentResult = (TrackPoint.Lerp(GetPoint(previousSegment, previousPoint), GetPoint(currentSegment, currentPoint), fraction.Value), testDistance);
+                        lastExitTrackDistance = null;
                     }
+                    else if (testDistance > maxCrossTrackDistance)
+                    {
+                        float trackDistance = currentSegment.Start.Distance + currentPoint.Distance;
+                        if (lastExitTrackDistance is null)
+                        {
+                            lastExitTrackDistance = trackDistance;
+                        }
+                        else if (trackDistance > lastExitTrackDistance.Value + minDistanceDelta)
+                        {
+                            results.Add(currentResult.Value);
+                            currentResult = null;
+                            lastExitTrackDistance = null;
+                        }
+                    }
+                    else
+                    {
+                        lastExitTrackDistance = null;
+                    }
+                }
+                else if (testDistance <= maxCrossTrackDistance)
+                {
+                    currentResult = (TrackPoint.Lerp(GetPoint(previousSegment, previousPoint), GetPoint(currentSegment, currentPoint), fraction.Value), testDistance);
                 }
                 (previousSegment, previousPoint) = (currentSegment, currentPoint);
             }

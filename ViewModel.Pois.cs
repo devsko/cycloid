@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
@@ -89,17 +90,23 @@ partial class ViewModel
 
                 (OnTrack next, int index) = onTracks
                     .Select((onTrack, index) => (onTrack, index))
-                    .FirstOrDefault(tuple => !tuple.onTrack.IsOffTrack && tuple.onTrack.TrackPoint.Distance >= trackPoint.Distance);
+                    .FirstOrDefault(tuple => tuple.onTrack.IsOffTrack || tuple.onTrack.TrackPoint.Distance >= trackPoint.Distance);
 
                 TrackPoint.CommonValues values = default;
                 if (isSection)
                 {
+                    Debug.Assert(next is not null, "Where is the goal POI?");
+
                     OnTrack previous = index >= 1 ? Sections[index - 1] : null;
                     values = trackPoint.Values - (previous?.Values ?? default);
                     next.Values -= values;
                 }
+                else if (next is null)
+                {
+                    index = onTracks.Count;
+                }
 
-                onTracks.Insert(index, new(onTracks)
+                onTracks.Insert(index, new OnTrack(onTracks)
                 {
                     TrackPoint = trackPoint,
                     PointOfInterest = pointOfInterest,

@@ -78,7 +78,9 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
             previous.Distance + distance,
             previous.Heading,
             previous.Gradient,
-            previous.Speed);
+            previous.Speed,
+            previous.Values.Ascent + fraction * (next.Values.Ascent - previous.Values.Ascent),
+            previous.Values.Descent + fraction * (next.Values.Descent - previous.Values.Descent));
     }
 
     public bool Equals(TrackPoint other) =>
