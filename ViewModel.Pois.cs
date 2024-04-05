@@ -55,8 +55,6 @@ partial class ViewModel
         }
 
         TrackPoint lastTrackPoint = Track.Points.Last();
-
-        Sections.Clear();
         Sections.Add(new OnTrack(Sections)
         {
             TrackPoint = lastTrackPoint,
@@ -69,6 +67,12 @@ partial class ViewModel
         {
             AddOnTrackPoints(pointOfInterest);
         }
+    }
+
+    private void RemoveAllOnTrackPoints()
+    {
+        Sections.Clear();
+        Points.Clear();
     }
 
     private void AddOnTrackPoints(PointOfInterest pointOfInterest)
@@ -129,7 +133,7 @@ partial class ViewModel
         }
     }
 
-    private void PointOfInterest_PropertyChanged(object _1, PropertyChangedEventArgs _2)
+    private void PointOfInterest_PropertyChanged(object sender, PropertyChangedEventArgs _)
     {
         SaveTrackAsync().FireAndForget();
     }

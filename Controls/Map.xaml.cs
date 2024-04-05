@@ -113,6 +113,8 @@ public sealed partial class Map : UserControl
         ViewModel.InfoCategoryVisibleChanged += ViewModel_InfoCategoryVisibleChanged;
         ViewModel.Infos.InfosActivated += Infos_InfosActivated;
         ViewModel.Infos.InfosDeactivated += Infos_InfosDeactivated;
+        ViewModel.Sections.CollectionChanged += Sections_CollectionChanged;
+        ViewModel.Points.CollectionChanged += Points_CollectionChanged;
 
         MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
 
@@ -138,7 +140,7 @@ public sealed partial class Map : UserControl
 
         foreach (InfoCategory category in InfoCategory.All.Where(c => !c.Hide))
         {
-            MenuFlyoutSubItem subItem = new MenuFlyoutSubItem { Text = category.Name };
+            MenuFlyoutSubItem subItem = new() { Text = category.Name };
             foreach (InfoType type in category.Types)
             {
                 PointOfInterestCommandParameter parameter = new() { Type = type };

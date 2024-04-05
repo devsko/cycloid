@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
-using cycloid.Info;
 using cycloid.Serizalization;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
@@ -60,11 +59,7 @@ partial class ViewModel
         Stopwatch watch = Stopwatch.StartNew();
         
         await Track.LoadAsync();
-        foreach (PointOfInterest pointOfInterest in Track.PointsOfInterest)
-        {
-            pointOfInterest.PropertyChanged += PointOfInterest_PropertyChanged;
-        }
-        CreateAllOnTrackPoints();
+        InitializePointsOfInterest();
 
         TrackIsInitialized = true;
 
@@ -72,7 +67,7 @@ partial class ViewModel
     }
 
     [RelayCommand]
-    private async Task NewTrackAsync()
+    public async Task NewTrackAsync()
     {
         FileSavePicker picker = new()
         {
@@ -93,20 +88,20 @@ partial class ViewModel
         }
 
         Track = new Track(file);
-        
-        PointOfInterest goal = new()
-        {
-            Name = "Goal",
-            Type = InfoType.Goal,
-        };
-        goal.InitOnTrackCount(1);
-        Track.PointsOfInterest.Add(goal);
-        goal.PropertyChanged += PointOfInterest_PropertyChanged;
-        CreateAllOnTrackPoints();
+        InitializePointsOfInterest();
         
         TrackIsInitialized = true;
 
         Status = $"{Track.Name} created";
+    }
+
+    private void InitializePointsOfInterest()
+    {
+        foreach (PointOfInterest pointOfInterest in Track.PointsOfInterest)
+        {
+            pointOfInterest.PropertyChanged += PointOfInterest_PropertyChanged;
+        }
+        CreateAllOnTrackPoints();
     }
 
     [RelayCommand]

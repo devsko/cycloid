@@ -31,6 +31,7 @@ public static class Serializer
             Deserialize(i == 0 ? null : trackFile.TrackPoints[i - 1])
         )));
 
+        track.PointsOfInterest.Clear();
         track.PointsOfInterest.AddRange(trackFile.PointsOfInterest.Select(pointOfInterest =>
         {
             cycloid.PointOfInterest poi = new()

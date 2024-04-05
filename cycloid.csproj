@@ -65,6 +65,7 @@
       <DependentUpon>InfoToggleButton.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\Map.CompareSession.cs" />
+    <Compile Include="Controls\Map.Pois.cs" />
     <Compile Include="Controls\Map.Routing.cs" />
     <Compile Include="Info\AmenitiesConverter.cs" />
     <Compile Include="Info\InfoCache.cs" />

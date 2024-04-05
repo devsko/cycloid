@@ -18,18 +18,21 @@ partial class ViewModel
               },
               "extensions": {
                 "Routing": {
-                  "Point": {
+                  "BasePoint": {
+                    "parent": "userPoint",
                     "scale": 0.5,
-                    "fillColor": "#FF000000",
-                    "strokeColor": "#FFFFFFFF",
                     "iconScale": 2.3
                   },
+                  "Point": {
+                    "parent": "Routing.BasePoint",
+                    "fillColor": "#FF000000",
+                    "strokeColor": "#FFFFFFFF"
+                  },
                   "SplitPoint": {
-                    "scale": 0.5, 
+                    "parent": "Routing.BasePoint",
                     "fillColor": "#FFFFFFFF", 
                     "strokeColor": "#FFFF0000",
-                    "iconColor": "#FFFF0000", 
-                    "iconScale": 2.3
+                    "iconColor": "#FFFF0000"
                   },
                   "Line": {
                     "fillColor": "#FFFF00FF",
@@ -65,65 +68,143 @@ partial class ViewModel
                   }
                 },
                 "Info": {
-                  "Base": {
-                    "parent": "userPoint", 
+                  "BasePoint": {
+                    "parent": "userPoint",
+                    "overwriteColor": true,
+                    "strokeColor": "#C0FFFFFF",
                     "iconScale": 1.2, 
-                    "scale": 0.9
+                    "scale": 0.85
                   },
-                  "SectionBase": {
-                    "parent": "Info.Base", 
-                    "fillColor": "#80FFFFFF", 
+                  "SectionBasePoint": {
+                    "parent": "Info.BasePoint", 
+                    "fillColor": "#A0FFFFFF", 
                     "iconColor": "#FF004200"
                   },
-                  "WaterBase": {
-                    "parent": "Info.Base", 
-                    "fillColor": "#80FFFFFF", 
+                  "WaterBasePoint": {
+                    "parent": "Info.BasePoint", 
+                    "fillColor": "#A0FFFFFF", 
                     "iconColor": "#FF0000BF"
                   },
-                  "ShopBase": {
-                    "parent": "Info.Base", 
-                    "fillColor": "#80F0E036", 
+                  "ShopBasePoint": {
+                    "parent": "Info.BasePoint", 
+                    "fillColor": "#A0F0E036", 
                     "iconColor": "#FF871113"
                   },
-                  "FoodBase": {
-                    "parent": "Info.Base", 
-                    "fillColor": "#8085F0EE", 
+                  "FoodBasePoint": {
+                    "parent": "Info.BasePoint", 
+                    "fillColor": "#A085F0EE", 
                     "iconColor": "#FF2E084A"
                   },
                   "Restaurant": {
-                    "parent": "Info.FoodBase", 
+                    "parent": "Info.FoodBasePoint", 
                     "shape-icon": "knifeAndFork"
                   },
                   "FastFood": {
-                    "parent": "Info.FoodBase", 
+                    "parent": "Info.FoodBasePoint", 
                     "shape-icon": "car"
                   },
                   "Bar": {
-                    "parent": "Info.FoodBase", 
+                    "parent": "Info.FoodBasePoint", 
                     "shape-icon": "mug"
                   },
                   "FuelStation": {
-                    "parent": "Info.ShopBase", 
+                    "parent": "Info.ShopBasePoint", 
                     "shape-icon": "gasPump"
                   },
                   "Bakery": {
-                    "parent": "Info.ShopBase", 
+                    "parent": "Info.ShopBasePoint", 
                     "shape-icon": "cupcake"
                   },
                   "Supermarket": {
-                    "parent": "Info.ShopBase", 
+                    "parent": "Info.ShopBasePoint", 
                     "shape-icon": "shoppingCart"
                   },
                   "MountainPass": {
-                    "parent": "Info.SectionBase", 
+                    "parent": "Info.SectionBasePoint", 
                     "shape-icon": "naturalPlace"
                   },
                   "Toilet": {
-                    "parent": "Info.WaterBase", 
+                    "parent": "Info.WaterBasePoint", 
                     "shape-icon": "toilet"
                   },
                   "Water": {
-                    "parent": "Info.WaterBase", 
+                    "parent": "Info.WaterBasePoint", 
+                    "shape-icon": "brewery"
+                  }
+                },
+                "POI": {
+                  "BasePoint": {
+                    // stemHeightScale cannot be overridden by extensions.
+                    // It must be set on the internal types and derived.
+                    "parent": "point",
+                    "labelColor": "#FFFFFFFF",
+                    "labelOutlineColor": "#FF000000",
+                    "fontWeight": "Bold",
+                    "strokeColor": "#FF000000",
+                    "iconScale": 1.2
+                  },
+                  "SectionBasePoint": {
+                    "parent": "POI.BasePoint", 
+                    "fillColor": "#FFFFFFFF", 
+                    "iconColor": "#FF004200"
+                  },
+                  "WaterBasePoint": {
+                    "parent": "POI.BasePoint", 
+                    "fillColor": "#FFFFFFFF", 
+                    "iconColor": "#FF0000BF"
+                  },
+                  "ShopBasePoint": {
+                    "parent": "POI.BasePoint", 
+                    "fillColor": "#FFF0E036", 
+                    "iconColor": "#FF871113"
+                  },
+                  "FoodBasePoint": {
+                    "parent": "POI.BasePoint", 
+                    "fillColor": "#FF85F0EE", 
+                    "iconColor": "#FF2E084A"
+                  },
+                  "Restaurant": {
+                    "parent": "POI.FoodBasePoint", 
+                    "shape-icon": "knifeAndFork"
+                  },
+                  "FastFood": {
+                    "parent": "POI.FoodBasePoint", 
+                    "shape-icon": "car"
+                  },
+                  "Bar": {
+                    "parent": "POI.FoodBasePoint", 
+                    "shape-icon": "mug"
+                  },
+                  "FuelStation": {
+                    "parent": "POI.ShopBasePoint", 
+                    "shape-icon": "gasPump"
+                  },
+                  "Bakery": {
+                    "parent": "POI.ShopBasePoint", 
+                    "shape-icon": "cupcake"
+                  },
+                  "Supermarket": {
+                    "parent": "POI.ShopBasePoint", 
+                    "shape-icon": "shoppingCart"
+                  },
+                  "MountainPass": {
+                    "parent": "POI.SectionBasePoint", 
+                    "shape-icon": "naturalPlace"
+                  },
+                  "Split": {
+                    "parent": "POI.SectionBasePoint", 
+                    "shape-icon": "lightning"
+                  },
+                  "Goal": {
+                    "parent": "POI.SectionBasePoint", 
+                    "shape-icon": "beach"
+                  },
+                  "Toilet": {
+                    "parent": "POI.WaterBasePoint", 
+                    "shape-icon": "toilet"
+                  },
+                  "Water": {
+                    "parent": "POI.WaterBasePoint", 
                     "shape-icon": "brewery"
                   }
                 }

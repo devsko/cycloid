@@ -71,9 +71,17 @@ public partial class ViewModel : ObservableObject
 
     partial void OnModeChanged(Modes oldValue, Modes newValue)
     {
-        if (oldValue == Modes.Edit && newValue != Modes.Edit)
+        bool isEditMode = newValue == Modes.Edit;
+        if (isEditMode != (oldValue == Modes.Edit))
         {
-            CreateAllOnTrackPoints();
+            if (isEditMode)
+            {
+                RemoveAllOnTrackPoints();
+            }
+            else
+            {
+                CreateAllOnTrackPoints();
+            }
         }
 
         ModeChanged?.Invoke(oldValue, newValue);

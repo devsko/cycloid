@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using cycloid.Info;
 using cycloid.Routing;
 using cycloid.Serizalization;
 using Windows.Storage;
@@ -26,7 +27,13 @@ public partial class Track : ObservableObject
         File = file;
         RouteBuilder = new RouteBuilder();
         Points = new PointCollection(this);
-        PointsOfInterest = [];
+        PointOfInterest goal = new()
+        {
+            Name = "Goal",
+            Type = InfoType.Goal,
+        };
+        goal.InitOnTrackCount(1);
+        PointsOfInterest = [goal];
     }
 
     public string Name => File is null ? "" : Path.GetFileNameWithoutExtension(File.Name);
