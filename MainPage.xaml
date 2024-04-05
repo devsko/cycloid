@@ -108,7 +108,7 @@
                 <ToggleButton
                     Content="{ui:SymbolIcon Symbol=MapPin}"
                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.PoisVisible}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.IsNotNull(ViewModel.Track)}">
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.PoisEnabled}">
                     <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="P" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>

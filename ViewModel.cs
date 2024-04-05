@@ -19,6 +19,8 @@ public partial class ViewModel : ObservableObject
     private readonly SynchronizationContext _synchronizationContext;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PoisEnabled))]
+    [NotifyPropertyChangedFor(nameof(PoisVisible))]
     private Modes _mode;
 
     [ObservableProperty]

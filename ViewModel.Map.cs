@@ -34,7 +34,8 @@ partial class ViewModel
     private bool _trackVisible = true;
 
     [ObservableProperty]
-    private bool _poisVisible = true;
+    [NotifyPropertyChangedFor(nameof(PoisVisible))]
+    private bool _poisShouldVisible = true;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(InfoVisible))]
@@ -52,6 +53,22 @@ partial class ViewModel
 
     public event Action<bool, bool> InfoVisibleChanged;
     public event Action<InfoCategory, bool> InfoCategoryVisibleChanged;
+
+    public bool PoisEnabled => Mode != Modes.Edit;
+
+    public bool PoisVisible
+    {
+        get => PoisShouldVisible && PoisEnabled;
+        set
+        {
+            if (PoisEnabled)
+            {
+                PoisShouldVisible = value;
+            }
+            // Notify property changed again to convinvce the toggle button
+            OnPropertyChanged(nameof(PoisVisible));
+        }
+    }
 
     public bool InfoEnabled => MapZoomLevel >= MinInfoZoomLevel;
 
