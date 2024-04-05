@@ -46,8 +46,17 @@ public sealed partial class Map : UserControl
         }
     }
 
-    public async Task SetCenterAsync(Geopoint point, int zoom = 12)
+    public async Task SetCenterAsync(Geopoint point, int zoom = 12, bool onlyIfNotInView = false)
     {
+        if (onlyIfNotInView)
+        {
+            MapControl.IsLocationInView(point, out bool isInView);
+            if (isInView && MapControl.ZoomLevel >= zoom)
+            {
+                return;
+            }
+        }
+
         await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Bow);
     }
 
@@ -60,6 +69,10 @@ public sealed partial class Map : UserControl
             if (bounds is not null)
             {
                 MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.Linear).AsTask().FireAndForget();
+                if (MapControl.ZoomLevel > 14)
+                {
+                    MapControl.ZoomLevel = 14;
+                }
             }
         }
     }

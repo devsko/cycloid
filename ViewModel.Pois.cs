@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using cycloid.Info;
 
@@ -18,9 +19,14 @@ public class PointOfInterestCommandParameter
 
 partial class ViewModel
 {
+    [ObservableProperty]
+    private OnTrack _currentSection;
+
     public ObservableCollection<OnTrack> Sections { get; } = [];
 
     public ObservableCollection<OnTrack> Points { get; } = [];
+
+    public event Action<OnTrack> SectionAdded;
 
     [RelayCommand(CanExecute = nameof(CanAddPointOfInterest))]
     public async Task AddPointOfInterestAsync(PointOfInterestCommandParameter parameter)
@@ -38,6 +44,12 @@ partial class ViewModel
 
         Track.PointsOfInterest.Add(pointOfInterest);
         pointOfInterest.PropertyChanged += PointOfInterest_PropertyChanged;
+
+        if (pointOfInterest.IsSection)
+        {
+            CurrentSection = Sections.First(section => section.PointOfInterest == pointOfInterest);
+            SectionAdded?.Invoke(CurrentSection);
+        }
 
         await SaveTrackAsync();
     }

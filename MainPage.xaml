@@ -13,7 +13,10 @@
         <ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml">
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
-                    <cycloid:ViewModel x:Name="ViewModel" TrackChanged="ViewModel_TrackChanged" />
+                    <cycloid:ViewModel
+                        x:Name="ViewModel"
+                        SectionAdded="ViewModel_SectionAdded"
+                        TrackChanged="ViewModel_TrackChanged" />
                     <!--  Workaround: NumberBox controls are too wide  -->
                     <x:Double x:Key="TextControlThemeMinWidth">0</x:Double>
                 </ResourceDictionary>
@@ -287,7 +290,6 @@
                                 HorizontalTextAlignment="Center"
                                 Text="{x:Bind Mode=OneWay, Path=ViewModel.CompareSessionState}" />
                             <ListView
-                                x:Name="Differences"
                                 Grid.Row="4"
                                 ItemsSource="{x:Bind Mode=OneWay, Path=ViewModel.CompareSession.Differences}"
                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -325,9 +327,11 @@
                             ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Sections}"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                             ScrollViewer.VerticalScrollMode="Auto"
-                            SelectionChanged="Sections_SelectionChanged">
+                            SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentSection}"
+                            SelectionChanged="Sections_SelectionChanged"
+                            ContainerContentChanging="Sections_ContainerContentChanging">
                             <ListView.Resources>
-                                <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                                     <Setter Property="MinHeight" Value="52" />
                                     <Setter Property="Padding" Value="10,0,2,0" />
                                 </Style>
@@ -380,7 +384,7 @@
                             ScrollViewer.VerticalScrollMode="Auto"
                             SelectionChanged="Points_SelectionChanged">
                             <ListView.Resources>
-                                <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                                     <Setter Property="MinHeight" Value="52" />
                                     <Setter Property="Padding" Value="10,0,2,0" />
                                 </Style>

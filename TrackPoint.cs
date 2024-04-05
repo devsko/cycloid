@@ -17,6 +17,40 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
 
     public static readonly TrackPoint Invalid = new(float.NaN, float.NaN);
 
+    public static explicit operator TrackPoint(BasicGeoposition position) => new((float)position.Latitude, (float)position.Longitude, 0);
+
+    public static explicit operator BasicGeoposition(TrackPoint point) => point.IsValid
+        ? new() { Latitude = point.Latitude, Longitude = point.Longitude }
+        : throw new ArgumentException("invalid", nameof(point));
+
+    public static TrackPoint Lerp(TrackPoint previous, TrackPoint next, float fraction)
+    {
+        if (fraction == 0)
+        {
+            return previous;
+        }
+
+        if (fraction == 1)
+        {
+            return next;
+        }
+
+        var distance = fraction * (next.Distance - previous.Distance);
+        (var latitude, var longitude) = GeoCalculation.Add(previous, previous.Heading, distance);
+
+        return new TrackPoint(
+            latitude,
+            longitude,
+            previous.Altitude + fraction * (next.Altitude - previous.Altitude),
+            previous.Time + fraction * (next.Time - previous.Time),
+            previous.Distance + distance,
+            previous.Heading,
+            previous.Gradient,
+            previous.Speed,
+            previous.Values.Ascent + fraction * (next.Values.Ascent - previous.Values.Ascent),
+            previous.Values.Descent + fraction * (next.Values.Descent - previous.Values.Descent));
+    }
+
     private readonly float _latitude = latitude;
     private readonly float _longitude = longitude;
     private readonly CommonValues _values = new(distance, time, ascent, descent);
@@ -48,40 +82,6 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
     }
 
     public bool IsValid => !float.IsNaN(Latitude);
-
-    public static explicit operator TrackPoint(BasicGeoposition position) => new((float)position.Latitude, (float)position.Longitude, 0);
-
-    public static explicit operator BasicGeoposition(TrackPoint point) =>  point.IsValid 
-        ? new() { Latitude = point.Latitude, Longitude = point.Longitude } 
-        : throw new ArgumentException("invalid", nameof(point));
-
-    public static TrackPoint Lerp(TrackPoint previous, TrackPoint next, float fraction)
-    {
-        if (fraction == 0)
-        {
-            return previous;
-        }
-
-        if (fraction == 1)
-        {
-            return next;
-        }
-
-        var distance = fraction * (next.Distance - previous.Distance);
-        (var latitude, var longitude) = GeoCalculation.Add(previous, previous.Heading, distance);
-
-        return new TrackPoint(
-            latitude, 
-            longitude,
-            previous.Altitude + fraction * (next.Altitude - previous.Altitude),
-            previous.Time + fraction * (next.Time - previous.Time),
-            previous.Distance + distance,
-            previous.Heading,
-            previous.Gradient,
-            previous.Speed,
-            previous.Values.Ascent + fraction * (next.Values.Ascent - previous.Values.Ascent),
-            previous.Values.Descent + fraction * (next.Values.Descent - previous.Values.Descent));
-    }
 
     public bool Equals(TrackPoint other) =>
         other._latitude == _latitude &&

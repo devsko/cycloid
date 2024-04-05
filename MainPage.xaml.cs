@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Devices.Geolocation;
 using Windows.Globalization.NumberFormatting;
 using Windows.Services.Maps;
 using Windows.UI.ViewManagement;
@@ -100,18 +102,39 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private void Differences_SelectionChanged(object _1, SelectionChangedEventArgs _2)
+    private void Differences_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        Map.ZoomTrackDifference(((TrackDifference)Differences.SelectedItem));
+        if (e.AddedItems is [TrackDifference diff, ..])
+        {
+            Map.ZoomTrackDifference(diff);
+        }
     }
 
-    private void Sections_SelectionChanged(object _1, SelectionChangedEventArgs _2)
+    private void Sections_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (e.AddedItems is [OnTrack section, ..])
+        {
+            Map.SetCenterAsync(new Geopoint((BasicGeoposition)section.TrackPoint), onlyIfNotInView: true).FireAndForget();
+        }
+    }
 
+    private OnTrack _lastAddedSection;
+
+    private void ViewModel_SectionAdded(OnTrack section)
+    {
+        _lastAddedSection = section;
+    }
+
+    private void Sections_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (args.Item == _lastAddedSection && !args.InRecycleQueue)
+        {
+            args.ItemContainer.FindDescendant<TextBox>().Focus(FocusState.Programmatic);
+        }
     }
 
     private void Points_SelectionChanged(object _1, SelectionChangedEventArgs _2)
     {
-
+        // TODO Center on POI?
     }
 }
