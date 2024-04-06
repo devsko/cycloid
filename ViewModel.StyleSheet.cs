@@ -70,7 +70,6 @@ partial class ViewModel
                 "Info": {
                   "BasePoint": {
                     "parent": "userPoint",
-                    "overwriteColor": true,
                     "fontWeight": "SemiBold",
                     "strokeColor": "#C0FFFFFF",
                     "iconScale": 1.2, 
@@ -135,11 +134,7 @@ partial class ViewModel
                 },
                 "POI": {
                   "BasePoint": {
-                    // stemHeightScale cannot be overridden by extensions.
-                    // It must be set on the internal types and derived.
-                    "parent": "point",
-                    "labelColor": "#FFFFFFFF",
-                    "labelOutlineColor": "#FF000000",
+                    "parent": "userPoint",
                     "fontWeight": "Bold",
                     "strokeColor": "#FF000000",
                     "iconScale": 1.2
