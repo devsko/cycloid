@@ -23,16 +23,10 @@ partial class Track
 {
     public class CompareSession : ObservableObject
     {
-        private readonly struct OriginalSegment
+        private readonly struct OriginalSegment(TrackPoint[] points)
         {
-            public TrackPoint[] Points { get; }
-            public Dictionary<MapPoint, int> Indices { get; }
-
-            public OriginalSegment(TrackPoint[] points)
-            {
-                Points = points;
-                Indices = points.Select((point, index) => (Point: (MapPoint)point, Index: index)).ToDictionary(tuple => tuple.Point, tuple => tuple.Index);
-            }
+            public TrackPoint[] Points { get; } = points;
+            public Dictionary<MapPoint, int> Indices { get; } = points.Select((point, index) => (Point: (MapPoint)point, Index: index)).ToDictionary(tuple => tuple.Point, tuple => tuple.Index);
         }
 
         private class NewSegment

@@ -15,7 +15,7 @@
                 <ResourceDictionary>
                     <cycloid:ViewModel
                         x:Name="ViewModel"
-                        SectionAdded="ViewModel_SectionAdded"
+                        OnTrackAdded="ViewModel_OnTrackAdded"
                         TrackChanged="ViewModel_TrackChanged" />
                     <!--  Workaround: NumberBox controls are too wide  -->
                     <x:Double x:Key="TextControlThemeMinWidth">0</x:Double>
@@ -324,7 +324,7 @@
                             <mux:SymbolIconSource Symbol="FullScreen" />
                         </mux:TabViewItem.IconSource>
                         <ListView
-                            ContainerContentChanging="Sections_ContainerContentChanging"
+                            ContainerContentChanging="OnTracks_ContainerContentChanging"
                             ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Sections}"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                             ScrollViewer.VerticalScrollMode="Auto"
@@ -380,10 +380,11 @@
                             <mux:SymbolIconSource Symbol="MapPin" />
                         </mux:TabViewItem.IconSource>
                         <ListView
+                            ContainerContentChanging="OnTracks_ContainerContentChanging"
                             ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Points}"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                             ScrollViewer.VerticalScrollMode="Auto"
-                            SelectionChanged="Points_SelectionChanged">
+                            SelectionChanged="Pois_SelectionChanged">
                             <ListView.Resources>
                                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                                     <Setter Property="MinHeight" Value="52" />
@@ -409,6 +410,8 @@
                                         <TextBox
                                             Grid.Row="1"
                                             Grid.ColumnSpan="2"
+                                            CharacterReceived="TextBox_CharacterReceived"
+                                            IsSpellCheckEnabled="False"
                                             Text="{x:Bind Mode=TwoWay, Path=Name}" />
                                     </Grid>
                                 </DataTemplate>

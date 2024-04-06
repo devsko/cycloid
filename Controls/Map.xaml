@@ -87,13 +87,18 @@
                 Text="Follow routing"
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(DirectRoute.Visibility)}" />
         </controls:MapMenuFlyout>
-        <controls:MapMenuFlyout x:Name="MapPointMenu">
-            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.AddPointOfInterestCommand}" Text="Add Section">
+        <controls:MapMenuFlyout x:Name="MapOnTrackMenu">
+            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.AddPointOfInterestCommand}" Text="Add Split">
                 <MenuFlyoutItem.CommandParameter>
-                    <cycloid:PointOfInterestCommandParameter Location="{x:Bind Mode=OneWay, Path=MapPointMenu.Location}" Type="{x:Bind Mode=OneTime, Path=info:InfoType.Split}" />
+                    <cycloid:PointOfInterestCommandParameter Location="{x:Bind Mode=OneWay, Path=MapOnTrackMenu.Location}" Type="{x:Bind Mode=OneTime, Path=info:InfoType.Split}" />
                 </MenuFlyoutItem.CommandParameter>
             </MenuFlyoutItem>
-            <MenuFlyoutSubItem x:Name="AddPoiButton" Text="Add POI" />
+            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.AddPointOfInterestCommand}" Text="Add Mountain pass">
+                <MenuFlyoutItem.CommandParameter>
+                    <cycloid:PointOfInterestCommandParameter Location="{x:Bind Mode=OneWay, Path=MapOnTrackMenu.Location}" Type="{x:Bind Mode=OneTime, Path=info:InfoType.MountainPass}" />
+                </MenuFlyoutItem.CommandParameter>
+            </MenuFlyoutItem>
+            <MenuFlyoutSeparator />
         </controls:MapMenuFlyout>
         <controls:MapMenuFlyout x:Name="MapTrainMenu" />
     </UserControl.Resources>

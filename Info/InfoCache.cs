@@ -28,7 +28,7 @@ public partial class InfoCache : ObservableObject
 
     public async Task SetCenterAsync(MapPoint point)
     {
-        BucketPoint center = new BucketPoint((int)Math.Floor(point.Latitude / BucketWidth ), (int)Math.Floor(point.Longitude / BucketWidth));
+        BucketPoint center = new((int)Math.Floor(point.Latitude / BucketWidth ), (int)Math.Floor(point.Longitude / BucketWidth));
         
         HashSet<BucketPoint> toActivate = [
             new BucketPoint(center.Bottom, center.Left),

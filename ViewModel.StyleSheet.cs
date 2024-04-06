@@ -71,9 +71,10 @@ partial class ViewModel
                   "BasePoint": {
                     "parent": "userPoint",
                     "overwriteColor": true,
+                    "fontWeight": "SemiBold",
                     "strokeColor": "#C0FFFFFF",
                     "iconScale": 1.2, 
-                    "scale": 0.85
+                    "scale": 0.75
                   },
                   "SectionBasePoint": {
                     "parent": "Info.BasePoint", 

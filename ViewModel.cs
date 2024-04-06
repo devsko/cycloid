@@ -1,8 +1,11 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using cycloid.External;
 using cycloid.Info;
+using Windows.System;
 
 namespace cycloid;
 
@@ -69,6 +72,12 @@ public partial class ViewModel : ObservableObject
     {
         get => !MapHoverPointValuesEnabled;
         set => MapHoverPointValuesEnabled = !value;
+    }
+
+    [RelayCommand]
+    public Task OpenLocationAsync(MapPoint location)
+    {
+        return Launcher.LaunchUriAsync(new Uri(FormattableString.Invariant($"https://www.google.com/maps/search/?api=1&query={location.Latitude},{location.Longitude}"))).AsTask();
     }
 
     partial void OnModeChanged(Modes oldValue, Modes newValue)

@@ -12,7 +12,7 @@ public class OverpassEnumConverter<T> : JsonConverter<T> where T: struct, Enum
 
     private static Dictionary<string, T> CreateKnownValues()
     {
-        Dictionary<string, T> knownValues = new();
+        Dictionary<string, T> knownValues = [];
 
         string[] names = Enum.GetNames(typeof(T));
         Array values = Enum.GetValues(typeof(T));

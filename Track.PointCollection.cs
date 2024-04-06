@@ -133,7 +133,7 @@ partial class Track
             IEnumerator<(Segment Segment, TrackPoint Point, Index _)> enumerator = Enumerate().GetEnumerator();
             if (!enumerator.MoveNext())
             {
-                return Array.Empty<(TrackPoint, float)>();
+                return [];
             }
 
             List<(TrackPoint Point, float Distance)> results = [];

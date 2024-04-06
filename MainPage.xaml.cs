@@ -111,22 +111,22 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private OnTrack _lastAddedSection;
+    private OnTrack _lastAddedOnTrack;
 
-    private void ViewModel_SectionAdded(OnTrack section)
+    private void ViewModel_OnTrackAdded(OnTrack section)
     {
-        _lastAddedSection = section;
+        _lastAddedOnTrack = section;
     }
 
-    private void Sections_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    private void OnTracks_ContainerContentChanging(ListViewBase _, ContainerContentChangingEventArgs args)
     {
-        if (args.Item == _lastAddedSection && !args.InRecycleQueue)
+        if (args.Item == _lastAddedOnTrack && !args.InRecycleQueue)
         {
             args.ItemContainer.FindDescendant<TextBox>().Focus(FocusState.Programmatic);
         }
     }
 
-    private void Points_SelectionChanged(object _, SelectionChangedEventArgs e)
+    private void Pois_SelectionChanged(object _, SelectionChangedEventArgs e)
     {
         if (e.AddedItems is [OnTrack onTrack, ..])
         {

@@ -29,6 +29,9 @@ public class MapMenuFlyout : MenuFlyout
 
         Location = location;
         _coordinates.Text = $"{Format.Latitude(location.Latitude)} {Format.Longitude(location.Longitude)}";
+        _coordinates.Command = ((ViewModel)placementTarget.FindResource(nameof(ViewModel))).OpenLocationCommand;
+        _coordinates.CommandParameter = location;
+
         ShowAsync().FireAndForget();
 
         async Task ShowAsync()
@@ -47,9 +50,7 @@ public class MapMenuFlyout : MenuFlyout
 
     protected override Control CreatePresenter()
     {
-        _coordinates.IsEnabled = false;
         _address.IsEnabled = false;
-        _coordinates.Style = _locationItemStyle;
         _address.Style = _locationItemStyle;
 
         if (Items.Count > 0)

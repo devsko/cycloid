@@ -153,11 +153,11 @@ public sealed partial class Map : UserControl
 
         foreach (InfoCategory category in InfoCategory.All.Where(c => !c.Hide))
         {
-            MenuFlyoutSubItem subItem = new() { Text = category.Name };
+            MenuFlyoutSubItem subItem = new() { Text = $"Add {category.Name}" };
             foreach (InfoType type in category.Types)
             {
                 PointOfInterestCommandParameter parameter = new() { Type = type };
-                MapPointMenu.RegisterPropertyChangedCallback(MapMenuFlyout.LocationProperty, (sender, _) => parameter.Location = ((MapMenuFlyout)sender).Location);
+                MapOnTrackMenu.RegisterPropertyChangedCallback(MapMenuFlyout.LocationProperty, (sender, _) => parameter.Location = ((MapMenuFlyout)sender).Location);
                 subItem.Items.Add(new MenuFlyoutItem
                 {
                     Text = type.ToString(),
@@ -165,7 +165,7 @@ public sealed partial class Map : UserControl
                     CommandParameter = parameter,
                 });
             }
-            AddPoiButton.Items.Add(subItem);
+            MapOnTrackMenu.Items.Add(subItem);
         }
     }
 
@@ -234,7 +234,7 @@ public sealed partial class Map : UserControl
         }
         else if (ViewModel.Mode is Modes.Sections or Modes.POIs)
         {
-            menu = MapPointMenu;
+            menu = MapOnTrackMenu;
         }
         else
         {

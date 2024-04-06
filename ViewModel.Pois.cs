@@ -26,7 +26,7 @@ partial class ViewModel
 
     public ObservableCollection<OnTrack> Points { get; } = [];
 
-    public event Action<OnTrack> SectionAdded;
+    public event Action<OnTrack> OnTrackAdded;
     public event Action<OnTrack, OnTrack> CurrentSectionChanged;
 
     [RelayCommand(CanExecute = nameof(CanAddPointOfInterest))]
@@ -46,11 +46,13 @@ partial class ViewModel
         Track.PointsOfInterest.Add(pointOfInterest);
         pointOfInterest.PropertyChanged += PointOfInterest_PropertyChanged;
 
+        OnTrack onTrack = (pointOfInterest.IsSection ? Sections : Points).First(onTrack => onTrack.PointOfInterest == pointOfInterest);
         if (pointOfInterest.IsSection)
         {
-            CurrentSection = Sections.First(section => section.PointOfInterest == pointOfInterest);
-            SectionAdded?.Invoke(CurrentSection);
+            CurrentSection = onTrack;
         }
+
+        OnTrackAdded?.Invoke(onTrack);
 
         await SaveTrackAsync();
     }

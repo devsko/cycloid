@@ -70,6 +70,8 @@ public class OsmClient
     }
 }
 
+#pragma warning disable IDE1006 // Naming Styles
+
 public record struct OverpassResponse(OverpassPoint[] elements);
 public record struct OverpassPoint(float lat, float lon, OverpassTags tags, OverpassBounds? bounds);
 public record struct OverpassTags(OverpassAmenities? amenity, OverpassShops? shop, string name, string ele, OverpassBool? mountain_pass);
@@ -103,6 +105,8 @@ public enum OverpassBool
     yes,
     no,
 }
+
+#pragma warning restore IDE1006 // Naming Styles
 
 [JsonSerializable(typeof(OverpassResponse))]
 [JsonSourceGenerationOptions(
