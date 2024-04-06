@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -26,7 +28,7 @@ public partial class InfoCache : ObservableObject
     public event Action<InfoPoint[]> InfosActivated;
     public event Action<int, int> InfosDeactivated;
 
-    public async Task SetCenterAsync(MapPoint point)
+    public async Task SetCenterAsync(MapPoint point, CancellationToken cancellationToken)
     {
         BucketPoint center = new((int)Math.Floor(point.Latitude / BucketWidth ), (int)Math.Floor(point.Longitude / BucketWidth));
         
@@ -56,13 +58,10 @@ public partial class InfoCache : ObservableObject
             Deactivate(bucket);
         }
 
-        foreach (BucketPoint bucketPoint in toActivate)
-        {
-            await ActivateAsync(bucketPoint);
-        }
+        await Task.WhenAll(toActivate.Select(bucketPoint => ActivateAsync(bucketPoint, cancellationToken)));
     }
 
-    private async Task ActivateAsync(BucketPoint point)
+    private async Task ActivateAsync(BucketPoint point, CancellationToken cancellationToken)
     {
         if (!_buckets.TryGetValue(point, out InfoBucket bucket))
         {
@@ -70,6 +69,9 @@ public partial class InfoCache : ObservableObject
             _buckets.Add(point, bucket);
             CachedCount += bucket.Infos.Length;
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
         _activated.Add(bucket);
 
         InfosActivated?.Invoke(bucket.Infos);

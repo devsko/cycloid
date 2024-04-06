@@ -99,12 +99,12 @@ public sealed partial class Map : UserControl
             => Math.Abs(value1 - value2) < 1e-4;
     }
 
-    private async Task LoadInfosAsync(CancellationToken _)
+    private async Task LoadInfosAsync(CancellationToken cancellationToken)
     {
         ViewModel.InfoIsLoading = true;
         try
         {
-            await ViewModel.Infos.SetCenterAsync((MapPoint)MapControl.ActualCamera.Location.Position);
+            await ViewModel.Infos.SetCenterAsync((MapPoint)MapControl.ActualCamera.Location.Position, cancellationToken);
         }
         finally
         {
