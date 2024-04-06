@@ -10,6 +10,7 @@ using Windows.Services.Maps;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 
 namespace cycloid;
 
@@ -110,14 +111,6 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private void Sections_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (e.AddedItems is [OnTrack section, ..])
-        {
-            Map.SetCenterAsync(new Geopoint((BasicGeoposition)section.TrackPoint), onlyIfNotInView: true).FireAndForget();
-        }
-    }
-
     private OnTrack _lastAddedSection;
 
     private void ViewModel_SectionAdded(OnTrack section)
@@ -133,8 +126,20 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private void Points_SelectionChanged(object _1, SelectionChangedEventArgs _2)
+    private void Points_SelectionChanged(object _, SelectionChangedEventArgs e)
     {
-        // TODO Center on POI?
+        if (e.AddedItems is [OnTrack onTrack, ..])
+        {
+            Map.SetCenterAsync(new Geopoint(onTrack.PointOfInterest.Location), onlyIfNotInView: true).FireAndForget();
+        }
+    }
+
+    private void TextBox_CharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs args)
+    {
+        if (args.Character == '\r')
+        {
+            sender.FindAscendant<ListView>().Focus(FocusState.Programmatic);
+            args.Handled = true;
+        }
     }
 }

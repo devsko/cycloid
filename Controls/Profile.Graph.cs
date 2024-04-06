@@ -9,12 +9,12 @@ namespace cycloid.Controls;
 partial class Profile
 {
     private float _trackTotalDistance;
+
     private float _trackStartDistance;
     private float _trackEndDistance;
 
-    //private Section _currentSection;
-    //private float _sectionStartDistance;
-    //private float _sectionEndDistance;
+    private float _sectionStartDistance;
+    private float _sectionEndDistance;
 
     private void ResetTrack()
     {
@@ -28,8 +28,8 @@ partial class Profile
     {
         SectionGraph.Points.Clear();
 
-        //_sectionStartDistance = float.PositiveInfinity;
-        //_sectionEndDistance = -1;
+        _sectionStartDistance = float.PositiveInfinity;
+        _sectionEndDistance = -1;
     }
 
     private void EnsureTrack()
@@ -46,19 +46,20 @@ partial class Profile
 
     private void EnsureSection()
     {
-        //if (_currentSection is not null)
-        //{
-        //    float startDistance = Math.Max(_currentSection.Start, (float)(_scrollerOffset / _horizontalScale));
-        //    float endDistance = Math.Min(_currentSection.End, (float)((ActualWidth + _scrollerOffset) / _horizontalScale));
+        if (ViewModel.CurrentSection is not null)
+        {
+            float startDistance = Math.Max(ViewModel.CurrentSection.Start.Distance, (float)(_scrollerOffset / _horizontalScale));
+            float endDistance = Math.Min(ViewModel.CurrentSection.End.Distance, (float)((ActualWidth + _scrollerOffset) / _horizontalScale));
 
-        //    if (startDistance <= endDistance)
-        //    {
-        //        EnsureGraph(startDistance, endDistance, SectionGraph, _sectionStartDistance, _sectionEndDistance);
+            if (startDistance <= endDistance)
+            {
+                EnsureGraph(startDistance, endDistance, SectionGraph, _sectionStartDistance, _sectionEndDistance);
 
-        //        _sectionStartDistance = Math.Min(_sectionStartDistance, startDistance);
-        //        _sectionEndDistance = Math.Max(_sectionEndDistance, endDistance);
-        //    }
-        //}
+                SectionGraphFigure.StartPoint = SectionGraph.Points[0];
+                _sectionStartDistance = Math.Min(_sectionStartDistance, startDistance);
+                _sectionEndDistance = Math.Max(_sectionEndDistance, endDistance);
+            }
+        }
     }
 
     private void EnsureGraph(float startDistance, float endDistance, PolyLineSegment graph, float currentStartDistance, float currentEndDistance)

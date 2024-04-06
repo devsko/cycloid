@@ -60,20 +60,14 @@ public partial class OnTrack(IList<OnTrack> onTracks) : ObservableObject
 
     public float? Speed => IsOffTrack ? null : Values.Distance / 1000 / (float)Values.Time.TotalHours;
 
-    public bool IsCurrent(TrackPoint? currentPoint)
+    public bool IsCurrent(float distance)
     {
         if (PointOfInterest.IsSection)
         {
-            return currentPoint is TrackPoint trackPoint && trackPoint.Distance >= Start.Distance && trackPoint.Distance <= End.Distance;
+            return distance >= Start.Distance && distance <= End.Distance;
         }
         else
         {
-            if (currentPoint is null)
-            {
-                return false;
-            }
-
-            float distance = currentPoint.Value.Distance;
             int index = _onTracks.IndexOf(this);
             if (distance <= TrackPoint.Distance)
             {

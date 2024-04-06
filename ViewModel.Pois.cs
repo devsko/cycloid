@@ -27,6 +27,7 @@ partial class ViewModel
     public ObservableCollection<OnTrack> Points { get; } = [];
 
     public event Action<OnTrack> SectionAdded;
+    public event Action<OnTrack, OnTrack> CurrentSectionChanged;
 
     [RelayCommand(CanExecute = nameof(CanAddPointOfInterest))]
     public async Task AddPointOfInterestAsync(PointOfInterestCommandParameter parameter)
@@ -113,8 +114,11 @@ partial class ViewModel
                 {
                     Debug.Assert(next is not null, "Where is the goal POI?");
 
-                    OnTrack previous = index >= 1 ? Sections[index - 1] : null;
-                    values = trackPoint.Values - (previous?.Values ?? default);
+                    values = trackPoint.Values;
+                    if (index > 0)
+                    {
+                        values -= Sections[index - 1].TrackPoint.Values;
+                    }
                     next.Values -= values;
                 }
                 else if (next is null)
@@ -143,6 +147,11 @@ partial class ViewModel
         {
             pointOfInterest.InitOnTrackCount(i);
         }
+    }
+
+    partial void OnCurrentSectionChanged(OnTrack oldValue, OnTrack newValue)
+    {
+        CurrentSectionChanged?.Invoke(oldValue, newValue);
     }
 
     private void PointOfInterest_PropertyChanged(object sender, PropertyChangedEventArgs _)

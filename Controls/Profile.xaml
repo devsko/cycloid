@@ -49,7 +49,7 @@
                 <Path Fill="{ThemeResource SectionGraphFill}">
                     <Path.Data>
                         <PathGeometry Transform="{StaticResource GraphTransform}">
-                            <PathFigure StartPoint="0,0">
+                            <PathFigure x:Name="SectionGraphFigure">
                                 <PolyLineSegment x:Name="SectionGraph" />
                             </PathFigure>
                         </PathGeometry>

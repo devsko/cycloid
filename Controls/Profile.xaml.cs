@@ -44,9 +44,6 @@ public sealed partial class Profile : UserControl
     [ObservableProperty]
     private double _horizontalZoom = 1;
 
-    //private ObservableCollection<Section> _sections;
-    //private ObservableCollection<TrackPoi> _trackPois;
-
     private float _maxElevation;
     private float _elevationDiff;
 
@@ -67,25 +64,6 @@ public sealed partial class Profile : UserControl
         InitializeComponent();
     }
 
-    //public ObservableCollection<Section> Sections
-    //{
-    //    get => _sections;
-    //    set
-    //    {
-    //        if (!object.Equals(_sections, value))
-    //        {
-    //            _sections = value;
-    //            _sections.CollectionChanged += (_, args) =>
-    //            {
-    //                if (args.Action == NotifyCollectionChangedAction.Add)
-    //                {
-    //                    OnSectionAdded((Section)args.NewItems[0]);
-    //                }
-    //            };
-    //        }
-    //    }
-    //}
-
     //public ObservableCollection<TrackPoi> TrackPois
     //{
     //    get => _trackPois;
@@ -105,7 +83,6 @@ public sealed partial class Profile : UserControl
     //    }
     //}
 
-    // OnSectionAdded
     // OnTrackPoiAdded
     // OnCurrentPointChanged
 
@@ -267,6 +244,7 @@ public sealed partial class Profile : UserControl
     {
         ViewModel.TrackChanged += ViewModel_TrackChanged;
         ViewModel.HoverPointChanged += ViewModel_HoverPointChanged;
+        ViewModel.CurrentSectionChanged += ViewModel_CurrentSectionChanged;
     }
 
     private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -334,7 +312,19 @@ public sealed partial class Profile : UserControl
     {
         if (ViewModel.Track is not null)
         {
-            //float distance = (float)(e.GetPosition(Root).X / Root.ActualWidth * ViewModel.Track.Points.Total.Distance);
+            float distance = (float)(e.GetPosition(Root).X / Root.ActualWidth * ViewModel.Track.Points.Total.Distance);
+            if (ViewModel.Mode is Modes.Sections or Modes.POIs)
+            {
+                foreach (OnTrack section in ViewModel.Sections)
+                {
+                    if (section.IsCurrent(distance))
+                    {
+                        ViewModel.CurrentSection = section;
+                    }
+                }
+            }
+
+            //
             //ViewModel.CurrentPoint = ViewModel.Track.Pin.Search(distance);
             //if (!Camera.AutoUpdate)
             //    Camera.Set(setView: false);
@@ -372,6 +362,12 @@ public sealed partial class Profile : UserControl
     private void ViewModel_HoverPointChanged(TrackPoint oldPoint, TrackPoint newPoint)
     {
         UpdateMarker(newPoint, HoverPointLine1, HoverPointLine2, HoverPointCircle);
+    }
+
+    private void ViewModel_CurrentSectionChanged(OnTrack arg1, OnTrack arg2)
+    {
+        ResetSection();
+        EnsureSection();
     }
 
     private void RouteBuilder_Changed(bool _)

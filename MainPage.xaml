@@ -324,12 +324,11 @@
                             <mux:SymbolIconSource Symbol="FullScreen" />
                         </mux:TabViewItem.IconSource>
                         <ListView
+                            ContainerContentChanging="Sections_ContainerContentChanging"
                             ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Sections}"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                             ScrollViewer.VerticalScrollMode="Auto"
-                            SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentSection}"
-                            SelectionChanged="Sections_SelectionChanged"
-                            ContainerContentChanging="Sections_ContainerContentChanging">
+                            SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentSection}">
                             <ListView.Resources>
                                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                                     <Setter Property="MinHeight" Value="52" />
@@ -365,6 +364,8 @@
                                         <TextBox
                                             Grid.Row="1"
                                             Grid.ColumnSpan="4"
+                                            CharacterReceived="TextBox_CharacterReceived"
+                                            IsSpellCheckEnabled="False"
                                             Text="{x:Bind Mode=TwoWay, Path=Name}" />
                                     </Grid>
                                 </DataTemplate>

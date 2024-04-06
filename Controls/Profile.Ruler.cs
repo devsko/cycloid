@@ -109,17 +109,11 @@ partial class Profile
             factor *= 10;
         }
 
-        if (gap < factor)
-        {
-            return factor;
-        }
-        else if (gap < 2 * factor)
-        {
-            return 2 * factor;
-        }
-        else
-        {
-            return 5 * factor;
-        }
+        return 
+            gap < factor 
+            ? factor 
+            : gap < 2 * factor 
+            ? 2 * factor 
+            : 5 * factor;
     }
 }
