@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using cycloid.Info;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Devices.Geolocation;
 using Windows.Globalization.NumberFormatting;
@@ -51,7 +53,6 @@ public sealed partial class MainPage : Page
 
         async Task InitialSceneAsync()
         {
-            await Map.SetCenterAsync("Stampfl Samerberg", 8);
             await ViewModel.OpenLastTrackAsync();
         }
     }
@@ -89,18 +90,31 @@ public sealed partial class MainPage : Page
 
     private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
+        Geopoint point;
         if (args.ChosenSuggestion is MapLocation location)
         {
-            Map.SetCenterAsync(location.Point).FireAndForget();
+            point = location.Point;
         }
-        else if (sender.ItemsSource is IReadOnlyList<MapLocation> { Count: > 0 } list)
+        else if (sender.ItemsSource is IReadOnlyList<MapLocation> list && list is [MapLocation first, ..])
         {
-            Map.SetCenterAsync(list[0].Point).FireAndForget();
+            point = first.Point;
         }
-        else if (sender.Text.Length > 2)
+        else
         {
-            Map.SetCenterAsync(sender.Text).FireAndForget();
+            return;
         }
+
+        StrongReferenceMessenger.Default.Send(new SetMapCenterMessage((MapPoint)point.Position));
+    }
+
+    private void PoisButton_CategoryChanged(InfoCategory category, bool value)
+    {
+        ViewModel.SetInfoCategoryVisible(true, category, value);
+    }
+
+    private void InfoButton_CategoryChanged(InfoCategory category, bool value)
+    {
+        ViewModel.SetInfoCategoryVisible(false, category, value);
     }
 
     private void Differences_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -122,21 +136,25 @@ public sealed partial class MainPage : Page
     {
         if (args.Item == _lastAddedOnTrack && !args.InRecycleQueue)
         {
-            args.ItemContainer.FindDescendant<TextBox>().Focus(FocusState.Programmatic);
+            TextBox textBox = args.ItemContainer.FindDescendant<TextBox>();
+            textBox.Focus(FocusState.Programmatic);
+            textBox.Text = ((OnTrack)args.Item).Name;
+            textBox.SelectAll();
         }
     }
 
-    private void Pois_SelectionChanged(object _, SelectionChangedEventArgs e)
+    private void OnTracks_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (e.AddedItems is [OnTrack onTrack, ..])
+        ListView list = (ListView)sender;
+        if (list.SelectedItem is OnTrack onTrack)
         {
-            Map.SetCenterAsync(new Geopoint(onTrack.PointOfInterest.Location), onlyIfNotInView: true).FireAndForget();
+            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.PointOfInterest.Location));
         }
     }
 
     private void TextBox_CharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs args)
     {
-        if (args.Character == '\r')
+        if (args.Character is '\r')
         {
             sender.FindAscendant<ListView>().Focus(FocusState.Programmatic);
             args.Handled = true;

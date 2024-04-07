@@ -30,7 +30,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="210" />
+            <ColumnDefinition Width="223" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
@@ -108,15 +108,30 @@
                         </Grid>
                     </ToggleButton.Content>
                 </ToggleButton>
-                <ToggleButton
-                    Content="{ui:SymbolIcon Symbol=MapPin}"
+                <controls:InfoToggleButton
+                    CategoryChanged="PoisButton_CategoryChanged"
                     IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.PoisVisible}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.PoisEnabled}">
-                    <ToggleButton.KeyboardAccelerators>
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.PoisEnabled}"
+                    IsLoading="{x:Bind Mode=OneWay, Path=ViewModel.PoisAreLoading}"
+                    Symbol="MapPin"
+                    TotalCount="{x:Bind Mode=OneWay, Path=ViewModel.OnTrackCount}"
+                    VisibleCount="{x:Bind Mode=OneWay, Path=ViewModel.OnTrackCount}">
+                    <controls:InfoToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="P" Modifiers="Control" />
-                    </ToggleButton.KeyboardAccelerators>
-                </ToggleButton>
-                <controls:InfoToggleButton />
+                    </controls:InfoToggleButton.KeyboardAccelerators>
+                </controls:InfoToggleButton>
+                <controls:InfoToggleButton
+                    CategoryChanged="InfoButton_CategoryChanged"
+                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.InfoVisible}"
+                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.InfoEnabled}"
+                    IsLoading="{x:Bind Mode=OneWay, Path=ViewModel.InfoIsLoading}"
+                    Symbol="OutlineStar"
+                    TotalCount="{x:Bind Mode=OneWay, Path=ViewModel.Infos.CachedCount}"
+                    VisibleCount="{x:Bind Mode=OneWay, Path=ViewModel.Infos.ActivatedCount}">
+                    <controls:InfoToggleButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="I" Modifiers="Control" />
+                    </controls:InfoToggleButton.KeyboardAccelerators>
+                </controls:InfoToggleButton>
             </StackPanel>
 
             <ComboBox
@@ -325,6 +340,7 @@
                         </mux:TabViewItem.IconSource>
                         <ListView
                             ContainerContentChanging="OnTracks_ContainerContentChanging"
+                            DoubleTapped="OnTracks_DoubleTapped"
                             ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Sections}"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                             ScrollViewer.VerticalScrollMode="Auto"
@@ -381,10 +397,10 @@
                         </mux:TabViewItem.IconSource>
                         <ListView
                             ContainerContentChanging="OnTracks_ContainerContentChanging"
+                            DoubleTapped="OnTracks_DoubleTapped"
                             ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Points}"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                            ScrollViewer.VerticalScrollMode="Auto"
-                            SelectionChanged="Pois_SelectionChanged">
+                            ScrollViewer.VerticalScrollMode="Auto">
                             <ListView.Resources>
                                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                                     <Setter Property="MinHeight" Value="52" />

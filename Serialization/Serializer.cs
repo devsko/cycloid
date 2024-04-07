@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using cycloid.Info;
 using cycloid.Routing;
 using Microsoft.VisualStudio.Threading;
 using Windows.Storage;
@@ -38,6 +39,7 @@ public static class Serializer
             {
                 Name = pointOfInterest.Name,
                 Type = pointOfInterest.Type,
+                Category = InfoCategory.Get(pointOfInterest.Type),
                 Created = pointOfInterest.Created,
                 Location = new MapPoint(pointOfInterest.Location.Lat, pointOfInterest.Location.Lon),
             };
@@ -118,12 +120,14 @@ public static class Serializer
                 .ToArray()
         };
 
-        using IRandomAccessStream winRtStream = await track.File.OpenAsync(FileAccessMode.ReadWrite).AsTask().ConfigureAwait(false);
-        winRtStream.Size = 0;
-        using Stream stream = winRtStream.AsStreamForWrite();
+        StorageFile tempFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("current", CreationCollisionOption.ReplaceExisting);
+        using (Stream stream = await tempFile.OpenStreamForWriteAsync().ConfigureAwait(false))
+        {
+            await JsonSerializer.SerializeAsync(stream, trackFile, PoiContext.Default.TrackFile, cancellationToken).ConfigureAwait(false);
+        }
 
-        await JsonSerializer.SerializeAsync(stream, trackFile, PoiContext.Default.TrackFile, cancellationToken).ConfigureAwait(false);
-
+        await tempFile.CopyAndReplaceAsync(track.File);
+        
         static byte[] Serialize(TrackPoint[] points)
         {
             if (points is null)

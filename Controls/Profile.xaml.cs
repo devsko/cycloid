@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -12,7 +13,7 @@ using Windows.UI.Xaml.Media;
 namespace cycloid.Controls;
 
 [ObservableObject]
-public sealed partial class Profile : UserControl
+public sealed partial class Profile : ViewModelControl
 {
     [Flags]
     private enum Change
@@ -85,9 +86,6 @@ public sealed partial class Profile : UserControl
 
     // OnTrackPoiAdded
     // OnCurrentPointChanged
-
-
-    private ViewModel ViewModel => (ViewModel)this.FindResource(nameof(ViewModel));
 
     partial void OnHorizontalZoomChanged(double _)
     {
@@ -240,14 +238,14 @@ public sealed partial class Profile : UserControl
         }
     }
 
-    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    private void ViewModelControl_Loaded(object _1, RoutedEventArgs _2)
     {
         ViewModel.TrackChanged += ViewModel_TrackChanged;
         ViewModel.HoverPointChanged += ViewModel_HoverPointChanged;
         ViewModel.CurrentSectionChanged += ViewModel_CurrentSectionChanged;
     }
 
-    private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
+    private void ViewModelControl_SizeChanged(object _1, SizeChangedEventArgs _2)
     {
         // TODO
         // Weird behavior if HorizontalZoom equals 1 and a restored app window is maximized!
@@ -331,7 +329,18 @@ public sealed partial class Profile : UserControl
         }
     }
 
-    private void ZoomOut_Click(object _1, RoutedEventArgs _2)
+    private void Root_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        if (ViewModel.Track is not null)
+        {
+            float distance = (float)(e.GetPosition(Root).X / Root.ActualWidth * ViewModel.Track.Points.Total.Distance);
+            (TrackPoint point, _) = ViewModel.Track.Points.Search(distance);
+
+            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(point));
+        }
+    }
+
+        private void ZoomOut_Click(object _1, RoutedEventArgs _2)
     {
         HorizontalZoom = Math.Max(1, HorizontalZoom / 1.25);
     }

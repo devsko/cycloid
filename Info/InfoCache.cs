@@ -28,7 +28,7 @@ public partial class InfoCache : ObservableObject
     public event Action<InfoPoint[]> InfosActivated;
     public event Action<int, int> InfosDeactivated;
 
-    public async Task SetCenterAsync(MapPoint point, CancellationToken cancellationToken)
+    public async Task LoadAsync(MapPoint point, CancellationToken cancellationToken)
     {
         BucketPoint center = new((int)Math.Floor(point.Latitude / BucketWidth ), (int)Math.Floor(point.Longitude / BucketWidth));
         

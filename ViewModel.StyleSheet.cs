@@ -130,6 +130,10 @@ partial class ViewModel
                   "Water": {
                     "parent": "Info.WaterBasePoint", 
                     "shape-icon": "brewery"
+                  },
+                  "hover": {
+                    "scale": 1,
+                    "strokeColor": "#FF000000"
                   }
                 },
                 "POI": {

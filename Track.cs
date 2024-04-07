@@ -31,6 +31,7 @@ public partial class Track : ObservableObject
         {
             Name = "Goal",
             Type = InfoType.Goal,
+            Category = InfoCategory.Section,
         };
         goal.InitOnTrackCount(1);
         PointsOfInterest = [goal];

@@ -42,6 +42,9 @@ partial class ViewModel
     private bool _infoShouldVisible = true;
 
     [ObservableProperty]
+    private bool _poisAreLoading;
+
+    [ObservableProperty]
     private bool _infoIsLoading;
 
     [ObservableProperty]
@@ -49,10 +52,13 @@ partial class ViewModel
     [NotifyPropertyChangedFor(nameof(InfoVisible))]
     private double _mapZoomLevel;
 
+    private readonly Dictionary<InfoCategory, bool> _poisCategories = InfoCategory.All.ToDictionary(category => category, _ => true);
     private readonly Dictionary<InfoCategory, bool> _infoCategories = InfoCategory.All.ToDictionary(category => category, _ => true);
 
     public event Action<bool, bool> InfoVisibleChanged;
+    public event Action<bool, bool> PoisVisibleChanged;
     public event Action<InfoCategory, bool> InfoCategoryVisibleChanged;
+    public event Action<InfoCategory, bool> PoisCategoryVisibleChanged;
 
     public bool PoisEnabled => Mode != Modes.Edit;
 
@@ -68,6 +74,11 @@ partial class ViewModel
             // Notify property changed again to convinvce the toggle button
             OnPropertyChanged(nameof(PoisVisible));
         }
+    }
+
+    partial void OnPoisShouldVisibleChanged(bool oldValue, bool newValue)
+    {
+        PoisVisibleChanged?.Invoke(oldValue, newValue);
     }
 
     public bool InfoEnabled => MapZoomLevel >= MinInfoZoomLevel;
@@ -106,24 +117,24 @@ partial class ViewModel
         }
     }
 
-    public void SetInfoCategoryVisible(InfoCategory category, bool value)
+    public void SetInfoCategoryVisible(bool pois, InfoCategory category, bool value)
     {
         if (category is null)
         {
             foreach (InfoCategory c in InfoCategory.All)
             {
-                _infoCategories[c] = value;
+                (pois ? _poisCategories : _infoCategories)[c] = value;
             }
         }
         else
         {
-            _infoCategories[category] = value;
+            (pois ? _poisCategories : _infoCategories)[category] = value;
         }
-        InfoCategoryVisibleChanged?.Invoke(category, value);
+        (pois ? PoisCategoryVisibleChanged : InfoCategoryVisibleChanged)?.Invoke(category, value);
     }
 
-    public bool GetInfoCategoryVisible(InfoCategory category)
+    public bool GetInfoCategoryVisible(bool pois, InfoCategory category)
     {
-        return _infoCategories[category];
+        return (pois ? _poisCategories : _infoCategories)[category];
     }
 }

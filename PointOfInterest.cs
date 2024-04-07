@@ -15,6 +15,8 @@ public partial class PointOfInterest : ObservableObject
 
     public InfoType Type { get; set; }
 
+    public InfoCategory Category { get; set; }
+
     public DateTime Created { get; set; }
 
     public MapPoint Location { get; set; }

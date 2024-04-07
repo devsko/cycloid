@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using cycloid.External;
 using cycloid.Info;
-using Windows.System;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace cycloid;
 
@@ -77,7 +77,13 @@ public partial class ViewModel : ObservableObject
     [RelayCommand]
     public Task OpenLocationAsync(MapPoint location)
     {
-        return Launcher.LaunchUriAsync(new Uri(FormattableString.Invariant($"https://www.google.com/maps/search/?api=1&query={location.Latitude},{location.Longitude}"))).AsTask();
+        DataPackage data = new();
+        data.SetText(FormattableString.Invariant($"{location.Latitude},{location.Longitude}"));
+        Clipboard.SetContent(data);
+
+        return Task.CompletedTask;
+
+        //return Launcher.LaunchUriAsync(new Uri(FormattableString.Invariant($"https://www.google.com/maps/search/?api=1&query={location.Latitude},{location.Longitude}"))).AsTask();
     }
 
     partial void OnModeChanged(Modes oldValue, Modes newValue)

@@ -1,5 +1,5 @@
-using System.Collections.Specialized;
 using System;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using cycloid.Routing;
@@ -9,9 +9,7 @@ using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Maps;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Input;
 
 namespace cycloid.Controls;
 
@@ -134,7 +132,7 @@ partial class Map
         ViewModel.EndDragWayPoint();
     }
 
-    private void HandleRoutingPanelPointerMoved(Point point)
+    private void HandleRoutingPointerMoved(Point point)
     {
         _dragWayPointThrottle.Next(point, this);
     }
@@ -157,6 +155,11 @@ partial class Map
 
     private void RoutingLayer_MapElementPointerEntered(MapElementsLayer _, MapElementsLayerPointerEnteredEventArgs args)
     {
+        if (ViewModel.Mode != Modes.Edit)
+        {
+            return;
+        }
+
         Debug.Assert(ViewModel.HoveredWayPoint is null && ViewModel.HoveredSection is null);
 
         if (args.MapElement is MapIcon { Tag: WayPoint wayPoint })
@@ -173,6 +176,11 @@ partial class Map
 
     private void RoutingLayer_MapElementPointerExited(MapElementsLayer _, MapElementsLayerPointerExitedEventArgs args)
     {
+        if (ViewModel.Mode != Modes.Edit)
+        {
+            return;
+        }
+
         args.MapElement.MapStyleSheetEntryState = "";
 
         ViewModel.HoveredWayPoint = null;
@@ -181,6 +189,11 @@ partial class Map
 
     private void RoutingLayer_MapElementClick(MapElementsLayer _, MapElementsLayerClickEventArgs args)
     {
+        if (ViewModel.Mode != Modes.Edit)
+        {
+            return;
+        }
+
         // No way to find out if it is a middle button click for delete. Use Ctrl-Click as workaround
 
         //bool ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);

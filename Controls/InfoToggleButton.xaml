@@ -8,14 +8,14 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <x:Double x:Key="SplitButtonSecondaryButtonSize">22</x:Double>
+            <x:Double x:Key="SplitButtonSecondaryButtonSize">16</x:Double>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <mux:ToggleSplitButton
         Height="32.8"
-        IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.InfoVisible}"
-        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.InfoEnabled}">
+        IsChecked="{x:Bind Mode=TwoWay, Path=IsChecked}"
+        IsEnabled="{x:Bind Mode=OneWay, Path=IsEnabled}">
         <mux:ToggleSplitButton.Flyout>
             <Flyout>
                 <StackPanel x:Name="CheckBoxContainer">
@@ -23,9 +23,9 @@
                         <CheckBox.Content>
                             <TextBlock>
                                 <Run Text="All (" />
-                                <Run Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Numeric(ViewModel.Infos.ActivatedCount)}" />
+                                <Run Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Numeric(VisibleCount)}" />
                                 <Run Text="/" />
-                                <Run Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Numeric(ViewModel.Infos.CachedCount)}" />
+                                <Run Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Numeric(TotalCount)}" />
                                 <Run Text=")" />
                             </TextBlock>
                         </CheckBox.Content>
@@ -49,18 +49,15 @@
                 </StackPanel>
             </Flyout>
         </mux:ToggleSplitButton.Flyout>
-        <mux:ToggleSplitButton.KeyboardAccelerators>
-            <KeyboardAccelerator Key="I" Modifiers="Control" />
-        </mux:ToggleSplitButton.KeyboardAccelerators>
         <mux:ToggleSplitButton.Content>
             <Grid>
-                <SymbolIcon Symbol="OutlineStar" />
+                <SymbolIcon Symbol="{x:Bind Mode=OneWay, Path=Symbol}" />
                 <mux:ProgressBar
                     Margin="-8,-6,-8,-6"
                     VerticalAlignment="Bottom"
                     Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
                     IsIndeterminate="True"
-                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.InfoIsLoading)}" />
+                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(IsLoading)}" />
             </Grid>
         </mux:ToggleSplitButton.Content>
     </mux:ToggleSplitButton>

@@ -3,7 +3,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace cycloid.Controls;
 
-public partial class PointControl : UserControl
+public class PointControl : UserControl
 {
     public TrackPoint Point
     {

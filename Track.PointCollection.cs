@@ -128,6 +128,39 @@ partial class Track
             return (point, index);
         }
 
+        public TrackPoint GetNearestPoint<T>(T point) where T : IMapPoint
+        {
+            IEnumerator<(Segment, TrackPoint, Index)> enumerator = Enumerate().GetEnumerator();
+            if (!enumerator.MoveNext())
+            {
+                return default;
+            }
+
+            (Segment Segment, TrackPoint Point, float Distance) result = (default, default, float.MaxValue);
+
+            (Segment previousSegment, TrackPoint previousPoint, _) = enumerator.Current;
+            while (enumerator.MoveNext())
+            {
+                // TODO einfacher nur Distance der TrackPoints vergleichen und ohne Lerp
+
+                (Segment currentSegment, TrackPoint currentPoint, _) = enumerator.Current;
+                (float? fraction, float testDistance) = GeoCalculation.CrossTrackDistance(previousPoint, currentPoint, point);
+                if (fraction is float f && testDistance < result.Distance)
+                {
+                    result = (previousSegment, TrackPoint.Lerp(previousPoint, currentPoint, f), testDistance);
+                }
+                previousPoint = currentPoint;
+                previousSegment = currentSegment;
+            }
+
+            if (GeoCalculation.Distance(previousPoint, point) < result.Distance)
+            {
+                result = (previousSegment, previousPoint, 0);
+            }
+
+            return GetPoint(result.Segment, result.Point);
+        }
+
         public (TrackPoint Point, float Distance)[] GetNearPoints(MapPoint location, float maxCrossTrackDistance, int minDistanceDelta)
         {
             IEnumerator<(Segment Segment, TrackPoint Point, Index _)> enumerator = Enumerate().GetEnumerator();

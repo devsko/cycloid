@@ -67,11 +67,14 @@
     <Compile Include="Controls\Map.CompareSession.cs" />
     <Compile Include="Controls\Map.Pois.cs" />
     <Compile Include="Controls\Map.Routing.cs" />
+    <Compile Include="Controls\ViewModelControl.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Info\AmenitiesConverter.cs" />
     <Compile Include="Info\InfoCache.cs" />
     <Compile Include="Info\InfoPoint.cs" />
     <Compile Include="OnTrack.cs" />
     <Compile Include="PointOfInterest.cs" />
+    <Compile Include="SetMapCenterMessage.cs" />
     <Compile Include="Track.Index.cs" />
     <Compile Include="Track.CompareSession.cs" />
     <Compile Include="Controls\Bing.xaml.cs">

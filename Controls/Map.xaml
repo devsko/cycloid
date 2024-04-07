@@ -1,4 +1,4 @@
-﻿<UserControl
+﻿<controls:ViewModelControl
     x:Class="cycloid.Controls.Map"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,7 +7,7 @@
     xmlns:info="using:cycloid.Info"
     xmlns:maps="using:Windows.UI.Xaml.Controls.Maps">
 
-    <UserControl.Resources>
+    <controls:ViewModelControl.Resources>
 
         <Style
             x:Key="LocationMenuItemStyle"
@@ -88,20 +88,30 @@
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(DirectRoute.Visibility)}" />
         </controls:MapMenuFlyout>
         <controls:MapMenuFlyout x:Name="MapOnTrackMenu">
-            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.AddPointOfInterestCommand}" Text="Add Split">
+            <MenuFlyoutItem
+                x:Name="ConvertInfoMenuItem"
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.AddPointOfInterestCommand}"
+                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.HoverInfo)}" />
+            <MenuFlyoutItem
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.AddPointOfInterestCommand}"
+                Text="Add Split point"
+                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfInvalid(ViewModel.HoverInfo)}">
                 <MenuFlyoutItem.CommandParameter>
                     <cycloid:PointOfInterestCommandParameter Location="{x:Bind Mode=OneWay, Path=MapOnTrackMenu.Location}" Type="{x:Bind Mode=OneTime, Path=info:InfoType.Split}" />
                 </MenuFlyoutItem.CommandParameter>
             </MenuFlyoutItem>
-            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.AddPointOfInterestCommand}" Text="Add Mountain pass">
+            <MenuFlyoutItem
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.AddPointOfInterestCommand}"
+                Text="Add Mountain pass"
+                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfInvalid(ViewModel.HoverInfo)}">
                 <MenuFlyoutItem.CommandParameter>
                     <cycloid:PointOfInterestCommandParameter Location="{x:Bind Mode=OneWay, Path=MapOnTrackMenu.Location}" Type="{x:Bind Mode=OneTime, Path=info:InfoType.MountainPass}" />
                 </MenuFlyoutItem.CommandParameter>
             </MenuFlyoutItem>
-            <MenuFlyoutSeparator />
+            <MenuFlyoutSeparator Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfInvalid(ViewModel.HoverInfo)}" />
         </controls:MapMenuFlyout>
         <controls:MapMenuFlyout x:Name="MapTrainMenu" />
-    </UserControl.Resources>
+    </controls:ViewModelControl.Resources>
 
     <maps:MapControl
         x:Name="MapControl"
@@ -146,6 +156,7 @@
 
         <controls:PointerPanel
             x:Name="PointerPanel"
+            ContextRequested="PointerPanel_ContextRequested"
             PointerMoved="PointerPanel_PointerMoved"
             Tapped="PointerPanel_Tapped" />
 
@@ -201,4 +212,4 @@
 
     </maps:MapControl>
 
-</UserControl>
+</controls:ViewModelControl>

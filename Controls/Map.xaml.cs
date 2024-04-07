@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.WinUI;
+using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Info;
 using Windows.Devices.Geolocation;
+using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -15,7 +15,7 @@ using Windows.UI.Xaml.Input;
 
 namespace cycloid.Controls;
 
-public sealed partial class Map : UserControl
+public sealed partial class Map : ViewModelControl
 {
     private readonly Throttle<object, Map> _loadInfosThrottle = new(
         static (_, @this, cancellationToken) => @this.LoadInfosAsync(cancellationToken),
@@ -31,33 +31,62 @@ public sealed partial class Map : UserControl
     public Map()
     {
         InitializeComponent();
-    }
 
-    private ViewModel ViewModel => (ViewModel)this.FindResource(nameof(ViewModel));
+        StrongReferenceMessenger.Default.Register<SetMapCenterMessage>(this, (recipient, message) =>
+        {
+            ((Map)recipient).SetCenterAsync(new Geopoint(message.Value)).FireAndForget();
+        });
+    }
 
     public Geopoint Center => MapControl.Center;
 
-    public async Task SetCenterAsync(string address, int zoom = 12)
-    {
-        Geopoint point = await ViewModel.GetLocationAsync(address, MapControl.Center);
-        if (point is not null)
-        {
-            await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Bow);
-        }
-    }
-
-    public async Task SetCenterAsync(Geopoint point, int zoom = 12, bool onlyIfNotInView = false)
+    private async Task SetCenterAsync(Geopoint point, int zoom = 12, bool onlyIfNotInView = false)
     {
         if (onlyIfNotInView)
         {
             MapControl.IsLocationInView(point, out bool isInView);
-            if (isInView && MapControl.ZoomLevel >= zoom)
+            if (isInView)
             {
                 return;
             }
         }
 
-        await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Bow);
+        await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Linear);
+    }
+
+    private void ShowMapMenu(Point position, MapPoint location)
+    {
+        MapMenuFlyout menu;
+        if (ViewModel.Track is null)
+        {
+            menu = MapNoTrackMenu;
+        }
+        else if (ViewModel.Mode == Modes.Edit)
+        {
+            if (ViewModel.HoveredWayPoint is not null)
+            {
+                menu = MapEditPointMenu;
+            }
+            else if (ViewModel.HoveredSection is not null)
+            {
+                menu = MapEditSectionMenu;
+            }
+            else
+            {
+                menu = MapEditMenu;
+            }
+        }
+        else if (ViewModel.Mode is Modes.Sections or Modes.POIs)
+        {
+            HandlePoiPointerMoved(position);
+            menu = MapOnTrackMenu;
+        }
+        else
+        {
+            menu = MapTrainMenu;
+        }
+
+        menu.ShowAt(MapControl, location, position);
     }
 
     public void ZoomTrackDifference(TrackDifference difference)
@@ -104,7 +133,7 @@ public sealed partial class Map : UserControl
         ViewModel.InfoIsLoading = true;
         try
         {
-            await ViewModel.Infos.SetCenterAsync((MapPoint)MapControl.ActualCamera.Location.Position, cancellationToken);
+            await ViewModel.Infos.LoadAsync((MapPoint)MapControl.ActualCamera.Location.Position, cancellationToken);
         }
         finally
         {
@@ -123,6 +152,7 @@ public sealed partial class Map : UserControl
         ViewModel.DragNewWayPointStarting += ViewModel_DragNewWayPointStarting;
         ViewModel.DragWayPointStarted += ViewModel_DragWayPointStarted;
         ViewModel.DragWayPointEnded += ViewModel_DragWayPointEnded;
+        ViewModel.PoisCategoryVisibleChanged += ViewModel_PoisCategoryVisibleChanged;
         ViewModel.InfoCategoryVisibleChanged += ViewModel_InfoCategoryVisibleChanged;
         ViewModel.Infos.InfosActivated += Infos_InfosActivated;
         ViewModel.Infos.InfosDeactivated += Infos_InfosDeactivated;
@@ -151,22 +181,51 @@ public sealed partial class Map : UserControl
         _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
         MapControl.Layers.Add(_routingLayer);
 
-        foreach (InfoCategory category in InfoCategory.All.Where(c => !c.Hide))
-        {
-            MenuFlyoutSubItem subItem = new() { Text = $"Add {category.Name}" };
-            foreach (InfoType type in category.Types)
+        MenuFlyoutSubItem[] infoCategoryMenuItems = InfoCategory.All
+            .Where(category => !category.Hide)
+            .Select(category =>
             {
-                PointOfInterestCommandParameter parameter = new() { Type = type };
-                MapOnTrackMenu.RegisterPropertyChangedCallback(MapMenuFlyout.LocationProperty, (sender, _) => parameter.Location = ((MapMenuFlyout)sender).Location);
-                subItem.Items.Add(new MenuFlyoutItem
+                MenuFlyoutSubItem subItem = new() { Text = $"Add {category.Name}" };
+                foreach (InfoType type in category.Types)
                 {
-                    Text = type.ToString(),
-                    Command = ViewModel.AddPointOfInterestCommand,
-                    CommandParameter = parameter,
-                });
+                    PointOfInterestCommandParameter parameter = new() { Type = type };
+                    MapOnTrackMenu.RegisterPropertyChangedCallback(MapMenuFlyout.LocationProperty, (sender, _) => parameter.Location = ((MapMenuFlyout)sender).Location);
+                    subItem.Items.Add(new MenuFlyoutItem
+                    {
+                        Text = type.ToString(),
+                        Command = ViewModel.AddPointOfInterestCommand,
+                        CommandParameter = parameter,
+                    });
+                }
+                MapOnTrackMenu.Items.Add(subItem);
+                
+                return subItem;
+            })
+            .ToArray();
+
+        ViewModel.HoverInfoChanged += (_, _) =>
+        {
+            InfoPoint info = ViewModel.HoverInfo;
+            if (info.IsValid)
+            {
+                string name = info.Name;
+                if (name.Length > 10)
+                {
+                    name = name[..10] + "... ";
+                }
+                else if (name.Length > 0)
+                {
+                    name += " ";
+                }
+                ConvertInfoMenuItem.Text = $"Add {name}as {info.Type} ({info.Category.Name})";
             }
-            MapOnTrackMenu.Items.Add(subItem);
-        }
+
+            Visibility visibility = Convert.VisibleIfInvalid(info);
+            foreach (MenuFlyoutSubItem menuItem in infoCategoryMenuItems)
+            {
+                menuItem.Visibility = visibility;
+            }
+        };
     }
 
     private void MapControl_ActualCameraChanged(MapControl _1, MapActualCameraChangedEventArgs _2)
@@ -211,37 +270,7 @@ public sealed partial class Map : UserControl
 
     private void MapControl_MapContextRequested(MapControl sender, MapContextRequestedEventArgs args)
     {
-        MapMenuFlyout menu;
-        MapPoint location = (MapPoint)args.Location.Position;
-        if (ViewModel.Track is null)
-        {
-            menu = MapNoTrackMenu;
-        }
-        else if (ViewModel.Mode == Modes.Edit)
-        {
-            if (ViewModel.HoveredWayPoint is not null)
-            {
-                menu = MapEditPointMenu;
-            }
-            else if (ViewModel.HoveredSection is not null)
-            {
-                menu = MapEditSectionMenu;
-            }
-            else
-            {
-                menu = MapEditMenu;
-            }
-        }
-        else if (ViewModel.Mode is Modes.Sections or Modes.POIs)
-        {
-            menu = MapOnTrackMenu;
-        }
-        else
-        {
-            menu = MapTrainMenu;
-        }
-
-        menu.ShowAt(MapControl, location, args.Position);
+        ShowMapMenu(args.Position, (MapPoint)args.Location.Position);
     }
 
     private void MapControl_LosingFocus(UIElement _, LosingFocusEventArgs args)
@@ -266,12 +295,26 @@ public sealed partial class Map : UserControl
 
     private void PointerPanel_PointerMoved(object _, PointerRoutedEventArgs e)
     {
+        Point position = e.GetCurrentPoint(MapControl).Position;
         if (ViewModel.Mode == Modes.Edit)
         {
-            HandleRoutingPanelPointerMoved(e.GetCurrentPoint(MapControl).Position);
+            HandleRoutingPointerMoved(position);
+        }
+        else
+        {
+            HandlePoiPointerMoved(position);
         }
 
         e.Handled = true;
+    }
+
+    private void PointerPanel_ContextRequested(UIElement sender, ContextRequestedEventArgs args)
+    {
+        if (args.TryGetPosition(MapControl, out Point position) && 
+            MapControl.TryGetLocationFromOffset(position, out Geopoint location))
+        {
+            ShowMapMenu(position, (MapPoint)location.Position);
+        }
     }
 
     private void ViewModel_ModeChanged(Modes oldMode, Modes newMode)
@@ -285,11 +328,8 @@ public sealed partial class Map : UserControl
                 {
                     element.Visible = isEditMode;
                 }
-                else
-                {
-                    element.IsEnabled = isEditMode;
-                }
             }
+            PointerPanel.IsEnabled = !isEditMode;
         }
     }
 
@@ -318,42 +358,5 @@ public sealed partial class Map : UserControl
     private void ViewModel_HoverPointChanged(TrackPoint arg1, TrackPoint arg2)
     {
         Nudge();
-    }
-
-    private void ViewModel_InfoCategoryVisibleChanged(InfoCategory category, bool value)
-    {
-        IEnumerable<MapIcon> icons = _infoLayer.MapElements.Cast<MapIcon>();
-        if (category is not null)
-        {
-            icons = icons.Where(icon => icon.Tag.Equals(category));
-        }
-
-        foreach (MapIcon icon in icons)
-        {
-            icon.Visible = value;
-        }
-    }
-
-    private void Infos_InfosActivated(InfoPoint[] infoPoints)
-    {
-        foreach (InfoPoint infoPoint in infoPoints)
-        {
-            _infoLayer.MapElements.Add(new MapIcon
-            {
-                Location = new Geopoint(infoPoint.Location),
-                MapStyleSheetEntry = $"Info.{infoPoint.Type}",
-                Title = infoPoint.Name,
-                Tag = infoPoint.Category,
-                Visible = ViewModel.GetInfoCategoryVisible(infoPoint.Category),
-            });
-        }
-    }
-
-    private void Infos_InfosDeactivated(int startIndex, int length)
-    {
-        while (length-- > 0)
-        {
-            _infoLayer.MapElements.RemoveAt(startIndex);
-        }
     }
 }

@@ -4,10 +4,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using cycloid.Info;
+using Microsoft.VisualStudio.Threading;
 
 namespace cycloid;
 
@@ -22,26 +24,37 @@ partial class ViewModel
     [ObservableProperty]
     private OnTrack _currentSection;
 
+    [ObservableProperty]
+    private InfoPoint _hoverInfo = InfoPoint.Invalid;
+
     public ObservableCollection<OnTrack> Sections { get; } = [];
 
     public ObservableCollection<OnTrack> Points { get; } = [];
 
     public event Action<OnTrack> OnTrackAdded;
     public event Action<OnTrack, OnTrack> CurrentSectionChanged;
+    public event Action<InfoPoint, InfoPoint> HoverInfoChanged;
+
+    public int OnTrackCount => Sections.Count + Points.Count;
 
     [RelayCommand(CanExecute = nameof(CanAddPointOfInterest))]
     public async Task AddPointOfInterestAsync(PointOfInterestCommandParameter parameter)
     {
+        bool convertInfo = HoverInfo.IsValid;
+
+        InfoType type = convertInfo ? HoverInfo.Type : parameter.Type;
         PointOfInterest pointOfInterest = new()
         {
             Created = DateTime.UtcNow,
-            Location = parameter.Location,
-            Type = parameter.Type,
+            Location = convertInfo ? HoverInfo.Location : parameter.Location,
+            Type = type,
+            Category = InfoCategory.Get(type),
+            Name = convertInfo ? HoverInfo.Name : "",
         };
 
         Mode = pointOfInterest.IsSection ? Modes.Sections : Modes.POIs;
 
-        AddOnTrackPoints(pointOfInterest);
+        await AddOnTrackPointsAsync(pointOfInterest, null);
 
         Track.PointsOfInterest.Add(pointOfInterest);
         pointOfInterest.PropertyChanged += PointOfInterest_PropertyChanged;
@@ -69,18 +82,31 @@ partial class ViewModel
             return;
         }
 
-        TrackPoint lastTrackPoint = Track.Points.Last();
-        Sections.Add(new OnTrack(Sections)
-        {
-            TrackPoint = lastTrackPoint,
-            PointOfInterest = Track.PointsOfInterest.Single(poi => poi.Type == InfoType.Goal),
-            TrackFilePosition = Track.FilePosition(lastTrackPoint.Distance),
-            Values = lastTrackPoint.Values,
-        });
+        CreateAllOnTrackPointsAsync().FireAndForget();
 
-        foreach (PointOfInterest pointOfInterest in Track.PointsOfInterest.Where(poi => poi.Type != InfoType.Goal))
+        async Task CreateAllOnTrackPointsAsync()
         {
-            AddOnTrackPoints(pointOfInterest);
+            SynchronizationContext ui = SynchronizationContext.Current;
+
+            using (await Track.RouteBuilder.ChangeLock.EnterAsync(default))
+            {
+                TrackPoint lastTrackPoint = Track.Points.Last();
+                Sections.Add(new OnTrack(Sections)
+                {
+                    TrackPoint = lastTrackPoint,
+                    PointOfInterest = Track.PointsOfInterest.Single(poi => poi.Type == InfoType.Goal),
+                    TrackFilePosition = Track.FilePosition(lastTrackPoint.Distance),
+                    Values = lastTrackPoint.Values,
+                });
+
+                OnPropertyChanged(nameof(OnTrackCount));
+
+                foreach (PointOfInterest pointOfInterest in Track.PointsOfInterest.Where(poi => poi.Type != InfoType.Goal))
+                {
+                    await TaskScheduler.Default;
+                    await AddOnTrackPointsAsync(pointOfInterest, ui).ConfigureAwait(false);
+                }
+            }
         }
     }
 
@@ -88,14 +114,21 @@ partial class ViewModel
     {
         Sections.Clear();
         Points.Clear();
+
+        OnPropertyChanged(nameof(OnTrackCount));
     }
 
-    private void AddOnTrackPoints(PointOfInterest pointOfInterest)
+    private async Task AddOnTrackPointsAsync(PointOfInterest pointOfInterest, SynchronizationContext ui)
     {
         bool isSection = pointOfInterest.IsSection;
         IList<OnTrack> onTracks = isSection ? Sections : Points;
 
         (TrackPoint TrackPoint, float Distance)[] trackPoints = Track.Points.GetNearPoints(pointOfInterest.Location, maxCrossTrackDistance: isSection ? 50 : 2000, minDistanceDelta: 1500);
+
+        if (ui is not null)
+        {
+            await ui;
+        }
 
         bool initialize = pointOfInterest.OnTrackCount is null || pointOfInterest.OnTrackCount.Value != trackPoints.Length;
 
@@ -136,6 +169,8 @@ partial class ViewModel
                     TrackMaskBitPosition = i,
                     Values = values,
                 });
+
+                OnPropertyChanged(nameof(OnTrackCount));
             }
             i++;
         }
@@ -143,6 +178,8 @@ partial class ViewModel
         if (offTrack)
         {
             onTracks.Add(OnTrack.CreateOffTrack(pointOfInterest, onTracks));
+
+            OnPropertyChanged(nameof(OnTrackCount));
         }
 
         if (initialize)
@@ -154,6 +191,11 @@ partial class ViewModel
     partial void OnCurrentSectionChanged(OnTrack oldValue, OnTrack newValue)
     {
         CurrentSectionChanged?.Invoke(oldValue, newValue);
+    }
+
+    partial void OnHoverInfoChanged(InfoPoint oldValue, InfoPoint newValue)
+    {
+        HoverInfoChanged?.Invoke(oldValue, newValue);
     }
 
     private void PointOfInterest_PropertyChanged(object sender, PropertyChangedEventArgs _)

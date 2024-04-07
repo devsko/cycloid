@@ -1,12 +1,12 @@
-﻿<UserControl
+﻿<controls:ViewModelControl
     x:Class="cycloid.Controls.Profile"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    Loaded="UserControl_Loaded"
-    SizeChanged="UserControl_SizeChanged">
+    Loaded="ViewModelControl_Loaded"
+    SizeChanged="ViewModelControl_SizeChanged">
 
     <Grid>
 
@@ -23,7 +23,8 @@
                 PointerExited="Root_PointerExited"
                 PointerMoved="Root_PointerMoved"
                 SizeChanged="Root_SizeChanged"
-                Tapped="Root_Tapped">
+                Tapped="Root_Tapped"
+                DoubleTapped="Root_DoubleTapped">
                 <Canvas.Resources>
                     <CompositeTransform x:Name="GraphTransform" />
                     <CompositeTransform x:Name="GraphBottomTransform" />
@@ -121,4 +122,4 @@
 
     </Grid>
 
-</UserControl>
+</controls:ViewModelControl>
