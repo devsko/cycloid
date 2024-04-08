@@ -207,6 +207,14 @@ partial class ViewModel
                     "parent": "POI.WaterBasePoint", 
                     "shape-icon": "brewery"
                   }
+                },
+                "Dummy": {
+                  "Point": {
+                    "parent": "userPoint",
+                    "fillColor": "#00000000",
+                    "iconColor": "#00000000",
+                    "strokeColor": "#00000000"
+                  }
                 }
               }
             }

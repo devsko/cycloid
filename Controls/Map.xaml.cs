@@ -106,26 +106,20 @@ public sealed partial class Map : ViewModelControl
         }
     }
 
+
     // WORKAROUND Change the view slightly to update moved child controls.
+    private MapIcon _dummy;
     private void Nudge()
     {
-        if (IsEqualCamera(MapControl.ActualCamera, MapControl.TargetCamera))
+        if (_dummy is null)
         {
-            MapCamera camera = MapControl.TargetCamera;
-            camera.Roll = camera.Roll == 0 ? 1e-5 : 0;
-            _ = MapControl.TrySetSceneAsync(MapScene.CreateFromCamera(camera), MapAnimationKind.None);
+            MapControl.MapElements.Add(_dummy = new MapIcon { MapStyleSheetEntry = "Dummy.Point", Location = MapControl.Center });
         }
-
-        static bool IsEqualCamera(MapCamera camera1, MapCamera camera2) =>
-            IsEqualDouble(camera1.Location.Position.Latitude, camera2.Location.Position.Latitude) &&
-            IsEqualDouble(camera1.Location.Position.Longitude, camera2.Location.Position.Longitude) &&
-            (IsEqualDouble(camera1.Heading, camera2.Heading) || Math.Abs(Math.Abs(camera1.Heading - camera2.Heading) - 360) < 1e-4) &&
-            IsEqualDouble(camera1.FieldOfView, camera2.FieldOfView) &&
-            IsEqualDouble(camera1.Pitch, camera2.Pitch) &&
-            IsEqualDouble(camera1.Roll, camera2.Roll);
-
-        static bool IsEqualDouble(double value1, double value2)
-            => Math.Abs(value1 - value2) < 1e-4;
+        else
+        {
+            MapControl.MapElements.Clear();
+            _dummy = null;
+        }
     }
 
     private async Task LoadInfosAsync(CancellationToken cancellationToken)

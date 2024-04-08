@@ -9,6 +9,11 @@ public partial class PointValuesControl : PointControl
 {
     private static readonly PropertyChangedEventArgs _isVisibleChangedArgs = new(nameof(IsVisible));
 
+    public PointValuesControl()
+    {
+        IsHitTestVisible = false;
+    }
+
     public Track Track
     {
         get => (Track)GetValue(TrackProperty);

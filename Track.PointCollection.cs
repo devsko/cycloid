@@ -75,6 +75,12 @@ partial class Track
             }
         }
 
+        public Index LastIndex()
+        {
+            int segmentIndex = _segments.Count - 1;
+            return new Index(segmentIndex, _segments[segmentIndex].Points.Length - 1);
+        }
+
         public TrackPoint Last()
         {
             Segment segment = _segments[^1];
@@ -128,37 +134,45 @@ partial class Track
             return (point, index);
         }
 
-        public TrackPoint GetNearestPoint<T>(T point) where T : IMapPoint
+        public TrackPoint GetNearestPoint<T>(T point, (MapPoint NorthWest, MapPoint SouthEast) region) where T : IMapPoint
         {
-            IEnumerator<(Segment, TrackPoint, Index)> enumerator = Enumerate().GetEnumerator();
-            if (!enumerator.MoveNext())
+            float GetDistance((Segment Segment, TrackPoint TrackPoint, Index Index) current)
             {
-                return default;
-            }
-
-            (Segment Segment, TrackPoint Point, float Distance) result = (default, default, float.MaxValue);
-
-            (Segment previousSegment, TrackPoint previousPoint, _) = enumerator.Current;
-            while (enumerator.MoveNext())
-            {
-                // TODO einfacher nur Distance der TrackPoints vergleichen und ohne Lerp
-
-                (Segment currentSegment, TrackPoint currentPoint, _) = enumerator.Current;
-                (float? fraction, float testDistance) = GeoCalculation.CrossTrackDistance(previousPoint, currentPoint, point);
-                if (fraction is float f && testDistance < result.Distance)
+                TrackPoint currentPoint = current.TrackPoint;
+                if (currentPoint.Latitude <= region.NorthWest.Latitude && currentPoint.Latitude >= region.SouthEast.Latitude &&
+                    currentPoint.Longitude >= region.NorthWest.Longitude && currentPoint.Longitude <= region.SouthEast.Longitude)
                 {
-                    result = (previousSegment, TrackPoint.Lerp(previousPoint, currentPoint, f), testDistance);
+                    return GeoCalculation.Distance(currentPoint, point);
                 }
-                previousPoint = currentPoint;
-                previousSegment = currentSegment;
+
+                return float.PositiveInfinity;
             }
 
-            if (GeoCalculation.Distance(previousPoint, point) < result.Distance)
+            (Segment Segment, TrackPoint TrackPoint, Index Index) nearest = Enumerate().MinBy(GetDistance);
+
+            TrackPoint nearestPoint = GetPoint(nearest.Segment, nearest.TrackPoint);
+
+            (float Fraction, float Distance) previousDistance = (0, float.PositiveInfinity);
+            TrackPoint previous = default;
+            Index previousIndex = Decrement(nearest.Index);
+            if (previousIndex.IsValid)
             {
-                result = (previousSegment, previousPoint, 0);
+                previous = this[previousIndex];
+                previousDistance = GeoCalculation.MinimalDistance(previous, nearestPoint, point);
             }
 
-            return GetPoint(result.Segment, result.Point);
+            (float Fraction, float Distance) nextDistance = (0, float.PositiveInfinity);
+            TrackPoint next = default;
+            Index nextIndex = Increment(nearest.Index);
+            if (nextIndex.IsValid)
+            {
+                next = this[nextIndex];
+                nextDistance = GeoCalculation.MinimalDistance(nearestPoint, next, point);
+            }
+
+            return previousDistance.Distance < nextDistance.Distance
+                ? TrackPoint.Lerp(previous, nearestPoint, previousDistance.Fraction)
+                : TrackPoint.Lerp(nearestPoint, next, nextDistance.Fraction);
         }
 
         public (TrackPoint Point, float Distance)[] GetNearPoints(MapPoint location, float maxCrossTrackDistance, int minDistanceDelta)
@@ -313,11 +327,21 @@ partial class Track
             return new Index(segmentIndex, pointIndex);
         }
 
-        private Index Decrement(Index index) => index.PointIndex == 0
-            ? new Index(index.SegmentIndex - 1, _segments[index.SegmentIndex - 1].Points.Length - 1)
+        private Index Decrement(Index index) => 
+            index == default
+            ? Index.Invalid
+            : index.SegmentIndex == 0
+            ? new Index(index.SegmentIndex - 1, _segments[index.SegmentIndex - 1].Points.Length - 2) // Skip last point in all but last segment
             : index with { PointIndex = index.PointIndex - 1 };
 
-        private IEnumerable<(Segment Segment, TrackPoint Point, Index index)> Enumerate(Index from = default)
+        private Index Increment(Index index) => 
+            index == LastIndex()
+            ? Index.Invalid
+            : index.PointIndex == _segments[index.SegmentIndex].Points.Length - 2 // Skip last point in all but last segment
+            ? new Index(index.SegmentIndex + 1, 0)
+            : index with { PointIndex = index.PointIndex + 1 };
+
+        private IEnumerable<(Segment Segment, TrackPoint Point, Index Index)> Enumerate(Index from = default)
         {
             int startPointIndex = from.PointIndex;
             for (int segmentIndex = from.SegmentIndex; segmentIndex < _segments.Count; segmentIndex++)

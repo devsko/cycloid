@@ -19,7 +19,7 @@ public enum Modes
 
 public partial class ViewModel : ObservableObject
 {
-    private readonly SynchronizationContext _synchronizationContext;
+    private readonly SynchronizationContext _ui;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PoisEnabled))]
@@ -60,9 +60,9 @@ public partial class ViewModel : ObservableObject
 
     public ViewModel()
     {
-        _synchronizationContext = SynchronizationContext.Current;
+        _ui = SynchronizationContext.Current;
 
-        if (_synchronizationContext is null)
+        if (_ui is null)
         {
             throw new InvalidOperationException();
         }

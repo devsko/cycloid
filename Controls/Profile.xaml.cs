@@ -39,8 +39,8 @@ public sealed partial class Profile : ViewModelControl
     private const float VerticalRulerTickMinimumGap = 25;
 
     private readonly Throttle<PointerRoutedEventArgs, Profile> _pointerMovedThrottle = new(
-        static (e, @this) => @this.ThrottledPointerMoved(e), 
-        TimeSpan.FromMilliseconds(100));
+        static (e, @this) => @this.ThrottledPointerMoved(e),
+        TimeSpan.FromMilliseconds(70));
 
     [ObservableProperty]
     private double _horizontalZoom = 1;
@@ -254,7 +254,7 @@ public sealed partial class Profile : ViewModelControl
         _isOuterSizeChange = true;
     }
 
-    private void Scroller_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+    private void Scroller_ViewChanged(object _1, ScrollViewerViewChangedEventArgs _2)
     {
         _scrollerOffset = Scroller.HorizontalOffset;
 
@@ -276,7 +276,7 @@ public sealed partial class Profile : ViewModelControl
         }
     }
 
-    private void Root_SizeChanged(object sender, SizeChangedEventArgs e)
+    private void Root_SizeChanged(object _1, SizeChangedEventArgs _2)
     {
         if (_isOuterSizeChange)
         {
@@ -285,7 +285,7 @@ public sealed partial class Profile : ViewModelControl
         }
     }
 
-    private void Root_PointerMoved(object sender, PointerRoutedEventArgs e)
+    private void Root_PointerMoved(object _, PointerRoutedEventArgs e)
     {
         if (ViewModel.Track is not null)
         {
@@ -299,25 +299,25 @@ public sealed partial class Profile : ViewModelControl
         ViewModel.HoverPoint = ViewModel.Track.Points.Search((float)(e.GetCurrentPoint(Root).Position.X / _horizontalScale)).Point;
     }
 
-    private void Root_PointerExited(object sender, PointerRoutedEventArgs e)
+    private void Root_PointerExited(object _1, PointerRoutedEventArgs _2)
     {
         _pointerMovedThrottle.Clear();
         ViewModel.HoverPoint = TrackPoint.Invalid;
         HoverPointValues.Enabled = false;
     }
 
-    private void Root_Tapped(object sender, TappedRoutedEventArgs e)
+    private void Root_Tapped(object _1, TappedRoutedEventArgs _2)
     {
-        if (ViewModel.Track is not null)
+        if (ViewModel.Track is not null && ViewModel.HoverPoint.IsValid)
         {
-            float distance = (float)(e.GetPosition(Root).X / Root.ActualWidth * ViewModel.Track.Points.Total.Distance);
             if (ViewModel.Mode is Modes.Sections or Modes.POIs)
             {
                 foreach (OnTrack section in ViewModel.Sections)
                 {
-                    if (section.IsCurrent(distance))
+                    if (section.IsCurrent(ViewModel.HoverPoint.Distance))
                     {
                         ViewModel.CurrentSection = section;
+                        break;
                     }
                 }
             }
@@ -329,18 +329,15 @@ public sealed partial class Profile : ViewModelControl
         }
     }
 
-    private void Root_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    private void Root_DoubleTapped(object _1, DoubleTappedRoutedEventArgs _2)
     {
-        if (ViewModel.Track is not null)
+        if (ViewModel.Track is not null && ViewModel.HoverPoint.IsValid)
         {
-            float distance = (float)(e.GetPosition(Root).X / Root.ActualWidth * ViewModel.Track.Points.Total.Distance);
-            (TrackPoint point, _) = ViewModel.Track.Points.Search(distance);
-
-            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(point));
+            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(ViewModel.HoverPoint));
         }
     }
 
-        private void ZoomOut_Click(object _1, RoutedEventArgs _2)
+    private void ZoomOut_Click(object _1, RoutedEventArgs _2)
     {
         HorizontalZoom = Math.Max(1, HorizontalZoom / 1.25);
     }

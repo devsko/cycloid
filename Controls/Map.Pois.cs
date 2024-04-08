@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -12,6 +13,10 @@ namespace cycloid.Controls;
 
 partial class Map
 {
+    private readonly Throttle<(Point, MapPoint), Map> _hoverElementThrottle = new(
+        static (location, @this) => @this.HoverElement(location),
+        TimeSpan.FromMilliseconds(70));
+
     private MapPoint? GetLocation(Point offset) 
         => MapControl.TryGetLocationFromOffset(offset, out Geopoint location) ? (MapPoint)location.Position : null;
 
@@ -80,17 +85,20 @@ partial class Map
     private void HandlePoiPointerMoved(Point offset)
     {
         MapPoint? tryLocation = GetLocation(offset);
-        if (tryLocation is not MapPoint location)
+        if (tryLocation is MapPoint location)
         {
-            return;
+            _hoverElementThrottle.Next((offset, location), this);
         }
+    }
 
-        IReadOnlyList<MapElement> elements = MapControl.FindMapElementsAtOffset(offset, 7);
+    private void HoverElement((Point Offset, MapPoint Location) value)
+    { 
+        IReadOnlyList<MapElement> elements = MapControl.FindMapElementsAtOffset(value.Offset, 7);
 
         (MapIcon nearestIcon, float distance) = elements
             .Where(element => element.Tag is InfoPoint)
             .Cast<MapIcon>()
-            .MinBy(element => GeoCalculation.Distance((MapPoint)element.Location.Position, location));
+            .MinByWithKey(element => GeoCalculation.Distance((MapPoint)element.Location.Position, value.Location));
 
         InfoPoint nearestInfo = nearestIcon?.Tag as InfoPoint ?? InfoPoint.Invalid;
         if (nearestInfo != ViewModel.HoverInfo)
@@ -111,8 +119,15 @@ partial class Map
 
         ViewModel.HoverPoint = 
             elements.Any(element => element.Tag is RouteSection) 
-            ? ViewModel.Track.Points.GetNearestPoint(location)
+            ? ViewModel.Track.Points.GetNearestPoint(value.Location, GetBoundingBox())
             : TrackPoint.Invalid;
+
+        (MapPoint NorthWest, MapPoint SouthEast) GetBoundingBox()
+        {
+            GeoboundingBox box = GeoboundingBox.TryCompute(MapControl.GetVisibleRegion(MapVisibleRegionKind.Near).Positions);
+
+            return ((MapPoint)box.NorthwestCorner, (MapPoint)box.SoutheastCorner);
+        }
     }
 
     private void ViewModel_PoisCategoryVisibleChanged(InfoCategory category, bool value)
