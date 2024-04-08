@@ -143,6 +143,14 @@ public sealed partial class MainPage : Page
         }
     }
 
+    private void OnTracks_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.AddedItems.Count > 0)
+        {
+            ((ListView)sender).ScrollIntoView(e.AddedItems[0]);
+        }
+    }
+
     private void OnTracks_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
         ListView list = (ListView)sender;

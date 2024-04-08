@@ -330,7 +330,7 @@ partial class Track
         private Index Decrement(Index index) => 
             index == default
             ? Index.Invalid
-            : index.SegmentIndex == 0
+            : index.PointIndex == 0
             ? new Index(index.SegmentIndex - 1, _segments[index.SegmentIndex - 1].Points.Length - 2) // Skip last point in all but last segment
             : index with { PointIndex = index.PointIndex - 1 };
 

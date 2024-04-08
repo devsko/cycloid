@@ -344,7 +344,8 @@
                             ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Sections}"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                             ScrollViewer.VerticalScrollMode="Auto"
-                            SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentSection}">
+                            SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentSection}"
+                            SelectionChanged="OnTracks_SelectionChanged">
                             <ListView.Resources>
                                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                                     <Setter Property="MinHeight" Value="52" />
@@ -400,7 +401,8 @@
                             DoubleTapped="OnTracks_DoubleTapped"
                             ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Points}"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                            ScrollViewer.VerticalScrollMode="Auto">
+                            ScrollViewer.VerticalScrollMode="Auto"
+                            SelectionChanged="OnTracks_SelectionChanged">
                             <ListView.Resources>
                                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                                     <Setter Property="MinHeight" Value="52" />
