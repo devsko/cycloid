@@ -20,8 +20,6 @@ public partial class Track : ObservableObject
 
     public List<PointOfInterest> PointsOfInterest { get; }
 
-    public event Action Loaded;
-
     public Track(IStorageFile file)
     {
         File = file;
@@ -42,7 +40,6 @@ public partial class Track : ObservableObject
     public async Task LoadAsync()
     {
         await Serializer.LoadAsync(this);
-        Loaded?.Invoke();
     }
 
     public string FilePosition(float distance)

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using cycloid.Routing;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -12,8 +12,11 @@ using Windows.UI.Xaml.Media;
 
 namespace cycloid.Controls;
 
-[ObservableObject]
-public sealed partial class Profile : ViewModelControl
+public sealed partial class Profile : ViewModelControl,
+    IRecipient<TrackChanged>,
+    IRecipient<HoverPointChanged>,
+    IRecipient<CurrentSectionChanged>,
+    IRecipient<RouteChanged>
 {
     [Flags]
     private enum Change
@@ -42,8 +45,14 @@ public sealed partial class Profile : ViewModelControl
         static (e, @this) => @this.ThrottledPointerMoved(e),
         TimeSpan.FromMilliseconds(70));
 
-    [ObservableProperty]
-    private double _horizontalZoom = 1;
+    public double HorizontalZoom
+    {
+        get => (double)GetValue(HorizontalZoomProperty);
+        set => SetValue(HorizontalZoomProperty, value);
+    }
+
+    public static readonly DependencyProperty HorizontalZoomProperty = 
+        DependencyProperty.Register(nameof(HorizontalZoom), typeof(double), typeof(Profile), new PropertyMetadata(1d, (d, e) => ((Profile)d).HorizontalZoomChanged(e)));
 
     private float _maxElevation;
     private float _elevationDiff;
@@ -63,6 +72,10 @@ public sealed partial class Profile : ViewModelControl
     public Profile()
     {
         InitializeComponent();
+
+        StrongReferenceMessenger.Default.Register<TrackChanged>(this);
+        StrongReferenceMessenger.Default.Register<HoverPointChanged>(this);
+        StrongReferenceMessenger.Default.Register<CurrentSectionChanged>(this);
     }
 
     //public ObservableCollection<TrackPoi> TrackPois
@@ -87,12 +100,18 @@ public sealed partial class Profile : ViewModelControl
     // OnTrackPoiAdded
     // OnCurrentPointChanged
 
-    partial void OnHorizontalZoomChanged(double _)
+    private void HorizontalZoomChanged(DependencyPropertyChangedEventArgs _)
     {
         if (ViewModel.Track is not null)
         {
             ProcessChangeAsync(Change.Zoom).FireAndForget();
         }
+    }
+
+    private void ThrottledPointerMoved(PointerRoutedEventArgs e)
+    {
+        HoverPointValues.Enabled = true;
+        ViewModel.HoverPoint = ViewModel.Track.Points.Search((float)(e.GetCurrentPoint(Root).Position.X / _horizontalScale)).Point;
     }
 
     private double GetOffset(TrackPoint point) => point.IsValid ? point.Distance * _horizontalScale - _scrollerOffset : 0;
@@ -238,13 +257,6 @@ public sealed partial class Profile : ViewModelControl
         }
     }
 
-    private void ViewModelControl_Loaded(object _1, RoutedEventArgs _2)
-    {
-        ViewModel.TrackChanged += ViewModel_TrackChanged;
-        ViewModel.HoverPointChanged += ViewModel_HoverPointChanged;
-        ViewModel.CurrentSectionChanged += ViewModel_CurrentSectionChanged;
-    }
-
     private void ViewModelControl_SizeChanged(object _1, SizeChangedEventArgs _2)
     {
         // TODO
@@ -291,12 +303,6 @@ public sealed partial class Profile : ViewModelControl
         {
             _pointerMovedThrottle.Next(e, this);
         }
-    }
-
-    private void ThrottledPointerMoved(PointerRoutedEventArgs e)
-    {
-        HoverPointValues.Enabled = true;
-        ViewModel.HoverPoint = ViewModel.Track.Points.Search((float)(e.GetCurrentPoint(Root).Position.X / _horizontalScale)).Point;
     }
 
     private void Root_PointerExited(object _1, PointerRoutedEventArgs _2)
@@ -347,7 +353,7 @@ public sealed partial class Profile : ViewModelControl
         HorizontalZoom *= 1.25f;
     }
 
-    private void ViewModel_TrackChanged(Track oldTrack, Track newTrack)
+    void IRecipient<TrackChanged>.Receive(TrackChanged message)
     {
         HorizontalZoom = 1;
         Root.Width = double.NaN;
@@ -355,28 +361,28 @@ public sealed partial class Profile : ViewModelControl
         _maxElevation = 0;
         _elevationDiff = 0;
         ProcessChangeAsync(Change.Track).FireAndForget();
-        if (oldTrack is not null)
+        if (message.OldValue is not null)
         {
-            oldTrack.RouteBuilder.Changed -= RouteBuilder_Changed;
+            StrongReferenceMessenger.Default.Unregister<RouteChanged>(this);
         }
-        if (newTrack is not null)
+        if (message.NewValue is not null)
         {
-            newTrack.RouteBuilder.Changed += RouteBuilder_Changed;
+            StrongReferenceMessenger.Default.Register<RouteChanged>(this);
         }
     }
 
-    private void ViewModel_HoverPointChanged(TrackPoint oldPoint, TrackPoint newPoint)
+    void IRecipient<HoverPointChanged>.Receive(HoverPointChanged message)
     {
-        UpdateMarker(newPoint, HoverPointLine1, HoverPointLine2, HoverPointCircle);
+        UpdateMarker(message.NewValue, HoverPointLine1, HoverPointLine2, HoverPointCircle);
     }
 
-    private void ViewModel_CurrentSectionChanged(OnTrack arg1, OnTrack arg2)
+    void IRecipient<CurrentSectionChanged>.Receive(CurrentSectionChanged message)
     {
         ResetSection();
         EnsureSection();
     }
 
-    private void RouteBuilder_Changed(bool _)
+    void IRecipient<RouteChanged>.Receive(RouteChanged message)
     {
         ProcessChangeAsync(Change.Track).FireAndForget();
     }

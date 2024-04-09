@@ -2,6 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Routing;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
@@ -13,7 +14,17 @@ using Windows.UI.Xaml.Media;
 
 namespace cycloid.Controls;
 
-partial class Map
+partial class Map :
+    IRecipient<DragWayPointStarting>,
+    IRecipient<DragNewWayPointStarting>,
+    IRecipient<DragWayPointStarted>,
+    IRecipient<DragWayPointEnded>,
+    IRecipient<SectionAdded>,
+    IRecipient<SectionRemoved>,
+    IRecipient<CalculationStarting>,
+    IRecipient<CalculationRetry>,
+    IRecipient<CalculationFinished>,
+    IRecipient<FileSplitChanged>
 {
     private struct DragState(MapPolyline line, bool compareStart)
     {
@@ -88,32 +99,46 @@ partial class Map
         _dragStateTo = _dragStateFrom = default;
     }
 
+    private void RegisterRoutingMessages()
+    {
+        StrongReferenceMessenger.Default.Register<DragWayPointStarting>(this);
+        StrongReferenceMessenger.Default.Register<DragNewWayPointStarting>(this);
+        StrongReferenceMessenger.Default.Register<DragWayPointStarted>(this);
+        StrongReferenceMessenger.Default.Register<DragWayPointEnded>(this);
+   }
+
     private void ConnectRouting(Track track)
     {
-        track.Loaded += Track_Loaded;
+        if (track is not null)
+        {
+            track.RouteBuilder.Points.CollectionChanged += RouteBuilderPoints_CollectionChanged;
 
-        track.RouteBuilder.Points.CollectionChanged += RouteBuilderPoints_CollectionChanged;
-        track.RouteBuilder.SectionAdded += RouteBuilder_SectionAdded;
-        track.RouteBuilder.SectionRemoved += RouteBuilder_SectionRemoved;
-        track.RouteBuilder.CalculationStarting += RouteBuilder_CalculationStarting;
-        //track.RouteBuilder.CalculationDelayed += RouteBuilder_CalculationDelayed;
-        track.RouteBuilder.CalculationRetry += RouteBuilder_CalculationRetry;
-        track.RouteBuilder.CalculationFinished += RouteBuilder_CalculationFinished;
-        track.RouteBuilder.FileSplitChanged += RouteBuilder_FileSplitChanged;
+            StrongReferenceMessenger.Default.Register<SectionAdded>(this);
+            StrongReferenceMessenger.Default.Register<SectionRemoved>(this);
+            StrongReferenceMessenger.Default.Register<CalculationStarting>(this);
+            StrongReferenceMessenger.Default.Register<CalculationRetry>(this);
+            StrongReferenceMessenger.Default.Register<CalculationFinished>(this);
+            StrongReferenceMessenger.Default.Register<FileSplitChanged>(this);
+
+            //track.RouteBuilder.CalculationDelayed += RouteBuilder_CalculationDelayed;
+        }
     }
 
     private void DisconnectRouting(Track track)
     {
-        track.Loaded -= Track_Loaded;
+        if (track is not null)
+        {
+            track.RouteBuilder.Points.CollectionChanged -= RouteBuilderPoints_CollectionChanged;
 
-        track.RouteBuilder.Points.CollectionChanged -= RouteBuilderPoints_CollectionChanged;
-        track.RouteBuilder.SectionAdded -= RouteBuilder_SectionAdded;
-        track.RouteBuilder.SectionRemoved -= RouteBuilder_SectionRemoved;
-        track.RouteBuilder.CalculationStarting -= RouteBuilder_CalculationStarting;
-        //track.RouteBuilder.CalculationDelayed -= RouteBuilder_CalculationDelayed;
-        track.RouteBuilder.CalculationRetry -= RouteBuilder_CalculationRetry;
-        track.RouteBuilder.CalculationFinished -= RouteBuilder_CalculationFinished;
-        track.RouteBuilder.FileSplitChanged -= RouteBuilder_FileSplitChanged;
+            StrongReferenceMessenger.Default.Unregister<SectionAdded>(this);
+            StrongReferenceMessenger.Default.Unregister<SectionRemoved>(this);
+            StrongReferenceMessenger.Default.Unregister<CalculationStarting>(this);
+            StrongReferenceMessenger.Default.Unregister<CalculationRetry>(this);
+            StrongReferenceMessenger.Default.Unregister<CalculationFinished>(this);
+            StrongReferenceMessenger.Default.Unregister<FileSplitChanged>(this);
+
+            //track.RouteBuilder.CalculationDelayed -= RouteBuilder_CalculationDelayed;
+        }
     }
 
     private bool HandleRoutingKey(VirtualKey key)
@@ -219,47 +244,6 @@ partial class Map
         }
     }
 
-    private void ViewModel_DragWayPointStarting(WayPoint wayPoint)
-    {
-        BeginDrag(ViewModel.Track.RouteBuilder.GetSections(wayPoint));
-    }
-
-    private void ViewModel_DragNewWayPointStarting(RouteSection section)
-    {
-        BeginDrag((section, section));
-    }
-
-    private void ViewModel_DragWayPointStarted()
-    {
-        PointerPanel.IsEnabled = true;
-
-        GeneralTransform transform = Window.Current.Content.TransformToVisual(MapControl);
-        Rect window = Window.Current.CoreWindow.Bounds;
-        Point pointer = CoreWindow.GetForCurrentThread().PointerPosition;
-        pointer = new Point(pointer.X - window.X, pointer.Y - window.Y);
-
-        if (transform.TryTransform(pointer, out pointer) &&
-            MapControl.TryGetLocationFromOffset(pointer, out Geopoint location))
-        {
-            ViewModel.ContinueDragWayPointAsync((MapPoint)location.Position).FireAndForget();
-        }
-    }
-
-    private void ViewModel_DragWayPointEnded()
-    {
-        PointerPanel.IsEnabled = false;
-        EndDrag();
-    }
-
-    private void Track_Loaded()
-    {
-        GeoboundingBox bounds = GeoboundingBox.TryCompute(ViewModel.Track.Points.Select(trackPoint => (BasicGeoposition)trackPoint));
-        if (bounds is not null)
-        {
-            MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.Bow).AsTask().FireAndForget();
-        }
-    }
-
     private void RouteBuilderPoints_CollectionChanged(object _, NotifyCollectionChangedEventArgs e)
     {
         switch (e.Action)
@@ -307,51 +291,125 @@ partial class Map
         }
     }
 
-    private void RouteBuilder_SectionAdded(RouteSection section, int index)
+    void IRecipient<DragWayPointStarting>.Receive(DragWayPointStarting message)
     {
-        if (DragState.IsSameSection(_dragStateTo, _dragStateFrom, section))
+        BeginDrag(ViewModel.Track.RouteBuilder.GetSections(message.WayPoint));
+    }
+
+    void IRecipient<DragNewWayPointStarting>.Receive(DragNewWayPointStarting message)
+    {
+        BeginDrag((message.Section, message.Section));
+    }
+
+    void IRecipient<DragWayPointStarted>.Receive(DragWayPointStarted message)
+    {
+        PointerPanel.IsEnabled = true;
+
+        GeneralTransform transform = Window.Current.Content.TransformToVisual(MapControl);
+        Rect window = Window.Current.CoreWindow.Bounds;
+        Point pointer = CoreWindow.GetForCurrentThread().PointerPosition;
+        pointer = new Point(pointer.X - window.X, pointer.Y - window.Y);
+
+        if (transform.TryTransform(pointer, out pointer) &&
+            MapControl.TryGetLocationFromOffset(pointer, out Geopoint location))
+        {
+            ViewModel.ContinueDragWayPointAsync((MapPoint)location.Position).FireAndForget();
+        }
+    }
+
+    void IRecipient<DragWayPointEnded>.Receive(DragWayPointEnded message)
+    {
+        PointerPanel.IsEnabled = false;
+        EndDrag();
+    }
+
+    void IRecipient<SectionAdded>.Receive(SectionAdded message)
+    {
+        if (DragState.IsSameSection(_dragStateTo, _dragStateFrom, message.Section))
         {
             MapPolyline line = new()
             {
                 MapStyleSheetEntry = "Routing.Line",
-                Tag = section,
+                Tag = message.Section,
                 Path = new Geopath([new BasicGeoposition()])
             };
             _routingLayer.MapElements.Add(line);
             _dragStateFrom = new DragState(line, false);
-            _dragStateFrom.Added(section);
+            _dragStateFrom.Added(message.Section);
         }
-        else if (!_dragStateTo.Added(section) && !_dragStateFrom.Added(section))
+        else if (!_dragStateTo.Added(message.Section) && !_dragStateFrom.Added(message.Section))
         {
             _routingLayer.MapElements.Add(new MapPolyline
             {
                 MapStyleSheetEntry = "Routing.Line",
                 MapStyleSheetEntryState = "Routing.new",
-                Tag = section,
-                Path = new Geopath([(BasicGeoposition)section.Start.Location, (BasicGeoposition)section.End.Location]),
+                Tag = message.Section,
+                Path = new Geopath([(BasicGeoposition)message.Section.Start.Location, (BasicGeoposition)message.Section.End.Location]),
             });
         }
     }
 
-    private void RouteBuilder_SectionRemoved(RouteSection section, int index)
+    void IRecipient<SectionRemoved>.Receive(SectionRemoved message)
     {
-        if (!_dragStateTo.Removed(section) && !_dragStateFrom.Removed(section))
+        if (!_dragStateTo.Removed(message.Section) && !_dragStateFrom.Removed(message.Section))
         {
-            _routingLayer.MapElements.Remove(GetSectionLine(section));
+            _routingLayer.MapElements.Remove(GetSectionLine(message.Section));
         }
 
-        if (section == ViewModel.HoveredSection)
+        if (message.Section == ViewModel.HoveredSection)
         {
             ViewModel.HoveredSection = null;
         }
     }
 
-    private void RouteBuilder_CalculationStarting(RouteSection section)
+    void IRecipient<CalculationStarting>.Receive(CalculationStarting message)
     {
         if (!ViewModel.IsCaptured)
         {
-            GetSectionLine(section).MapStyleSheetEntryState = "Routing.calculating";
+            GetSectionLine(message.Section).MapStyleSheetEntryState = "Routing.calculating";
         }
+    }
+
+    void IRecipient<CalculationRetry>.Receive(CalculationRetry message)
+    {
+        GetSectionLine(message.Section).MapStyleSheetEntryState = "Routing.retry";
+    }
+
+    void IRecipient<CalculationFinished>.Receive(CalculationFinished message)
+    {
+        if (!message.Section.IsCanceled)
+        {
+            _dragStateTo.Calculated(message.Section);
+            _dragStateFrom.Calculated(message.Section);
+
+            MapPolyline line = GetSectionLine(message.Section);
+            if (message.Result.IsValid)
+            {
+                line.Path = new Geopath(message.Result.Points.Select(p => new BasicGeoposition { Longitude = p.Longitude, Latitude = p.Latitude }));
+                line.MapStyleSheetEntryState = "";
+            }
+            else
+            {
+                if (line.Path.Positions.Count < 2)
+                {
+                    line.Path = new Geopath([(BasicGeoposition)message.Section.Start.Location, (BasicGeoposition)message.Section.End.Location]);
+                }
+                line.MapStyleSheetEntryState = "Routing.error";
+            }
+        }
+        else
+        {
+            MapPolyline line = GetSectionLine(message.Section);
+            if (line is not null)
+            {
+                line.MapStyleSheetEntryState = "";
+            }
+        }
+    }
+
+    void IRecipient<FileSplitChanged>.Receive(FileSplitChanged message)
+    {
+        GetWayPointIcon(message.WayPoint).MapStyleSheetEntry = message.WayPoint.IsFileSplit ? "Routing.SplitPoint" : "Routing.Point";
     }
 
     //private void RouteBuilder_CalculationDelayed(RouteSection section)
@@ -361,46 +419,4 @@ partial class Map
 
     //    }
     //}
-
-    private void RouteBuilder_CalculationRetry(RouteSection section)
-    {
-        GetSectionLine(section).MapStyleSheetEntryState = "Routing.retry";
-    }
-
-    private void RouteBuilder_CalculationFinished(RouteSection section, RouteResult result)
-    {
-        if (!section.IsCanceled)
-        {
-            _dragStateTo.Calculated(section);
-            _dragStateFrom.Calculated(section);
-
-            MapPolyline line = GetSectionLine(section);
-            if (result.IsValid)
-            {
-                line.Path = new Geopath(result.Points.Select(p => new BasicGeoposition { Longitude = p.Longitude, Latitude = p.Latitude }));
-                line.MapStyleSheetEntryState = "";
-            }
-            else
-            {
-                if (line.Path.Positions.Count < 2)
-                {
-                    line.Path = new Geopath([(BasicGeoposition)section.Start.Location, (BasicGeoposition)section.End.Location]);
-                }
-                line.MapStyleSheetEntryState = "Routing.error";
-            }
-        }
-        else
-        {
-            MapPolyline line = GetSectionLine(section);
-            if (line is not null)
-            {
-                line.MapStyleSheetEntryState = "";
-            }
-        }
-    }
-
-    private void RouteBuilder_FileSplitChanged(WayPoint wayPoint)
-    {
-        GetWayPointIcon(wayPoint).MapStyleSheetEntry = wayPoint.IsFileSplit ? "Routing.SplitPoint" : "Routing.Point";
-    }
 }

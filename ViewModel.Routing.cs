@@ -1,31 +1,63 @@
 using System;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Routing;
 
 namespace cycloid;
 
-partial class ViewModel
+public class DragWayPointStarting(WayPoint wayPoint)
 {
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(TrackIsCalculating))]
-    [NotifyPropertyChangedFor(nameof(CompareSessionState))]
+    public WayPoint WayPoint => wayPoint;
+}
+
+public class DragNewWayPointStarting(RouteSection section)
+{
+    public RouteSection Section => section;
+}
+
+public class DragWayPointStarted
+{ }
+
+public class DragWayPointEnded
+{ }
+
+partial class ViewModel :
+    IRecipient<CalculationStarting>,
+    IRecipient<CalculationFinished>,
+    IRecipient<RouteChanged>,
+    IRecipient<FileSplitChanged>
+{
     private int _trackCalculationCounter;
+    public int TrackCalculationCounter
+    {
+        get => _trackCalculationCounter;
+        set
+        {
+            if (SetProperty(ref _trackCalculationCounter, value))
+            {
+                OnPropertyChanged(nameof(TrackIsCalculating));
+                OnPropertyChanged(nameof(CompareSessionState));
+            }
+        }
+    }
 
-    [ObservableProperty]
     private WayPoint _hoveredWayPoint;
+    public WayPoint HoveredWayPoint
+    {
+        get => _hoveredWayPoint;
+        set => SetProperty(ref _hoveredWayPoint, value);
+    }
 
-    [ObservableProperty]
     private RouteSection _hoveredSection;
+    public RouteSection HoveredSection
+    {
+        get => _hoveredSection;
+        set => SetProperty(ref _hoveredSection, value);
+    }
 
     private WayPoint _capturedWayPoint;
     private MapPoint _capturedWayPointOriginalLocation;
-
-    public event Action<WayPoint> DragWayPointStarting;
-    public event Action<RouteSection> DragNewWayPointStarting;
-    public event Action DragWayPointStarted;
-    public event Action DragWayPointEnded;
 
     public bool TrackIsCalculating => TrackCalculationCounter > 0;
 
@@ -88,11 +120,13 @@ partial class ViewModel
         if (Mode == Modes.Edit && Track is not null && !IsCaptured && HoveredWayPoint is not null)
         {
             Track.RouteBuilder.DelayCalculation = true;
-            DragWayPointStarting?.Invoke(HoveredWayPoint);
+
+            StrongReferenceMessenger.Default.Send(new DragWayPointStarting(HoveredWayPoint));
 
             _capturedWayPoint = HoveredWayPoint;
             _capturedWayPointOriginalLocation = HoveredWayPoint.Location;
-            DragWayPointStarted?.Invoke();
+
+            StrongReferenceMessenger.Default.Send(new DragWayPointStarted());
         }
     }
 
@@ -102,11 +136,13 @@ partial class ViewModel
         if (Mode == Modes.Edit && Track is not null && !IsCaptured && HoveredSection is not null)
         {
             Track.RouteBuilder.DelayCalculation = true;
-            DragNewWayPointStarting?.Invoke(HoveredSection);
+
+            StrongReferenceMessenger.Default.Send(new DragNewWayPointStarting(HoveredSection));
 
             _capturedWayPoint = await Track.RouteBuilder.InsertPointAsync(location, HoveredSection);
             _capturedWayPointOriginalLocation = MapPoint.Invalid;
-            DragWayPointStarted?.Invoke();
+
+            StrongReferenceMessenger.Default.Send(new DragWayPointStarted());
         }
     }
 
@@ -122,7 +158,8 @@ partial class ViewModel
     {
         if (Mode == Modes.Edit && Track is not null && IsCaptured)
         {
-            DragWayPointEnded?.Invoke();
+            StrongReferenceMessenger.Default.Send(new DragWayPointEnded());
+
             _capturedWayPoint = null;
             Track.RouteBuilder.DelayCalculation = false;
 
@@ -134,7 +171,7 @@ partial class ViewModel
     {
         if (Mode == Modes.Edit && Track is not null && IsCaptured)
         {
-            DragWayPointEnded?.Invoke();
+            StrongReferenceMessenger.Default.Send(new DragWayPointEnded());
 
             if (_capturedWayPointOriginalLocation.IsValid)
             {
@@ -170,39 +207,45 @@ partial class ViewModel
 
     private void ConnectRouting(Track track)
     {
-        track.RouteBuilder.CalculationStarting -= RouteBuilder_CalculationStarting;
-        track.RouteBuilder.CalculationFinished -= RouteBuilder_CalculationFinished;
-        track.RouteBuilder.Changed -= RouteBuilder_Changed;
-        track.RouteBuilder.FileSplitChanged -= RouteBuilder_FileSplitChanged;
+        if (track is not null)
+        {
+            StrongReferenceMessenger.Default.Register<CalculationStarting>(this);
+            StrongReferenceMessenger.Default.Register<CalculationFinished>(this);
+            StrongReferenceMessenger.Default.Register<RouteChanged>(this);
+            StrongReferenceMessenger.Default.Register<FileSplitChanged>(this);
+        }
     }
 
     private void DisconnectRouting(Track track)
     {
-        track.RouteBuilder.CalculationStarting += RouteBuilder_CalculationStarting;
-        track.RouteBuilder.CalculationFinished += RouteBuilder_CalculationFinished;
-        track.RouteBuilder.Changed += RouteBuilder_Changed;
-        track.RouteBuilder.FileSplitChanged += RouteBuilder_FileSplitChanged;
+        if (track is not null)
+        {
+            StrongReferenceMessenger.Default.Unregister<CalculationStarting>(this);
+            StrongReferenceMessenger.Default.Unregister<CalculationFinished>(this);
+            StrongReferenceMessenger.Default.Unregister<RouteChanged>(this);
+            StrongReferenceMessenger.Default.Unregister<FileSplitChanged>(this);
+        }
     }
 
-    private void RouteBuilder_CalculationStarting(RouteSection _)
+    void IRecipient<CalculationStarting>.Receive(CalculationStarting message)
     {
         TrackCalculationCounter++;
     }
 
-    private void RouteBuilder_CalculationFinished(RouteSection _1, RouteResult _2)
+    void IRecipient<CalculationFinished>.Receive(CalculationFinished message)
     {
         TrackCalculationCounter--;
     }
 
-    private void RouteBuilder_Changed(bool initialization)
+    void IRecipient<RouteChanged>.Receive(RouteChanged message)
     {
-        if (!initialization && !IsCaptured)
+        if (!message.Initialization && !IsCaptured)
         {
             SaveTrackAsync().FireAndForget();
         }
     }
 
-    private void RouteBuilder_FileSplitChanged(WayPoint wayPoint)
+    void IRecipient<FileSplitChanged>.Receive(FileSplitChanged message)
     {
         SaveTrackAsync().FireAndForget();
     }

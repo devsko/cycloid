@@ -4,8 +4,20 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace cycloid.Info;
+
+public class InfosActivated(InfoPoint[] infos)
+{
+    public InfoPoint[] Infos => infos;
+}
+
+public class InfosDeactivated(int index, int count)
+{
+    public int Index => index;
+    public int Count => count;
+}
 
 public partial class InfoCache : ObservableObject
 {
@@ -24,9 +36,6 @@ public partial class InfoCache : ObservableObject
 
     [ObservableProperty]
     private int _activatedCount;
-
-    public event Action<InfoPoint[]> InfosActivated;
-    public event Action<int, int> InfosDeactivated;
 
     public async Task LoadAsync(MapPoint point, CancellationToken cancellationToken)
     {
@@ -74,7 +83,8 @@ public partial class InfoCache : ObservableObject
 
         _activated.Add(bucket);
 
-        InfosActivated?.Invoke(bucket.Infos);
+        StrongReferenceMessenger.Default.Send(new InfosActivated(bucket.Infos));
+
         ActivatedCount += bucket.Infos.Length;
     }
 
@@ -88,7 +98,8 @@ public partial class InfoCache : ObservableObject
         }
         _activated.RemoveAt(bucketIndex);
 
-        InfosDeactivated?.Invoke(startIndex, bucket.Infos.Length);
+        StrongReferenceMessenger.Default.Send(new InfosDeactivated(startIndex, bucket.Infos.Length));
+
         ActivatedCount -= bucket.Infos.Length;
     }
 

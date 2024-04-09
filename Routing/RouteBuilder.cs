@@ -5,9 +5,42 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.VisualStudio.Threading;
 
 namespace cycloid.Routing;
+
+public abstract class SectionIndexMessage(RouteSection section, int index)
+{
+    public RouteSection Section => section;
+    public int Index => index;
+}
+
+public class SectionAdded(RouteSection section, int index) : SectionIndexMessage(section, index);
+public class SectionRemoved(RouteSection section, int index) : SectionIndexMessage(section, index);
+
+public abstract class CalculationMessage(RouteSection section)
+{
+    public RouteSection Section => section;
+}
+
+public class CalculationStarting(RouteSection section) : CalculationMessage(section);
+public class CalculationDelayed(RouteSection section) : CalculationMessage(section);
+public class CalculationRetry(RouteSection section) : CalculationMessage(section);
+public class CalculationFinished(RouteSection section, RouteResult result) : CalculationMessage(section)
+{
+    public RouteResult Result => result;
+}
+
+public class RouteChanged(bool initialization)
+{
+    public bool Initialization => initialization;
+}
+
+public class FileSplitChanged(WayPoint wayPoint)
+{
+    public WayPoint WayPoint => wayPoint;
+}
 
 public partial class RouteBuilder
 {
@@ -19,17 +52,6 @@ public partial class RouteBuilder
     public ObservableCollection<NoGoArea> NoGoAreas { get; }
     public BrouterClient Client { get; }
     public Profile Profile { get; set; }
-
-    public event Action<RouteSection, int> SectionAdded;
-    public event Action<RouteSection, int> SectionRemoved;
-
-    public event Action<RouteSection> CalculationStarting;
-    public event Action<RouteSection> CalculationDelayed;
-    public event Action<RouteSection> CalculationRetry;
-    public event Action<RouteSection, RouteResult> CalculationFinished;
-
-    public event Action<bool> Changed;
-    public event Action<WayPoint> FileSplitChanged;
 
     public RouteBuilder()
     {
@@ -46,7 +68,7 @@ public partial class RouteBuilder
             UphillCutoff = Profile.DefaultUphillCutoff,
             BikerPower = Profile.DefaultBikerPower,
         };
-        ChangeLock = new ChangeLocker(this);
+        ChangeLock = new ChangeLocker();
         DelayCalculation = false;
     }
 
@@ -78,7 +100,8 @@ public partial class RouteBuilder
     public void SetFileSplit(WayPoint wayPoint, bool value)
     {
         wayPoint.IsFileSplit = value;
-        FileSplitChanged?.Invoke(wayPoint);
+
+        StrongReferenceMessenger.Default.Send(new FileSplitChanged(wayPoint));
     }
 
     public (RouteSection To, RouteSection From) GetSections(WayPoint point)
@@ -119,7 +142,9 @@ public partial class RouteBuilder
         section.ResetCancellation();
         using (await ChangeLock.EnterCalculationAsync(section.CancellationToken))
         {
-            CalculationFinished?.Invoke(section, await GetResultAsync(section.CancellationToken));
+            RouteResult result = await GetResultAsync(section.CancellationToken);
+
+            StrongReferenceMessenger.Default.Send(new CalculationFinished(section, result));
         }
 
         async Task<RouteResult> GetResultAsync(CancellationToken cancellationToken)
@@ -130,11 +155,12 @@ public partial class RouteBuilder
             {
                 if (section.DirectDistance > 25_000)
                 {
-                    CalculationDelayed?.Invoke(section);
+                    StrongReferenceMessenger.Default.Send(new CalculationDelayed(section));
+
                     await _delayCalculationTaskSource.Task.WithCancellation(cancellationToken);
                 }
 
-                CalculationStarting?.Invoke(section);
+                StrongReferenceMessenger.Default.Send(new CalculationStarting(section));
 
                 await TaskScheduler.Default;
 
@@ -190,7 +216,8 @@ public partial class RouteBuilder
                 async Task RetryAsync()
                 {
                     await capturedContext;
-                    CalculationRetry?.Invoke(section);
+
+                    StrongReferenceMessenger.Default.Send(new CalculationRetry(section));
                 }
             }
         }
@@ -294,7 +321,8 @@ public partial class RouteBuilder
         WayPoint point = startPoint ?? Points[startIndex];
         RouteSection section = new(point, Points[startIndex + 1]);
         _sections.Add(point, section);
-        SectionAdded?.Invoke(section, startIndex);
+
+        StrongReferenceMessenger.Default.Send(new SectionAdded(section, startIndex));
 
         StartCalculation(section);
     }
@@ -307,7 +335,8 @@ public partial class RouteBuilder
             throw new InvalidOperationException();
         }
         section.Cancel();
-        SectionRemoved?.Invoke(section, startIndex);
+
+        StrongReferenceMessenger.Default.Send(new SectionRemoved(section, startIndex));
     }
 
     public int GetSectionIndex(RouteSection section)
@@ -341,7 +370,8 @@ public partial class RouteBuilder
                     WayPoint point = Points[startIndex];
                     RouteSection section = new(point, wayPoint);
                     _sections.Add(point, section);
-                    SectionAdded?.Invoke(section, startIndex);
+
+                    StrongReferenceMessenger.Default.Send(new SectionAdded(section, startIndex));
 
                     RouteResult result = routePoints is null
                         ? TrackPointConverter.Convert(
@@ -349,12 +379,12 @@ public partial class RouteBuilder
                             RoutePoint.FromMapPoint(wayPoint.Location, 0, TimeSpan.Zero))
                         : TrackPointConverter.Convert(routePoints, routePoints.Length);
 
-                    CalculationStarting?.Invoke(section);
-                    CalculationFinished?.Invoke(section, result);
+                    StrongReferenceMessenger.Default.Send(new CalculationStarting(section));
+                    StrongReferenceMessenger.Default.Send(new CalculationFinished(section, result));
                 }
             }
         }
 
-        Changed?.Invoke(wasEmpty);
+        StrongReferenceMessenger.Default.Send(new RouteChanged(wasEmpty));
     }
 }

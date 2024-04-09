@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Routing;
 
 using IndexedPoint = (cycloid.TrackPoint Point, int SegmentIndex, int PointIndex);
@@ -21,7 +21,11 @@ public class TrackDifference
 
 partial class Track
 {
-    public class CompareSession : ObservableObject
+    public class CompareSession :
+        IRecipient<SectionAdded>,
+        IRecipient<SectionRemoved>,
+        IRecipient<CalculationStarting>,
+        IRecipient<CalculationFinished>
     {
         private readonly struct OriginalSegment(TrackPoint[] points)
         {
@@ -51,20 +55,17 @@ partial class Track
             _originalWayPoints = segments.WayPoints;
             _newSegments = segments.WayPoints.SkipLast(1).Zip(segments.TrackPoints, (wayPoint, points) => new NewSegment { Start = wayPoint.Location, Points = points }).ToList();
 
-            _track.RouteBuilder.CalculationStarting += RouteBuilder_CalculationStarting;
-            _track.RouteBuilder.CalculationFinished += RouteBuilder_CalculationFinished;
-            _track.RouteBuilder.SectionAdded += RouteBuilder_SectionAdded;
-            _track.RouteBuilder.SectionRemoved += RouteBuilder_SectionRemoved;
+            StrongReferenceMessenger.Default.Register<SectionAdded>(this);
+            StrongReferenceMessenger.Default.Register<SectionRemoved>(this);
+            StrongReferenceMessenger.Default.Register<CalculationStarting>(this);
+            StrongReferenceMessenger.Default.Register<CalculationFinished>(this);
         }
 
         public int OriginalSegmentsCount => _originalSegments.Length;
 
         public async Task RollbackAsync()
         {
-            _track.RouteBuilder.CalculationStarting -= RouteBuilder_CalculationStarting;
-            _track.RouteBuilder.CalculationFinished -= RouteBuilder_CalculationFinished;
-            _track.RouteBuilder.SectionAdded -= RouteBuilder_SectionAdded;
-            _track.RouteBuilder.SectionRemoved -= RouteBuilder_SectionRemoved;
+            Dispose();
 
             await _track.RouteBuilder.InitializeAsync(
                 _originalWayPoints
@@ -75,23 +76,15 @@ partial class Track
                         (wayPoint, points) => (wayPoint, points)));
         }
 
-        private void RouteBuilder_SectionRemoved(RouteSection section, int index)
+        public void Dispose()
         {
-            _newSegments.RemoveAt(index);
-            // TODO Wenn der erste/letzte WayPoint entfernt wird, folgt keine Kalkulation aber die Diffs müssen trotzdem neu gefunden werden
+            StrongReferenceMessenger.Default.Unregister<SectionAdded>(this);
+            StrongReferenceMessenger.Default.Unregister<SectionRemoved>(this);
+            StrongReferenceMessenger.Default.Unregister<CalculationStarting>(this);
+            StrongReferenceMessenger.Default.Unregister<CalculationFinished>(this);
         }
 
-        private void RouteBuilder_SectionAdded(RouteSection section, int index)
-        {
-            _newSegments.Insert(index, new NewSegment { Start = section.Start.Location });
-        }
-
-        private void RouteBuilder_CalculationStarting(RouteSection section)
-        {
-            _newSegments[_track.RouteBuilder.GetSectionIndex(section)].Points = null;
-        }
-
-        private void RouteBuilder_CalculationFinished(RouteSection section, RouteResult result)
+        private void CalculationFinished(RouteSection section, RouteResult result)
         {
             if (!section.IsCanceled && result.IsValid)
             {
@@ -300,6 +293,27 @@ partial class Track
                     .Take(endSegment - startSegment)
                     .Aggregate(default(TrackPoint.CommonValues), (values, segment) => values + segment.Points.Last().Values) - startPoint.Values + endPoint.Values;
             }
+        }
+
+        void IRecipient<SectionAdded>.Receive(SectionAdded message)
+        {
+            _newSegments.Insert(message.Index, new NewSegment { Start = message.Section.Start.Location });
+        }
+
+        void IRecipient<SectionRemoved>.Receive(SectionRemoved message)
+        {
+            _newSegments.RemoveAt(message.Index);
+            // TODO Wenn der erste/letzte WayPoint entfernt wird, folgt keine Kalkulation aber die Diffs müssen trotzdem neu gefunden werden
+        }
+
+        void IRecipient<CalculationStarting>.Receive(CalculationStarting message)
+        {
+            _newSegments[_track.RouteBuilder.GetSectionIndex(message.Section)].Points = null;
+        }
+
+        void IRecipient<CalculationFinished>.Receive(CalculationFinished message)
+        {
+            CalculationFinished(message.Section, message.Result);
         }
     }
 }

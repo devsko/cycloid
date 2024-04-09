@@ -5,48 +5,52 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Routing;
 
 namespace cycloid;
 
 partial class Track
 {
-    public partial class PointCollection : ObservableObject, IEnumerable<TrackPoint>
+    public partial class PointCollection : ObservableObject, IEnumerable<TrackPoint>,
+        IRecipient<SectionAdded>,
+        IRecipient<SectionRemoved>,
+        IRecipient<CalculationFinished>,
+        IRecipient<FileSplitChanged>
     {
         private readonly Track _track;
         private readonly SegmentCollection _segments;
         
         private TrackPoint.CommonValues _total;
-        private float _minAltitude = float.PositiveInfinity;
-        private float _maxAltitude = float.NegativeInfinity;
-
-        public PointCollection(Track track)
-        {
-            _track = track;
-            _segments = new SegmentCollection(this);
-
-            track.RouteBuilder.SectionAdded += RouteBuilder_SectionAdded;
-            track.RouteBuilder.SectionRemoved += RouteBuilder_SectionRemoved;
-            track.RouteBuilder.CalculationFinished += RouteBuilder_CalculationFinished;
-            track.RouteBuilder.FileSplitChanged += RouteBuilder_FileSplitChanged;
-        }
-
         public TrackPoint.CommonValues Total
         {
             get => _total;
             private set => SetProperty(ref _total, value);
         }
 
+        private float _minAltitude = float.PositiveInfinity;
         public float MinAltitude
         {
             get => _minAltitude;
             private set => SetProperty(ref _minAltitude, value);
         }
 
+        private float _maxAltitude = float.NegativeInfinity;
         public float MaxAltitude
         {
             get => _maxAltitude;
             private set => SetProperty(ref _maxAltitude, value);
+        }
+
+        public PointCollection(Track track)
+        {
+            _track = track;
+            _segments = new SegmentCollection(this);
+
+            StrongReferenceMessenger.Default.Register<SectionAdded>(this);
+            StrongReferenceMessenger.Default.Register<SectionRemoved>(this);
+            StrongReferenceMessenger.Default.Register<CalculationFinished>(this);
+            StrongReferenceMessenger.Default.Register<FileSplitChanged>(this);
         }
 
         public TrackPoint this[Index index]
@@ -367,40 +371,40 @@ partial class Track
                     Math.Max(acc.Max, segment.MaxAltitude)));
         }
 
-        private void RouteBuilder_SectionAdded(RouteSection section, int index)
+        void IRecipient<SectionAdded>.Receive(SectionAdded message)
         {
-            _segments.Insert(new Segment { Section = section }, index);
+            _segments.Insert(new Segment { Section = message.Section }, message.Index);
         }
 
-        private void RouteBuilder_SectionRemoved(RouteSection _, int index)
+        void IRecipient<SectionRemoved>.Receive(SectionRemoved message)
         {
-            Segment segment = _segments[index];
-            
+            Segment segment = _segments[message.Index];
             Total -= segment.Values;
-            
-            _segments.Remove(segment, index);
-            
+
+            _segments.Remove(segment, message.Index);
+
             if (MinAltitude == segment.MinAltitude || MaxAltitude == segment.MaxAltitude)
             {
                 CalculateMinMaxAltitude();
             }
         }
 
-        private void RouteBuilder_CalculationFinished(RouteSection section, RouteResult result)
+        void IRecipient<CalculationFinished>.Receive(CalculationFinished message)
         {
-            if (!section.IsCanceled)
+            if (!message.Section.IsCanceled)
             {
-                Segment segment = _segments.Find(section);
+                Segment segment = _segments.Find(message.Section);
 
                 Total -= segment.Values;
                 bool calcMinAltitude = MinAltitude == segment.MinAltitude;
                 bool calcMaxAltitude = MaxAltitude == segment.MaxAltitude;
 
+                RouteResult result = message.Result;
                 if (!result.IsValid)
                 {
                     result = TrackPointConverter.Convert(
-                        RoutePoint.FromMapPoint(section.Start.Location, 0, TimeSpan.Zero), 
-                        RoutePoint.FromMapPoint(section.End.Location, 0, TimeSpan.FromHours(section.DirectDistance / 1_000 / 20)));
+                        RoutePoint.FromMapPoint(message.Section.Start.Location, 0, TimeSpan.Zero),
+                        RoutePoint.FromMapPoint(message.Section.End.Location, 0, TimeSpan.FromHours(message.Section.DirectDistance / 1_000 / 20)));
                 }
 
                 (segment.Points, segment.MinAltitude, segment.MaxAltitude) = (result.Points, result.MinAltitude, result.MaxAltitude);
@@ -425,11 +429,11 @@ partial class Track
             }
         }
 
-        private void RouteBuilder_FileSplitChanged(WayPoint wayPoint)
+        void IRecipient<FileSplitChanged>.Receive(FileSplitChanged message)
         {
-            if (wayPoint != _track.RouteBuilder.Points[^1])
+            if (message.WayPoint != _track.RouteBuilder.Points[^1])
             {
-                _segments.UpdateFileId(_segments.Find(wayPoint));
+                _segments.UpdateFileId(_segments.Find(message.WayPoint));
             }
         }
     }

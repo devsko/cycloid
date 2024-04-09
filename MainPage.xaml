@@ -13,10 +13,7 @@
         <ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml">
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
-                    <cycloid:ViewModel
-                        x:Name="ViewModel"
-                        OnTrackAdded="ViewModel_OnTrackAdded"
-                        TrackChanged="ViewModel_TrackChanged" />
+                    <cycloid:ViewModel x:Name="ViewModel" />
                     <!--  Workaround: NumberBox controls are too wide  -->
                     <x:Double x:Key="TextControlThemeMinWidth">0</x:Double>
                 </ResourceDictionary>

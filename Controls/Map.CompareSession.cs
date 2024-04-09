@@ -1,32 +1,26 @@
 using System.Collections.Specialized;
 using System.Linq;
+using CommunityToolkit.Mvvm.Messaging;
 using Windows.Devices.Geolocation;
 using Windows.UI.Xaml.Controls.Maps;
 
 namespace cycloid.Controls;
 
-partial class Map
+partial class Map :
+    IRecipient<CompareSessionChanged>
 {
-    private MapPolyline GetDifferenceLine(TrackDifference difference) => _differenceLayer.MapElements.OfType<MapPolyline>().FirstOrDefault(line => (TrackDifference)line.Tag == difference);
+    private void RegisterCompareSessionMessages()
+    {
+        StrongReferenceMessenger.Default.Register<CompareSessionChanged>(this);
+    }
+
+    private MapPolyline GetDifferenceLine(TrackDifference difference) 
+        => _differenceLayer.MapElements.OfType<MapPolyline>().FirstOrDefault(line => (TrackDifference)line.Tag == difference);
 
     private int GetDifferenceLineIndex(TrackDifference difference)
     {
         (MapElement line, int index) result = _differenceLayer.MapElements.Select((line, index) => (line, index)).FirstOrDefault(tuple => (TrackDifference)tuple.line.Tag == difference);
         return result.line is null ? -1 : result.index;
-    }
-
-    private void ViewModel_CompareSessionChanged(Track.CompareSession oldCompareSession, Track.CompareSession newCompareSession)
-    {
-        _differenceLayer.MapElements.Clear();
-
-        if (oldCompareSession is not null)
-        {
-            oldCompareSession.Differences.CollectionChanged -= Differences_CollectionChanged;
-        }
-        if (newCompareSession is not null)
-        {
-            newCompareSession.Differences.CollectionChanged += Differences_CollectionChanged;
-        }
     }
 
     private void Differences_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -62,6 +56,20 @@ partial class Map
             case NotifyCollectionChangedAction.Reset:
                 _differenceLayer.MapElements.Clear();
                 break;
+        }
+    }
+
+    void IRecipient<CompareSessionChanged>.Receive(CompareSessionChanged message)
+    {
+        _differenceLayer.MapElements.Clear();
+
+        if (message.OldValue is not null)
+        {
+            message.OldValue.Differences.CollectionChanged -= Differences_CollectionChanged;
+        }
+        if (message.NewValue is not null)
+        {
+            message.NewValue.Differences.CollectionChanged += Differences_CollectionChanged;
         }
     }
 }

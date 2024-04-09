@@ -4,12 +4,18 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Serizalization;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 
 namespace cycloid;
+
+public class TrackComplete(bool isNew)
+{
+    public bool IsNew => isNew;
+}
 
 partial class ViewModel
 {
@@ -59,9 +65,8 @@ partial class ViewModel
         Stopwatch watch = Stopwatch.StartNew();
         
         await Track.LoadAsync();
-        InitializePointsOfInterest();
 
-        TrackIsInitialized = true;
+        StrongReferenceMessenger.Default.Send(new TrackComplete(false));
 
         Status = $"{Track.Name} opened ({watch.ElapsedMilliseconds} ms)";
     }
@@ -88,9 +93,8 @@ partial class ViewModel
         }
 
         Track = new Track(file);
-        InitializePointsOfInterest();
-        
-        TrackIsInitialized = true;
+
+        StrongReferenceMessenger.Default.Send(new TrackComplete(true));
 
         Status = $"{Track.Name} created";
     }

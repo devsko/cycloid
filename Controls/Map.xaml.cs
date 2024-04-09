@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,13 @@ using Windows.UI.Xaml.Input;
 
 namespace cycloid.Controls;
 
-public sealed partial class Map : ViewModelControl
+public sealed partial class Map : ViewModelControl,
+    IRecipient<ModeChanged>,
+    IRecipient<TrackChanged>,
+    IRecipient<HoverPointChanged>,
+    IRecipient<InfoVisibleChanged>,
+    IRecipient<SetMapCenterMessage>,
+    IRecipient<TrackComplete>
 {
     private readonly Throttle<object, Map> _loadInfosThrottle = new(
         static (_, @this, cancellationToken) => @this.LoadInfosAsync(cancellationToken),
@@ -27,20 +34,50 @@ public sealed partial class Map : ViewModelControl
     private MapElementsLayer _differenceLayer;
     private MapElementsLayer _poisLayer;
     private MapElementsLayer _infoLayer;
+    private MapIcon _dummyIcon;
 
     public Map()
     {
         InitializeComponent();
 
-        StrongReferenceMessenger.Default.Register<SetMapCenterMessage>(this, (recipient, message) =>
-        {
-            ((Map)recipient).SetCenterAsync(new Geopoint(message.Value)).FireAndForget();
-        });
+        StrongReferenceMessenger.Default.Register<ModeChanged>(this);
+        StrongReferenceMessenger.Default.Register<TrackChanged>(this);
+        StrongReferenceMessenger.Default.Register<HoverPointChanged>(this);
+        StrongReferenceMessenger.Default.Register<InfoVisibleChanged>(this);
+        StrongReferenceMessenger.Default.Register<SetMapCenterMessage>(this);
+        StrongReferenceMessenger.Default.Register<TrackComplete>(this);
+
+        RegisterRoutingMessages();
+        RegisterCompareSessionMessages();
+        RegisterPoisMessages();
     }
 
     public Geopoint Center => MapControl.Center;
 
-    private async Task SetCenterAsync(Geopoint point, int zoom = 12, bool onlyIfNotInView = false)
+    public void ZoomTrackDifference(TrackDifference difference)
+    {
+        MapPolyline differenceLine = GetDifferenceLine(difference);
+        if (differenceLine is not null)
+        {
+            GeoboundingBox bounds = GeoboundingBox.TryCompute(differenceLine.Path.Positions);
+            if (bounds is not null)
+            {
+                SetViewAsync().FireAndForget();
+
+                async Task SetViewAsync()
+                {
+                    await MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.None);
+                    await Task.Delay(10);
+                    if (MapControl.ZoomLevel > 15)
+                    {
+                        MapControl.ZoomLevel = 15;
+                    }
+                }
+            }
+        }
+    }
+
+    private async Task SetCenterAsync(Geopoint point, float zoom = 12.9f, bool onlyIfNotInView = false)
     {
         if (onlyIfNotInView)
         {
@@ -89,36 +126,18 @@ public sealed partial class Map : ViewModelControl
         menu.ShowAt(MapControl, location, position);
     }
 
-    public void ZoomTrackDifference(TrackDifference difference)
-    {
-        MapPolyline differenceLine = GetDifferenceLine(difference);
-        if (differenceLine is not null)
-        {
-            GeoboundingBox bounds = GeoboundingBox.TryCompute(differenceLine.Path.Positions);
-            if (bounds is not null)
-            {
-                MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.Linear).AsTask().FireAndForget();
-                if (MapControl.ZoomLevel > 14)
-                {
-                    MapControl.ZoomLevel = 14;
-                }
-            }
-        }
-    }
-
 
     // WORKAROUND Change the view slightly to update moved child controls.
-    private MapIcon _dummy;
     private void Nudge()
     {
-        if (_dummy is null)
+        if (_dummyIcon is null)
         {
-            MapControl.MapElements.Add(_dummy = new MapIcon { MapStyleSheetEntry = "Dummy.Point", Location = MapControl.Center });
+            MapControl.MapElements.Add(_dummyIcon = new MapIcon { MapStyleSheetEntry = "Dummy.Point", Location = MapControl.Center });
         }
         else
         {
             MapControl.MapElements.Clear();
-            _dummy = null;
+            _dummyIcon = null;
         }
     }
 
@@ -135,23 +154,35 @@ public sealed partial class Map : ViewModelControl
         }
     }
 
+    private void ViewModelControl_Loaded(object _1, RoutedEventArgs _2)
+    {
+        foreach (InfoCategory category in InfoCategory.All)
+        {
+            if (!category.Hide)
+            {
+                MenuFlyoutSubItem subItem = new() { Text = $"Add {category.Name.ToLower()} point" };
+                foreach (InfoType type in category.Types)
+                {
+                    PointOfInterestCommandParameter parameter = new() { Type = type };
+                    MapOnTrackMenu.RegisterPropertyChangedCallback(
+                        MapMenuFlyout.LocationProperty, 
+                        (sender, _) => parameter.Location = ((MapMenuFlyout)sender).Location);
+                    subItem.Items.Add(new MenuFlyoutItem
+                    {
+                        Text = type.ToString(),
+                        Command = ViewModel.AddPointOfInterestCommand,
+                        CommandParameter = parameter,
+                    });
+                }
+                MapOnTrackMenu.Items.Add(subItem);
+            }
+        }
+    }
+
     private void MapControl_Loaded(object _1, RoutedEventArgs _2)
     {
-        ViewModel.ModeChanged += ViewModel_ModeChanged;
-        ViewModel.InfoVisibleChanged += ViewModel_InfoVisibleChanged;
-        ViewModel.TrackChanged += ViewModel_TrackChanged;
-        ViewModel.CompareSessionChanged += ViewModel_CompareSessionChanged;
-        ViewModel.HoverPointChanged += ViewModel_HoverPointChanged;
-        ViewModel.DragWayPointStarting += ViewModel_DragWayPointStarting;
-        ViewModel.DragNewWayPointStarting += ViewModel_DragNewWayPointStarting;
-        ViewModel.DragWayPointStarted += ViewModel_DragWayPointStarted;
-        ViewModel.DragWayPointEnded += ViewModel_DragWayPointEnded;
-        ViewModel.PoisCategoryVisibleChanged += ViewModel_PoisCategoryVisibleChanged;
-        ViewModel.InfoCategoryVisibleChanged += ViewModel_InfoCategoryVisibleChanged;
-        ViewModel.Infos.InfosActivated += Infos_InfosActivated;
-        ViewModel.Infos.InfosDeactivated += Infos_InfosDeactivated;
-        ViewModel.Sections.CollectionChanged += Sections_CollectionChanged;
-        ViewModel.Points.CollectionChanged += Points_CollectionChanged;
+        ViewModel.Sections.CollectionChanged += OnTracks_CollectionChanged;
+        ViewModel.Points.CollectionChanged += OnTracks_CollectionChanged;
 
         MapControl.Center = new Geopoint(new BasicGeoposition() { Latitude = 46.46039124618558, Longitude = 10.089039490153148 });
 
@@ -174,52 +205,6 @@ public sealed partial class Map : ViewModelControl
 
         _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
         MapControl.Layers.Add(_routingLayer);
-
-        MenuFlyoutSubItem[] infoCategoryMenuItems = InfoCategory.All
-            .Where(category => !category.Hide)
-            .Select(category =>
-            {
-                MenuFlyoutSubItem subItem = new() { Text = $"Add {category.Name}" };
-                foreach (InfoType type in category.Types)
-                {
-                    PointOfInterestCommandParameter parameter = new() { Type = type };
-                    MapOnTrackMenu.RegisterPropertyChangedCallback(MapMenuFlyout.LocationProperty, (sender, _) => parameter.Location = ((MapMenuFlyout)sender).Location);
-                    subItem.Items.Add(new MenuFlyoutItem
-                    {
-                        Text = type.ToString(),
-                        Command = ViewModel.AddPointOfInterestCommand,
-                        CommandParameter = parameter,
-                    });
-                }
-                MapOnTrackMenu.Items.Add(subItem);
-                
-                return subItem;
-            })
-            .ToArray();
-
-        ViewModel.HoverInfoChanged += (_, _) =>
-        {
-            InfoPoint info = ViewModel.HoverInfo;
-            if (info.IsValid)
-            {
-                string name = info.Name;
-                if (name.Length > 10)
-                {
-                    name = name[..10] + "... ";
-                }
-                else if (name.Length > 0)
-                {
-                    name += " ";
-                }
-                ConvertInfoMenuItem.Text = $"Add {name}as {info.Type} ({info.Category.Name})";
-            }
-
-            Visibility visibility = Convert.VisibleIfInvalid(info);
-            foreach (MenuFlyoutSubItem menuItem in infoCategoryMenuItems)
-            {
-                menuItem.Visibility = visibility;
-            }
-        };
     }
 
     private void MapControl_ActualCameraChanged(MapControl _1, MapActualCameraChangedEventArgs _2)
@@ -311,46 +296,54 @@ public sealed partial class Map : ViewModelControl
         }
     }
 
-    private void ViewModel_ModeChanged(Modes oldMode, Modes newMode)
+    void IRecipient<ModeChanged>.Receive(ModeChanged message)
     {
-        bool isEditMode = newMode == Modes.Edit;
-        if (isEditMode != (oldMode == Modes.Edit))
+        bool isEditMode = message.NewValue == Modes.Edit;
+        if (isEditMode != (message.OldValue == Modes.Edit))
         {
-            foreach (MapElement element in _routingLayer.MapElements)
+            foreach (MapIcon icon in _routingLayer.MapElements.OfType<MapIcon>())
             {
-                if (element is MapIcon)
-                {
-                    element.Visible = isEditMode;
-                }
+                icon.Visible = isEditMode;
             }
             PointerPanel.IsEnabled = !isEditMode;
         }
     }
 
-    private void ViewModel_InfoVisibleChanged(bool oldVisible, bool newVisible)
+    void IRecipient<TrackChanged>.Receive(TrackChanged message)
     {
-        if (newVisible)
+        _routingLayer.MapElements.Clear();
+
+        DisconnectRouting(message.OldValue);
+        ConnectRouting(message.NewValue);
+    }
+
+    void IRecipient<HoverPointChanged>.Receive(HoverPointChanged message)
+    {
+        Nudge();
+    }
+
+    void IRecipient<InfoVisibleChanged>.Receive(InfoVisibleChanged message)
+    {
+        if (message.NewValue)
         {
             _loadInfosThrottle.Next(null, this);
         }
     }
 
-    private void ViewModel_TrackChanged(Track oldTrack, Track newTrack)
+    void IRecipient<SetMapCenterMessage>.Receive(SetMapCenterMessage message)
     {
-        _routingLayer.MapElements.Clear();
-
-        if (oldTrack is not null)
-        {
-            DisconnectRouting(oldTrack);
-        }
-        if (newTrack is not null)
-        {
-            ConnectRouting(newTrack);
-        }
+        SetCenterAsync(new Geopoint(message.Value)).FireAndForget();
     }
 
-    private void ViewModel_HoverPointChanged(TrackPoint arg1, TrackPoint arg2)
+    void IRecipient<TrackComplete>.Receive(TrackComplete message)
     {
-        Nudge();
+        if (!message.IsNew)
+        {
+            GeoboundingBox bounds = GeoboundingBox.TryCompute(ViewModel.Track.Points.Select(trackPoint => (BasicGeoposition)trackPoint));
+            if (bounds is not null)
+            {
+                MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.Bow).AsTask().FireAndForget();
+            }
+        }
     }
 }

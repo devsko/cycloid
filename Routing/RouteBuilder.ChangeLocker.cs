@@ -1,12 +1,13 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace cycloid.Routing;
 
 partial class RouteBuilder
 {
-    public class ChangeLocker(RouteBuilder routeBuilder)
+    public class ChangeLocker()
     {
         public readonly struct Releaser(ChangeLocker changeLock, bool calculation) : IDisposable
         {
@@ -50,7 +51,8 @@ partial class RouteBuilder
             if (_runningCalculationCounter == 0)
             {
                 _semaphore.Release();
-                routeBuilder.Changed?.Invoke(false);
+
+                StrongReferenceMessenger.Default.Send(new RouteChanged(false));
             }
         }
 

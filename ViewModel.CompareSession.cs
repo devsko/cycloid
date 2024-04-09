@@ -2,44 +2,97 @@ using System;
 using System.Collections.Specialized;
 using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace cycloid;
 
+public class CompareSessionChanged(object sender, Track.CompareSession oldValue, Track.CompareSession newValue) : PropertyChangedMessage<Track.CompareSession>(sender, null, oldValue, newValue);
+
 partial class ViewModel
 {
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(RecalculateCommandName))]
-    [NotifyPropertyChangedFor(nameof(CompareSessionState))]
-    [NotifyCanExecuteChangedFor(nameof(RecalculateCommand))]
-    [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
     private Track.CompareSession _compareSession;
+    public Track.CompareSession CompareSession
+    {
+        get => _compareSession;
+        set
+        {
+            Track.CompareSession oldValue = _compareSession;
+            if (SetProperty(ref _compareSession, value))
+            {
+                if (oldValue is not null)
+                {
+                    oldValue.Differences.CollectionChanged -= CompareSessionDifferences_CollectionChanged;
+                }
+                if (value is not null)
+                {
+                    value.Differences.CollectionChanged += CompareSessionDifferences_CollectionChanged;
+                }
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(RecalculateCommandName))]
-    [NotifyPropertyChangedFor(nameof(CompareSessionState))]
-    [NotifyCanExecuteChangedFor(nameof(RecalculateCommand))]
+                OnPropertyChanged(nameof(RecalculateCommandName));
+                OnPropertyChanged(nameof(CompareSessionState));
+
+                RecalculateCommand.NotifyCanExecuteChanged();
+                CancelCommand.NotifyCanExecuteChanged();
+
+                StrongReferenceMessenger.Default.Send(new CompareSessionChanged(this, oldValue, value));
+            }
+        }
+    }
+
     private bool _recalculationComplete;
+    public bool RecalculationComplete
+    {
+        get => _recalculationComplete;
+        set
+        {
+            if (SetProperty(ref _recalculationComplete, value))
+            {
+                OnPropertyChanged(nameof(RecalculateCommandName));
+                OnPropertyChanged(nameof(CompareSessionState));
 
-    [ObservableProperty]
+                RecalculateCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
     private int _downhillCost;
+    public int DownhillCost
+    {
+        get => _downhillCost;
+        set => SetProperty(ref _downhillCost, value);
+    }
 
-    [ObservableProperty]
     private float _downhillCutoff;
+    public float DownhillCutoff
+    {
+        get => _downhillCutoff;
+        set => SetProperty(ref _downhillCutoff, value);
+    }
 
-    [ObservableProperty]
     private int _uphillCost;
+    public int UphillCost
+    {
+        get => _uphillCost;
+        set => SetProperty(ref _uphillCost, value);
+    }
 
-    [ObservableProperty]
     private float _uphillCutoff;
+    public float UphillCutoff
+    {
+        get => _uphillCutoff;
+        set => SetProperty(ref _uphillCutoff, value);
+    }
 
-    [ObservableProperty]
     private int _bikerPower;
+    public int BikerPower
+    {
+        get => _bikerPower;
+        set => SetProperty(ref _bikerPower, value);
+    }
 
     private Routing.Profile _originalProfile;
-
-    public event Action<Track.CompareSession, Track.CompareSession> CompareSessionChanged;
 
     public string CompareSessionState => 
         CompareSession is null 
@@ -53,19 +106,6 @@ partial class ViewModel
         (RecalculationComplete ? "" : $" ({CompareSession.OriginalSegmentsCount - TrackCalculationCounter} / {CompareSession.OriginalSegmentsCount})");
 
     public string RecalculateCommandName => RecalculationComplete ? "Accept" : "Recalculate";
-
-    partial void OnCompareSessionChanged(Track.CompareSession oldValue, Track.CompareSession newValue)
-    {
-        if (oldValue is not null)
-        {
-            oldValue.Differences.CollectionChanged -= CompareSessionDifferences_CollectionChanged;
-        }
-        if (newValue is not null)
-        {
-            newValue.Differences.CollectionChanged += CompareSessionDifferences_CollectionChanged;
-        }
-        CompareSessionChanged?.Invoke(oldValue, newValue);
-    }
 
     [RelayCommand(CanExecute = nameof(CanRecalculate))]
     public async Task RecalculateAsync(CancellationToken cancellationToken)
@@ -88,6 +128,7 @@ partial class ViewModel
             else
             {
                 CompareSession.Differences.Clear();
+                CompareSession.Dispose();
                 CompareSession = null;
                 RecalculationComplete = false;
             }

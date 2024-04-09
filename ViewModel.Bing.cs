@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
 
@@ -11,12 +10,11 @@ partial class ViewModel
 {
     private readonly Throttle<TrackPoint, ViewModel> _getAddressThrottle = new(GetAddressAsync, TimeSpan.FromSeconds(5));
 
-    [ObservableProperty]
     private string _currentPointAddress;
-
-    partial void OnCurrentPointChanged(TrackPoint value)
+    public string CurrentPointAddress
     {
-        _getAddressThrottle.Next(value, this);
+        get => _currentPointAddress;
+        set => SetProperty(ref _currentPointAddress, value);
     }
 
     private static async Task GetAddressAsync(TrackPoint point, ViewModel @this, CancellationToken _)

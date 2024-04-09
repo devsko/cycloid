@@ -16,8 +16,13 @@ using Windows.UI.Xaml.Input;
 
 namespace cycloid;
 
-public sealed partial class MainPage : Page
+public sealed partial class MainPage : Page,
+    IRecipient<TrackChanged>,
+    IRecipient<OnTrackAdded>
 {
+    private bool _ignoreTextChange;
+    private OnTrack _lastAddedOnTrack;
+
     public MainPage()
     {
         InitializeComponent();
@@ -34,6 +39,9 @@ public sealed partial class MainPage : Page
             },
         };
         DownhillCutoff.NumberFormatter = UphillCutoff.NumberFormatter = cutoffFormatter;
+
+        StrongReferenceMessenger.Default.Register<TrackChanged>(this);
+        StrongReferenceMessenger.Default.Register<OnTrackAdded>(this);
     }
 
     private TabViewItem GetTabItem(Modes mode)
@@ -56,13 +64,6 @@ public sealed partial class MainPage : Page
             await ViewModel.OpenLastTrackAsync();
         }
     }
-
-    private void ViewModel_TrackChanged(Track _, Track track)
-    {
-        ApplicationView.GetForCurrentView().Title = track is null ? string.Empty : track.Name;
-    }
-
-    private bool _ignoreTextChange;
 
     private async void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
@@ -125,13 +126,6 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private OnTrack _lastAddedOnTrack;
-
-    private void ViewModel_OnTrackAdded(OnTrack section)
-    {
-        _lastAddedOnTrack = section;
-    }
-
     private void OnTracks_ContainerContentChanging(ListViewBase _, ContainerContentChangingEventArgs args)
     {
         if (args.Item == _lastAddedOnTrack && !args.InRecycleQueue)
@@ -167,5 +161,15 @@ public sealed partial class MainPage : Page
             sender.FindAscendant<ListView>().Focus(FocusState.Programmatic);
             args.Handled = true;
         }
+    }
+
+    void IRecipient<TrackChanged>.Receive(TrackChanged message)
+    {
+        ApplicationView.GetForCurrentView().Title = message.NewValue is null ? string.Empty : message.NewValue.Name;
+    }
+
+    void IRecipient<OnTrackAdded>.Receive(OnTrackAdded message)
+    {
+        _lastAddedOnTrack = message.OnTrack;
     }
 }

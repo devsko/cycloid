@@ -99,8 +99,6 @@ public static class Convert
     public static Visibility VisibleIfValid(TrackPoint value) => !value.IsValid ? Visibility.Collapsed : Visibility.Visible;
 
     public static Visibility VisibleIfValid(Info.InfoPoint value) => !value.IsValid ? Visibility.Collapsed : Visibility.Visible;
-    
-    public static Visibility VisibleIfInvalid(Info.InfoPoint value) => value.IsValid ? Visibility.Collapsed : Visibility.Visible;
 
     public static Visibility VisibleIfNotNullOrEmpty(string value) => string.IsNullOrEmpty(value) ? Visibility.Collapsed : Visibility.Visible;
 

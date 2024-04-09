@@ -5,7 +5,8 @@
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
     xmlns:info="using:cycloid.Info"
-    xmlns:maps="using:Windows.UI.Xaml.Controls.Maps">
+    xmlns:maps="using:Windows.UI.Xaml.Controls.Maps"
+    Loaded="ViewModelControl_Loaded">
 
     <controls:ViewModelControl.Resources>
 
@@ -43,13 +44,13 @@
         <controls:MapMenuFlyout x:Name="MapNoTrackMenu" />
         <controls:MapMenuFlyout x:Name="MapEditMenu">
             <MenuFlyoutItem
-                Command="{x:Bind Mode=OneTime, Path=ViewModel.AddDestinationCommand}"
-                CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
-                Text="Add new destination" />
-            <MenuFlyoutItem
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.AddWayPointCommand}"
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
                 Text="Add waypoint" />
+            <MenuFlyoutItem
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.AddDestinationCommand}"
+                CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
+                Text="Add new destination" />
             <MenuFlyoutItem
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.AddStartCommand}"
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
@@ -58,8 +59,8 @@
             <MenuFlyoutItem IsEnabled="False" Text="Add forbidden area" />
         </controls:MapMenuFlyout>
         <controls:MapMenuFlyout x:Name="MapEditPointMenu">
-            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.StartDragWayPointCommand}" Text="Move waypoint" />
             <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.DeleteWayPointCommand}" Text="Delete waypoint" />
+            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.StartDragWayPointCommand}" Text="Move waypoint" />
             <MenuFlyoutSeparator />
             <MenuFlyoutItem
                 x:Name="SplitGpxHere"
@@ -75,7 +76,7 @@
             <MenuFlyoutItem
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.StartDragNewWayPointCommand}"
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
-                Text="Add new waypoint" />
+                Text="Add waypoint" />
             <MenuFlyoutSeparator />
             <MenuFlyoutItem
                 x:Name="DirectRoute"
@@ -94,21 +95,21 @@
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.HoverInfo)}" />
             <MenuFlyoutItem
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.AddPointOfInterestCommand}"
-                Text="Add Split point"
-                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfInvalid(ViewModel.HoverInfo)}">
+                Text="Add split point"
+                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(ConvertInfoMenuItem.Visibility)}">
                 <MenuFlyoutItem.CommandParameter>
                     <cycloid:PointOfInterestCommandParameter Location="{x:Bind Mode=OneWay, Path=MapOnTrackMenu.Location}" Type="{x:Bind Mode=OneTime, Path=info:InfoType.Split}" />
                 </MenuFlyoutItem.CommandParameter>
             </MenuFlyoutItem>
             <MenuFlyoutItem
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.AddPointOfInterestCommand}"
-                Text="Add Mountain pass"
-                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfInvalid(ViewModel.HoverInfo)}">
+                Text="Add mountain pass"
+                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(ConvertInfoMenuItem.Visibility)}">
                 <MenuFlyoutItem.CommandParameter>
                     <cycloid:PointOfInterestCommandParameter Location="{x:Bind Mode=OneWay, Path=MapOnTrackMenu.Location}" Type="{x:Bind Mode=OneTime, Path=info:InfoType.MountainPass}" />
                 </MenuFlyoutItem.CommandParameter>
             </MenuFlyoutItem>
-            <MenuFlyoutSeparator Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfInvalid(ViewModel.HoverInfo)}" />
+            <MenuFlyoutSeparator Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(ConvertInfoMenuItem.Visibility)}" />
         </controls:MapMenuFlyout>
         <controls:MapMenuFlyout x:Name="MapTrainMenu" />
     </controls:ViewModelControl.Resources>

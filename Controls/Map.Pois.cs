@@ -3,19 +3,34 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Info;
 using cycloid.Routing;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Maps;
 
 namespace cycloid.Controls;
 
-partial class Map
+partial class Map : 
+    IRecipient<HoverInfoChanged>,
+    IRecipient<InfoCategoryVisibleChanged>,
+    IRecipient<InfosActivated>,
+    IRecipient<InfosDeactivated>
 {
     private readonly Throttle<(Point, MapPoint), Map> _hoverElementThrottle = new(
         static (location, @this) => @this.HoverElement(location),
         TimeSpan.FromMilliseconds(70));
+
+    private void RegisterPoisMessages()
+    {
+        StrongReferenceMessenger.Default.Register<HoverInfoChanged>(this);
+        StrongReferenceMessenger.Default.Register<InfoCategoryVisibleChanged>(this);
+        StrongReferenceMessenger.Default.Register<InfosActivated>(this);
+        StrongReferenceMessenger.Default.Register<InfosDeactivated>(this);
+    }
 
     private MapPoint? GetLocation(Point offset) 
         => MapControl.TryGetLocationFromOffset(offset, out Geopoint location) ? (MapPoint)location.Position : null;
@@ -26,17 +41,7 @@ partial class Map
     private MapIcon GetInfoIcon(InfoPoint info) 
         => _infoLayer.MapElements.OfType<MapIcon>().FirstOrDefault(element => (InfoPoint)element.Tag == info);
 
-    private void Points_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-    {
-        OnTrackCollectionChanged(e);
-    }
-
-    private void Sections_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-    {
-        OnTrackCollectionChanged(e);
-    }
-
-    private void OnTrackCollectionChanged(NotifyCollectionChangedEventArgs e)
+    private void OnTracks_CollectionChanged(object _, NotifyCollectionChangedEventArgs e)
     {
         switch (e.Action)
         {
@@ -130,37 +135,53 @@ partial class Map
         }
     }
 
-    private void ViewModel_PoisCategoryVisibleChanged(InfoCategory category, bool value)
+    void IRecipient<HoverInfoChanged>.Receive(HoverInfoChanged message)
     {
-        IEnumerable<MapIcon> icons = _poisLayer.MapElements.Cast<MapIcon>();
-        if (category is not null)
+        if (message.NewValue.IsValid)
         {
-            icons = icons.Where(icon => ((OnTrack)icon.Tag).PointOfInterest.Category == category);
+            string name = message.NewValue.Name;
+            if (name.Length > 14)
+            {
+                name = name[..14] + "... ";
+            }
+            else if (name.Length > 0)
+            {
+                name += " ";
+            }
+            ConvertInfoMenuItem.Text = $"Add {name}as {message.NewValue.Category.Name.ToLower()} point ({message.NewValue.Type})";
+        }
+
+        Visibility visibility = message.NewValue.IsValid ? Visibility.Collapsed : Visibility.Visible;
+        foreach (MenuFlyoutSubItem menuItem in MapOnTrackMenu.Items.OfType<MenuFlyoutSubItem>())
+        {
+            menuItem.Visibility = visibility;
+        }
+    }
+
+    void IRecipient<InfoCategoryVisibleChanged>.Receive(InfoCategoryVisibleChanged message)
+    {
+        IEnumerable<MapIcon> icons = (message.Pois ? _poisLayer : _infoLayer).MapElements.Cast<MapIcon>();
+        if (message.Category is not null)
+        {
+            if (message.Pois)
+            {
+                icons = icons.Where(icon => ((OnTrack)icon.Tag).PointOfInterest.Category == message.Category);
+            }
+            else
+            {
+                icons = icons.Where(icon => ((InfoPoint)icon.Tag).Category == message.Category);
+            }
         }
 
         foreach (MapIcon icon in icons)
         {
-            icon.Visible = value;
+            icon.Visible = message.NewValue;
         }
     }
 
-    private void ViewModel_InfoCategoryVisibleChanged(InfoCategory category, bool value)
+    void IRecipient<InfosActivated>.Receive(InfosActivated message)
     {
-        IEnumerable<MapIcon> icons = _infoLayer.MapElements.Cast<MapIcon>();
-        if (category is not null)
-        {
-            icons = icons.Where(icon => ((InfoPoint)icon.Tag).Category == category);
-        }
-
-        foreach (MapIcon icon in icons)
-        {
-            icon.Visible = value;
-        }
-    }
-
-    private void Infos_InfosActivated(InfoPoint[] infoPoints)
-    {
-        foreach (InfoPoint infoPoint in infoPoints)
+        foreach (InfoPoint infoPoint in message.Infos)
         {
             _infoLayer.MapElements.Add(new MapIcon
             {
@@ -173,11 +194,12 @@ partial class Map
         }
     }
 
-    private void Infos_InfosDeactivated(int startIndex, int length)
+    void IRecipient<InfosDeactivated>.Receive(InfosDeactivated message)
     {
-        while (length-- > 0)
+        int count = message.Count;
+        while (count-- > 0)
         {
-            _infoLayer.MapElements.RemoveAt(startIndex);
+            _infoLayer.MapElements.RemoveAt(message.Index);
         }
     }
 }

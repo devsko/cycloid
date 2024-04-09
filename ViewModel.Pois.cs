@@ -6,12 +6,28 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using cycloid.Info;
 using Microsoft.VisualStudio.Threading;
 
 namespace cycloid;
+
+public class OnTrackAdded(OnTrack onTrack)
+{
+    public OnTrack OnTrack => onTrack;
+}
+
+public class CurrentSectionChanged(object sender, OnTrack oldValue, OnTrack newValue) : PropertyChangedMessage<OnTrack>(sender, null, oldValue, newValue);
+
+public class HoverInfoChanged(object sender, InfoPoint oldValue, InfoPoint newValue) : PropertyChangedMessage<InfoPoint>(sender, null, oldValue, newValue);
+
+public class InfoCategoryVisibleChanged(object sender, bool pois, InfoCategory category, bool oldValue, bool newValue) : PropertyChangedMessage<bool>(sender, null, oldValue, newValue)
+{
+    public bool Pois => pois;
+    public InfoCategory Category => category;
+}
 
 public class PointOfInterestCommandParameter
 {
@@ -21,19 +37,37 @@ public class PointOfInterestCommandParameter
 
 partial class ViewModel
 {
-    [ObservableProperty]
     private OnTrack _currentSection;
+    public OnTrack CurrentSection
+    {
+        get => _currentSection;
+        set
+        {
+            OnTrack oldValue = _currentSection;
+            if (SetProperty(ref _currentSection, value))
+            {
+                StrongReferenceMessenger.Default.Send(new CurrentSectionChanged(this, oldValue, value));
+            }
+        }
+    }
 
-    [ObservableProperty]
     private InfoPoint _hoverInfo = InfoPoint.Invalid;
+    public InfoPoint HoverInfo
+    {
+        get => _hoverInfo;
+        set
+        {
+            InfoPoint oldValue = _hoverInfo;
+            if (SetProperty(ref _hoverInfo, value))
+            {
+                StrongReferenceMessenger.Default.Send(new HoverInfoChanged(this, oldValue, value));
+            }
+        }
+    }
 
     public ObservableCollection<OnTrack> Sections { get; } = [];
 
     public ObservableCollection<OnTrack> Points { get; } = [];
-
-    public event Action<OnTrack> OnTrackAdded;
-    public event Action<OnTrack, OnTrack> CurrentSectionChanged;
-    public event Action<InfoPoint, InfoPoint> HoverInfoChanged;
 
     public int OnTrackCount => Sections.Count + Points.Count;
 
@@ -65,7 +99,7 @@ partial class ViewModel
             CurrentSection = onTrack;
         }
 
-        OnTrackAdded?.Invoke(onTrack);
+        StrongReferenceMessenger.Default.Send(new OnTrackAdded(onTrack));
 
         await SaveTrackAsync();
     }
@@ -188,17 +222,7 @@ partial class ViewModel
         }
     }
 
-    partial void OnCurrentSectionChanged(OnTrack oldValue, OnTrack newValue)
-    {
-        CurrentSectionChanged?.Invoke(oldValue, newValue);
-    }
-
-    partial void OnHoverInfoChanged(InfoPoint oldValue, InfoPoint newValue)
-    {
-        HoverInfoChanged?.Invoke(oldValue, newValue);
-    }
-
-    private void PointOfInterest_PropertyChanged(object sender, PropertyChangedEventArgs _)
+    private void PointOfInterest_PropertyChanged(object _1, PropertyChangedEventArgs _2)
     {
         SaveTrackAsync().FireAndForget();
     }
