@@ -55,4 +55,19 @@ public static class EnumerableExtensions
         }
         return (min, minKey);
     }
+
+    public static IEnumerable<(T Previous, T Current)> InPairs<T>(this IEnumerable<T> source)
+    {
+        IEnumerator<T> enumerator = source.GetEnumerator();
+        if (enumerator.MoveNext())
+        {
+            T previous = enumerator.Current;
+            while (enumerator.MoveNext())
+            {
+                T current = enumerator.Current;
+                yield return (previous, current);
+                previous = current;
+            }
+        }
+    }
 }

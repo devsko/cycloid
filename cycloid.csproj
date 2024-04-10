@@ -154,6 +154,14 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Bakery.png" />
+    <Content Include="Assets\Bar.png" />
+    <Content Include="Assets\FastFood.png" />
+    <Content Include="Assets\FuelStation.png" />
+    <Content Include="Assets\Restaurant.png" />
+    <Content Include="Assets\Supermarket.png" />
+    <Content Include="Assets\Toilet.png" />
+    <Content Include="Assets\Water.png" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />

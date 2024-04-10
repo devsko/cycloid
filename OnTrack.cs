@@ -36,6 +36,7 @@ public partial class OnTrack(IList<OnTrack> onTracks) : ObservableObject
             if (SetProperty(ref _values, value))
             {
                 OnPropertyChanged(nameof(Distance));
+                OnPropertyChanged(nameof(Ascent));
                 OnPropertyChanged(nameof(Time));
                 OnPropertyChanged(nameof(Speed));
             }
@@ -68,6 +69,8 @@ public partial class OnTrack(IList<OnTrack> onTracks) : ObservableObject
     public TrackPoint.CommonValues End => TrackPoint.Values;
 
     public float? Distance => IsOffTrack ? null : Values.Distance;
+
+    public float? Ascent => IsOffTrack ? null : Values.Ascent;
 
     public TimeSpan? Time => IsOffTrack ? null : Values.Time;
 

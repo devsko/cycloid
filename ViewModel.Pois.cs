@@ -90,16 +90,25 @@ partial class ViewModel
     [RelayCommand(CanExecute = nameof(CanAddPointOfInterest))]
     public async Task AddPointOfInterestAsync(PointOfInterestCommandParameter parameter)
     {
-        bool convertInfo = HoverInfo.IsValid;
+        string name = "";
+        if (HoverInfo.IsValid)
+        {
+            parameter = new PointOfInterestCommandParameter { Location = HoverInfo.Location, Type = HoverInfo.Type };
+            name = HoverInfo.Name;
+        }
+        else if (HoverPoint.IsValid)
+        {
+            parameter = new PointOfInterestCommandParameter { Location = HoverPoint, Type = parameter.Type };
+        }
 
-        InfoType type = convertInfo ? HoverInfo.Type : parameter.Type;
+        InfoType type = parameter.Type;
         PointOfInterest pointOfInterest = new()
         {
             Created = DateTime.UtcNow,
-            Location = convertInfo ? HoverInfo.Location : parameter.Location,
+            Location = parameter.Location,
             Type = type,
             Category = InfoCategory.Get(type),
-            Name = convertInfo ? HoverInfo.Name : "",
+            Name = name,
         };
 
         Mode = pointOfInterest.IsSection ? Modes.Sections : Modes.POIs;
@@ -123,32 +132,22 @@ partial class ViewModel
         await SaveTrackAsync();
     }
 
-    private bool CanAddPointOfInterest()
-    {
-        return Mode is Modes.Sections or Modes.POIs && Track is not null;
-    }
+    private bool CanAddPointOfInterest() 
+        => Mode is Modes.Sections or Modes.POIs && Track is not null;
 
     [RelayCommand(CanExecute = nameof(CanRemoveCurrentSection))]
-    public void RemoveCurrentSection()
-    {
-        CurrentSection = DeleteOnTrack(CurrentSection);
-    }
+    public void RemoveCurrentSection() 
+        => CurrentSection = DeleteOnTrack(CurrentSection);
 
-    private bool CanRemoveCurrentSection()
-    {
-        return Mode is Modes.Sections && Track is not null && CurrentSection is not null && CurrentSection.PointOfInterest.Type != InfoType.Goal;
-    }
+    private bool CanRemoveCurrentSection() 
+        => Mode is Modes.Sections && Track is not null && CurrentSection is not null && CurrentSection.PointOfInterest.Type != InfoType.Goal;
 
     [RelayCommand(CanExecute = nameof(CanRemoveCurrentPoi))]
-    public void RemoveCurrentPoi()
-    {
-        CurrentPoi = DeleteOnTrack(CurrentPoi);
-    }
+    public void RemoveCurrentPoi() 
+        => CurrentPoi = DeleteOnTrack(CurrentPoi);
 
-    private bool CanRemoveCurrentPoi()
-    {
-        return Mode is Modes.POIs && Track is not null && CurrentPoi is not null;
-    }
+    private bool CanRemoveCurrentPoi() 
+        => Mode is Modes.POIs && Track is not null && CurrentPoi is not null;
 
     private OnTrack DeleteOnTrack(OnTrack onTrack)
     {
@@ -208,7 +207,8 @@ partial class ViewModel
 
                 OnPropertyChanged(nameof(OnTrackCount));
 
-                foreach (PointOfInterest pointOfInterest in Track.PointsOfInterest.Where(poi => poi.Type != InfoType.Goal))
+                foreach (PointOfInterest pointOfInterest in Track.PointsOfInterest.Where(poi => poi.Type != InfoType.Goal).ToArray()) 
+                    // iterate over a copy to prevent CollectionChangedException
                 {
                     await TaskScheduler.Default;
                     await AddOnTrackPointsAsync(pointOfInterest, ui).ConfigureAwait(false);

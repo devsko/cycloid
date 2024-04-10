@@ -1,11 +1,13 @@
-using Windows.Devices.Geolocation;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml;
-using Windows.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System;
+using cycloid.Info;
+using Windows.Devices.Geolocation;
+using Windows.UI;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace cycloid;
 
@@ -18,6 +20,18 @@ public static class Convert
 
     private static readonly (Brush Positive, Brush Negative) _differenceBrushes = (new SolidColorBrush(Colors.Red), new SolidColorBrush(Colors.Green));
     private static readonly (Brush[] Ascending, Brush[] Descending) _gradientBrushes = CreateGradientBrushes();
+
+    private static readonly Dictionary<InfoType, BitmapImage> _infoTypeIcons = CreateInfoTypeIcons();
+
+
+    private static Dictionary<InfoType, BitmapImage> CreateInfoTypeIcons()
+    {
+        return InfoCategory
+            .All
+            .Where(category => !category.Hide)
+            .SelectMany(category => category.Types)
+            .ToDictionary(type => type, type => new BitmapImage { UriSource = new Uri($"ms-appx:///Assets/{type}.png") });
+    }
 
     private static (Brush[], Brush[]) CreateGradientBrushes()
     {
@@ -103,6 +117,8 @@ public static class Convert
     public static Visibility VisibleIfNotNullOrEmpty(string value) => string.IsNullOrEmpty(value) ? Visibility.Collapsed : Visibility.Visible;
 
     public static Visibility VisibleIfNotVisible(Visibility visibility) => visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+
+    public static ImageSource InfoTypeIcon(InfoType type) => _infoTypeIcons[type];
 
     public static bool IsNotNull(object value) => value is not null;
 }

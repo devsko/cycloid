@@ -28,7 +28,7 @@ public static class Format
 
     public static string Duration(TimeSpan? value) => value is null ? "" : value.Value.Days == 0 ? $"{value.Value:hh\\:mm}" : $"{value.Value:d\\.hh\\:mm}";
 
-    public static string Altitude(float value) => $"{value:N0} m";
+    public static string Altitude(float? value) => value is null ? "" : $"{value:N0}";
 
     public static string Gradient(float gradient) => $"{gradient:N1} %";
 

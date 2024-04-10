@@ -185,6 +185,7 @@
 
         <!--  HoverPoint  -->
         <Border
+            ContextRequested="PointerPanel_ContextRequested"
             maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.HoverPoint)}"
             maps:MapControl.NormalizedAnchorPoint=".5 .5"
             UseLayoutRounding="False"

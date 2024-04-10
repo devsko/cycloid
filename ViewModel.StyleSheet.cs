@@ -212,8 +212,8 @@ partial class ViewModel
                   "Point": {
                     "parent": "userPoint",
                     "fillColor": "#00000000",
-                    "iconColor": "#00000000",
-                    "strokeColor": "#00000000"
+                    "strokeColor": "#00000000",
+                    "scale": 0.1
                   }
                 }
               }
