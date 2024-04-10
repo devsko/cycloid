@@ -88,6 +88,8 @@ public sealed partial class Map : ViewModelControl,
             }
         }
 
+        zoom = MathF.Max(zoom, (float)MapControl.ZoomLevel);
+
         await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Linear);
     }
 

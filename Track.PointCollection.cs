@@ -179,7 +179,7 @@ partial class Track
                 : TrackPoint.Lerp(nearestPoint, next, nextDistance.Fraction);
         }
 
-        public (TrackPoint Point, float Distance)[] GetNearPoints(MapPoint location, float maxCrossTrackDistance, int minDistanceDelta)
+        public (TrackPoint Point, float Distance)[] GetNearPoints(MapPoint location, float maxDistance, int minDistanceDelta)
         {
             IEnumerator<(Segment Segment, TrackPoint Point, Index _)> enumerator = Enumerate().GetEnumerator();
             if (!enumerator.MoveNext())
@@ -205,7 +205,7 @@ partial class Track
                         currentResult = (TrackPoint.Lerp(GetPoint(previousSegment, previousPoint), GetPoint(currentSegment, currentPoint), fraction.Value), testDistance);
                         lastExitTrackDistance = null;
                     }
-                    else if (testDistance > maxCrossTrackDistance)
+                    else if (testDistance > maxDistance)
                     {
                         float trackDistance = currentSegment.Start.Distance + currentPoint.Distance;
                         if (lastExitTrackDistance is null)
@@ -224,7 +224,7 @@ partial class Track
                         lastExitTrackDistance = null;
                     }
                 }
-                else if (testDistance <= maxCrossTrackDistance)
+                else if (testDistance <= maxDistance)
                 {
                     currentResult = (TrackPoint.Lerp(GetPoint(previousSegment, previousPoint), GetPoint(currentSegment, currentPoint), fraction.Value), testDistance);
                 }

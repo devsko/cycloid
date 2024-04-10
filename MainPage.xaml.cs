@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
@@ -9,6 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.Devices.Geolocation;
 using Windows.Globalization.NumberFormatting;
 using Windows.Services.Maps;
+using Windows.System;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -128,12 +130,15 @@ public sealed partial class MainPage : Page,
 
     private void OnTracks_ContainerContentChanging(ListViewBase _, ContainerContentChangingEventArgs args)
     {
-        if (args.Item == _lastAddedOnTrack && !args.InRecycleQueue)
+        Debug.WriteLine($"ContainerContentChanging '{(args.Item is null ? "null" : ((OnTrack)args.Item).Name)}'");
+        if (args.Item is not null && args.Item == _lastAddedOnTrack)
         {
+            Debug.WriteLine("Focus Text");
             TextBox textBox = args.ItemContainer.FindDescendant<TextBox>();
             textBox.Focus(FocusState.Programmatic);
-            textBox.Text = ((OnTrack)args.Item).Name;
+            textBox.Text = _lastAddedOnTrack.Name;
             textBox.SelectAll();
+            _lastAddedOnTrack = null;
         }
     }
 
@@ -149,6 +154,18 @@ public sealed partial class MainPage : Page,
     {
         ListView list = (ListView)sender;
         if (list.SelectedItem is OnTrack onTrack)
+        {
+            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.PointOfInterest.Location));
+        }
+    }
+
+    private void OnTracks_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        ListView list = (ListView)sender;
+        if (e.Key == VirtualKey.Enter && 
+            FocusManager.GetFocusedElement() is ListViewItem item &&
+            item.FindAscendant<ListView>() == list &&
+            item.Content is OnTrack onTrack)
         {
             StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.PointOfInterest.Location));
         }
@@ -170,6 +187,7 @@ public sealed partial class MainPage : Page,
 
     void IRecipient<OnTrackAdded>.Receive(OnTrackAdded message)
     {
+        Debug.WriteLine($"OnTrackAdded {message.OnTrack}");
         _lastAddedOnTrack = message.OnTrack;
     }
 }

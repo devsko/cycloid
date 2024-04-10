@@ -7,11 +7,12 @@ namespace cycloid;
 
 public partial class PointOfInterest : ObservableObject
 {
-    private byte _trackMask;
-    private int? _onTrackCount;
-
-    [ObservableProperty]
     private string _name;
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
 
     public InfoType Type { get; set; }
 
@@ -21,47 +22,31 @@ public partial class PointOfInterest : ObservableObject
 
     public MapPoint Location { get; set; }
 
-    public int? OnTrackCount 
-    {
-        get => _onTrackCount;
-        private set
-        {
-            SetProperty(ref _onTrackCount, value);
-        }
-    }
+    public int? OnTrackCount { get; private set; }
 
-    public byte TrackMask
-    {
-        get => _trackMask;
-        private set
-        {
-            SetProperty(ref _trackMask, value);
-        }
-    }
+    public byte TrackMask { get; private set; }
 
     public bool IsSection => InfoCategory.Section.Types.Contains(Type);
 
     public void InitOnTrackCount(int value, byte? trackMask = null)
     {
-        _onTrackCount = value;
+        OnTrackCount = value;
         if (trackMask is byte mask)
         {
-            _trackMask = mask;
+            TrackMask = mask;
         }
         else
         {
-            _trackMask = 0;
+            TrackMask = 0;
             while (value-- > 0)
             {
-                _trackMask <<= 1;
-                _trackMask |= 1;
+                TrackMask <<= 1;
+                TrackMask |= 1;
             }
         }
 
         OnPropertyChanged(nameof(OnTrackCount));
     }
-
-    public void SetTrackMaskBit(int position) => TrackMask |= GetMask(position, false);
 
     public void ClearTrackMaskBit(int position) => TrackMask &= GetMask(position, true);
 

@@ -108,6 +108,8 @@ partial class ViewModel
         CreateAllOnTrackPoints();
     }
 
+    private int _saveCounter;
+
     [RelayCommand]
     public async Task SaveTrackAsync()
     {
@@ -123,7 +125,7 @@ partial class ViewModel
 
                 await Serializer.SaveAsync(Track, _saveTrackCts.Token);
 
-                Status = $"{Track.Name} saved ({watch.ElapsedMilliseconds} ms)";
+                Status = $"{Track.Name} saved ({watch.ElapsedMilliseconds} ms) {++_saveCounter}";
 
                 StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", Track.File);
             }

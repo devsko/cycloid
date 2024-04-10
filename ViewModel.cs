@@ -57,6 +57,10 @@ public partial class ViewModel : ObservableObject,
                 OnPropertyChanged(nameof(PoisEnabled));
                 OnPropertyChanged(nameof(PoisVisible));
 
+                RecalculateCommand.NotifyCanExecuteChanged();
+                AddPointOfInterestCommand.NotifyCanExecuteChanged();
+                RemoveCurrentSectionCommand.NotifyCanExecuteChanged();
+
                 StrongReferenceMessenger.Default.Send(new ModeChanged(this, oldValue, value));
             }
         }
@@ -80,6 +84,8 @@ public partial class ViewModel : ObservableObject,
                 ConnectRouting(value);
 
                 RecalculateCommand.NotifyCanExecuteChanged();
+                AddPointOfInterestCommand.NotifyCanExecuteChanged();
+                RemoveCurrentSectionCommand.NotifyCanExecuteChanged();
 
                 StrongReferenceMessenger.Default.Send(new TrackChanged(this, oldValue, value));
             }

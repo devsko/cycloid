@@ -137,7 +137,7 @@ partial class ViewModel
 
     private bool CanRecalculate()
     {
-        return Track is not null && TrackIsInitialized && (CompareSession is null || RecalculationComplete);
+        return Mode is Modes.Edit && Track is not null && TrackIsInitialized && (CompareSession is null || RecalculationComplete);
     }
 
     [RelayCommand(CanExecute = nameof(CanCancel))]

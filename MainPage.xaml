@@ -5,7 +5,6 @@
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls"
-    xmlns:ui="using:CommunityToolkit.WinUI"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     Loaded="Page_Loaded">
 
@@ -13,9 +12,25 @@
         <ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml">
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
+
                     <cycloid:ViewModel x:Name="ViewModel" />
+
+                    <Style x:Key="OnTracksListViewStyle" TargetType="ListView">
+                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+                        <Setter Property="ItemContainerStyle">
+                            <Setter.Value>
+                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                    <Setter Property="MinHeight" Value="52" />
+                                    <Setter Property="Padding" Value="10,0,10,0" />
+                                </Style>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
                     <!--  Workaround: NumberBox controls are too wide  -->
                     <x:Double x:Key="TextControlThemeMinWidth">0</x:Double>
+
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -27,7 +42,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="219" />
+            <ColumnDefinition Width="220" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
@@ -141,6 +156,7 @@
             <mux:TabView
                 x:Name="TabView"
                 Grid.Row="4"
+                VerticalAlignment="Stretch"
                 IsAddTabButtonVisible="False"
                 SelectedItem="{x:Bind Mode=TwoWay, Path=GetTabItem(ViewModel.Mode), BindBack=GetMode}"
                 TabWidthMode="Compact">
@@ -335,56 +351,65 @@
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="FullScreen" />
                         </mux:TabViewItem.IconSource>
-                        <ListView
-                            ContainerContentChanging="OnTracks_ContainerContentChanging"
-                            DoubleTapped="OnTracks_DoubleTapped"
-                            ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Sections}"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto"
-                            ScrollViewer.VerticalScrollMode="Auto"
-                            SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentSection}"
-                            SelectionChanged="OnTracks_SelectionChanged">
-                            <ListView.Resources>
-                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                                    <Setter Property="MinHeight" Value="52" />
-                                    <Setter Property="Padding" Value="10,0,2,0" />
-                                </Style>
-                            </ListView.Resources>
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="cycloid:OnTrack">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition />
-                                            <RowDefinition />
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="7*" />
-                                            <ColumnDefinition Width="5*" />
-                                            <ColumnDefinition Width="4*" />
-                                            <ColumnDefinition Width="6*" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            HorizontalTextAlignment="Right"
-                                            Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}" />
-                                        <TextBlock
-                                            Grid.Column="2"
-                                            HorizontalTextAlignment="Right"
-                                            Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Speed(Speed)}" />
-                                        <TextBlock
-                                            Grid.Column="3"
-                                            HorizontalTextAlignment="Right"
-                                            Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(Time)}" />
-                                        <TextBox
-                                            Grid.Row="1"
-                                            Grid.ColumnSpan="4"
-                                            CharacterReceived="TextBox_CharacterReceived"
-                                            IsSpellCheckEnabled="False"
-                                            Text="{x:Bind Mode=TwoWay, Path=Name}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <ListView
+                                x:Name="Sections"
+                                Grid.Row="0"
+                                ContainerContentChanging="OnTracks_ContainerContentChanging"
+                                DoubleTapped="OnTracks_DoubleTapped"
+                                ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Sections}"
+                                PreviewKeyDown="OnTracks_PreviewKeyDown"
+                                SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentSection}"
+                                SelectionChanged="OnTracks_SelectionChanged"
+                                Style="{StaticResource OnTracksListViewStyle}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="cycloid:OnTrack">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="7*" />
+                                                <ColumnDefinition Width="5*" />
+                                                <ColumnDefinition Width="4*" />
+                                                <ColumnDefinition Width="6*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                HorizontalTextAlignment="Right"
+                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}" />
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                HorizontalTextAlignment="Right"
+                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Speed(Speed)}" />
+                                            <TextBlock
+                                                Grid.Column="3"
+                                                HorizontalTextAlignment="Right"
+                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(Time)}" />
+                                            <TextBox
+                                                Grid.Row="1"
+                                                Grid.ColumnSpan="4"
+                                                CharacterReceived="TextBox_CharacterReceived"
+                                                IsSpellCheckEnabled="False"
+                                                Text="{x:Bind Mode=TwoWay, Path=Name}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                            <CommandBar Grid.Row="1" OverflowButtonVisibility="Collapsed">
+                                <AppBarButton Command="{x:Bind Mode=OneTime, Path=ViewModel.RemoveCurrentSectionCommand}" Icon="Delete">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="Delete" />
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
+                            </CommandBar>
+                        </Grid>
                     </mux:TabViewItem>
                     <mux:TabViewItem
                         Header="POIs"
@@ -393,45 +418,55 @@
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="MapPin" />
                         </mux:TabViewItem.IconSource>
-                        <ListView
-                            ContainerContentChanging="OnTracks_ContainerContentChanging"
-                            DoubleTapped="OnTracks_DoubleTapped"
-                            ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Points}"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto"
-                            ScrollViewer.VerticalScrollMode="Auto"
-                            SelectionChanged="OnTracks_SelectionChanged">
-                            <ListView.Resources>
-                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                                    <Setter Property="MinHeight" Value="52" />
-                                    <Setter Property="Padding" Value="10,0,2,0" />
-                                </Style>
-                            </ListView.Resources>
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="cycloid:OnTrack">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition />
-                                            <RowDefinition />
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            HorizontalTextAlignment="Right"
-                                            Text="{x:Bind Mode=OneWay, Path=PointOfInterest.Type}" />
-                                        <TextBox
-                                            Grid.Row="1"
-                                            Grid.ColumnSpan="2"
-                                            CharacterReceived="TextBox_CharacterReceived"
-                                            IsSpellCheckEnabled="False"
-                                            Text="{x:Bind Mode=TwoWay, Path=Name}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <ListView
+                                x:Name="Pois"
+                                Grid.Row="0"
+                                ContainerContentChanging="OnTracks_ContainerContentChanging"
+                                DoubleTapped="OnTracks_DoubleTapped"
+                                ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Points}"
+                                PreviewKeyDown="OnTracks_PreviewKeyDown"
+                                SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoi}"
+                                SelectionChanged="OnTracks_SelectionChanged"
+                                Style="{StaticResource OnTracksListViewStyle}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="cycloid:OnTrack">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                HorizontalTextAlignment="Right"
+                                                Text="{x:Bind Mode=OneWay, Path=PointOfInterest.Type}" />
+                                            <TextBox
+                                                Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                CharacterReceived="TextBox_CharacterReceived"
+                                                IsSpellCheckEnabled="False"
+                                                Text="{x:Bind Mode=TwoWay, Path=Name}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                            <CommandBar Grid.Row="1" OverflowButtonVisibility="Collapsed">
+                                <AppBarButton Command="{x:Bind Mode=OneTime, Path=ViewModel.RemoveCurrentPoiCommand}" Icon="Delete">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="Delete" />
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
+                            </CommandBar>
+                        </Grid>
                     </mux:TabViewItem>
                     <mux:TabViewItem
                         Header="Train"

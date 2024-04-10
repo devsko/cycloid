@@ -46,7 +46,23 @@ partial class ViewModel
             OnTrack oldValue = _currentSection;
             if (SetProperty(ref _currentSection, value))
             {
+                RemoveCurrentSectionCommand.NotifyCanExecuteChanged();
+
                 StrongReferenceMessenger.Default.Send(new CurrentSectionChanged(this, oldValue, value));
+            }
+        }
+    }
+
+    private OnTrack _currentPoi;
+    public OnTrack CurrentPoi
+    {
+        get => _currentPoi;
+        set
+        {
+            OnTrack oldValue = _currentPoi;
+            if (SetProperty(ref _currentPoi, value))
+            {
+                RemoveCurrentPoiCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -88,18 +104,21 @@ partial class ViewModel
 
         Mode = pointOfInterest.IsSection ? Modes.Sections : Modes.POIs;
 
-        await AddOnTrackPointsAsync(pointOfInterest, null);
+        OnTrack onTrack = await AddOnTrackPointsAsync(pointOfInterest, null);
+
+        StrongReferenceMessenger.Default.Send(new OnTrackAdded(onTrack));
 
         Track.PointsOfInterest.Add(pointOfInterest);
         pointOfInterest.PropertyChanged += PointOfInterest_PropertyChanged;
 
-        OnTrack onTrack = (pointOfInterest.IsSection ? Sections : Points).First(onTrack => onTrack.PointOfInterest == pointOfInterest);
         if (pointOfInterest.IsSection)
         {
             CurrentSection = onTrack;
         }
-
-        StrongReferenceMessenger.Default.Send(new OnTrackAdded(onTrack));
+        else
+        {
+            CurrentPoi = onTrack;
+        }
 
         await SaveTrackAsync();
     }
@@ -107,6 +126,60 @@ partial class ViewModel
     private bool CanAddPointOfInterest()
     {
         return Mode is Modes.Sections or Modes.POIs && Track is not null;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRemoveCurrentSection))]
+    public void RemoveCurrentSection()
+    {
+        CurrentSection = DeleteOnTrack(CurrentSection);
+    }
+
+    private bool CanRemoveCurrentSection()
+    {
+        return Mode is Modes.Sections && Track is not null && CurrentSection is not null && CurrentSection.PointOfInterest.Type != InfoType.Goal;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRemoveCurrentPoi))]
+    public void RemoveCurrentPoi()
+    {
+        CurrentPoi = DeleteOnTrack(CurrentPoi);
+    }
+
+    private bool CanRemoveCurrentPoi()
+    {
+        return Mode is Modes.POIs && Track is not null && CurrentPoi is not null;
+    }
+
+    private OnTrack DeleteOnTrack(OnTrack onTrack)
+    {
+        PointOfInterest pointOfInterest = onTrack.PointOfInterest;
+        bool isSection = pointOfInterest.IsSection;
+        IList<OnTrack> onTracks = isSection ? Sections : Points;
+
+        int index = onTracks.IndexOf(onTrack);
+        int nextIndex = index == onTracks.Count - 1 ? index - 1 : index + 1;
+        OnTrack nextOnTrack = nextIndex < 0 ? null : onTracks[nextIndex];
+
+        if (isSection)
+        {
+            nextOnTrack.Values += onTrack.Values;
+        }
+
+        onTracks.RemoveAt(index);
+        
+        if (!onTrack.IsOffTrack)
+        {
+            pointOfInterest.ClearTrackMaskBit(onTrack.TrackMaskBitPosition);
+        }
+
+        if (onTrack.IsOffTrack || pointOfInterest.IsTrackMaskZero())
+        {
+            Track.PointsOfInterest.Remove(pointOfInterest);
+        }
+
+        SaveTrackAsync().FireAndForget();
+
+        return nextOnTrack;
     }
 
     private void CreateAllOnTrackPoints()
@@ -152,12 +225,12 @@ partial class ViewModel
         OnPropertyChanged(nameof(OnTrackCount));
     }
 
-    private async Task AddOnTrackPointsAsync(PointOfInterest pointOfInterest, SynchronizationContext ui)
+    private async Task<OnTrack> AddOnTrackPointsAsync(PointOfInterest pointOfInterest, SynchronizationContext ui)
     {
         bool isSection = pointOfInterest.IsSection;
         IList<OnTrack> onTracks = isSection ? Sections : Points;
 
-        (TrackPoint TrackPoint, float Distance)[] trackPoints = Track.Points.GetNearPoints(pointOfInterest.Location, maxCrossTrackDistance: isSection ? 50 : 2000, minDistanceDelta: 1500);
+        (TrackPoint TrackPoint, float Distance)[] trackPoints = Track.Points.GetNearPoints(pointOfInterest.Location, maxDistance: isSection ? 50 : 2000, minDistanceDelta: 1000);
 
         if (ui is not null)
         {
@@ -166,6 +239,7 @@ partial class ViewModel
 
         bool initialize = pointOfInterest.OnTrackCount is null || pointOfInterest.OnTrackCount.Value != trackPoints.Length;
 
+        OnTrack firstOnTrack = null;
         int i = 0;
         bool offTrack = true;
         foreach ((TrackPoint trackPoint, float distance) in trackPoints)
@@ -195,14 +269,17 @@ partial class ViewModel
                     index = onTracks.Count;
                 }
 
-                onTracks.Insert(index, new OnTrack(onTracks)
+                OnTrack onTrack = new(onTracks)
                 {
                     TrackPoint = trackPoint,
                     PointOfInterest = pointOfInterest,
                     TrackFilePosition = Track.FilePosition(trackPoint.Distance),
                     TrackMaskBitPosition = i,
                     Values = values,
-                });
+                };
+
+                firstOnTrack ??= onTrack;
+                onTracks.Insert(index, onTrack);
 
                 OnPropertyChanged(nameof(OnTrackCount));
             }
@@ -211,7 +288,7 @@ partial class ViewModel
 
         if (offTrack)
         {
-            onTracks.Add(OnTrack.CreateOffTrack(pointOfInterest, onTracks));
+            onTracks.Add(firstOnTrack = OnTrack.CreateOffTrack(pointOfInterest, onTracks));
 
             OnPropertyChanged(nameof(OnTrackCount));
         }
@@ -220,6 +297,8 @@ partial class ViewModel
         {
             pointOfInterest.InitOnTrackCount(i);
         }
+
+        return firstOnTrack;
     }
 
     private void PointOfInterest_PropertyChanged(object _1, PropertyChangedEventArgs _2)

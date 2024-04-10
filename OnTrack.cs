@@ -20,14 +20,27 @@ public partial class OnTrack(IList<OnTrack> onTracks) : ObservableObject
 
     private readonly IList<OnTrack> _onTracks = onTracks;
 
-    [ObservableProperty]
     private string _trackFilePosition;
+    public string TrackFilePosition
+    {
+        get => _trackFilePosition;
+        set => SetProperty(ref _trackFilePosition, value);
+    }
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(Distance))]
-    [NotifyPropertyChangedFor(nameof(Time))]
-    [NotifyPropertyChangedFor(nameof(Speed))]
     private TrackPoint.CommonValues _values;
+    public TrackPoint.CommonValues Values
+    {
+        get => _values;
+        set
+        {
+            if (SetProperty(ref _values, value))
+            {
+                OnPropertyChanged(nameof(Distance));
+                OnPropertyChanged(nameof(Time));
+                OnPropertyChanged(nameof(Speed));
+            }
+        }
+    }
 
     public TrackPoint TrackPoint { get; set; }
 
