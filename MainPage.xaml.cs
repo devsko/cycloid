@@ -155,7 +155,7 @@ public sealed partial class MainPage : Page,
         ListView list = (ListView)sender;
         if (list.SelectedItem is OnTrack onTrack)
         {
-            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.PointOfInterest.Location));
+            SendMapCenterMessage(onTrack);
         }
     }
 
@@ -167,8 +167,13 @@ public sealed partial class MainPage : Page,
             item.FindAscendant<ListView>() == list &&
             item.Content is OnTrack onTrack)
         {
-            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.PointOfInterest.Location));
+            SendMapCenterMessage(onTrack);
         }
+    }
+
+    private void SendMapCenterMessage(OnTrack onTrack)
+    {
+        StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.IsOffTrack ? onTrack.PointOfInterest.Location : onTrack.TrackPoint));
     }
 
     private void TextBox_CharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs args)

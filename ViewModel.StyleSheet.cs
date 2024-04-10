@@ -211,9 +211,7 @@ partial class ViewModel
                 "Dummy": {
                   "Point": {
                     "parent": "userPoint",
-                    "fillColor": "#00000000",
-                    "strokeColor": "#00000000",
-                    "scale": 0.1
+                    "scale": 0
                   }
                 }
               }

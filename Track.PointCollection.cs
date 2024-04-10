@@ -138,45 +138,44 @@ partial class Track
             return (point, index);
         }
 
+        private struct GetNearestComparer : IComparer<(float Fraction, float Distance)>
+        {
+            public int Compare((float Fraction, float Distance) x, (float Fraction, float Distance) y) => x.Distance.CompareTo(y.Distance);
+        }
+
         public TrackPoint GetNearestPoint<T>(T point, (MapPoint NorthWest, MapPoint SouthEast) region) where T : IMapPoint
         {
-            float GetDistance((Segment Segment, TrackPoint TrackPoint, Index Index) current)
+            (float Fraction, float Distance) GetDistance(((Segment Segment, TrackPoint TrackPoint, Index Index) Previous, (Segment Segment, TrackPoint TrackPoint, Index Index) Next) current)
             {
-                TrackPoint currentPoint = current.TrackPoint;
-                if (currentPoint.Latitude <= region.NorthWest.Latitude && currentPoint.Latitude >= region.SouthEast.Latitude &&
-                    currentPoint.Longitude >= region.NorthWest.Longitude && currentPoint.Longitude <= region.SouthEast.Longitude)
+                bool IsInside(TrackPoint point)
+                    => point.Latitude <= region.NorthWest.Latitude && point.Latitude >= region.SouthEast.Latitude &&
+                        point.Longitude >= region.NorthWest.Longitude && point.Longitude <= region.SouthEast.Longitude;
+    
+                TrackPoint previousPoint = current.Previous.TrackPoint;
+                TrackPoint nextPoint = current.Next.TrackPoint;
+                if (IsInside(previousPoint) || IsInside(nextPoint))
                 {
-                    return GeoCalculation.Distance(currentPoint, point);
+                    return GeoCalculation.MinimalDistance(previousPoint, nextPoint, point);
                 }
 
-                return float.PositiveInfinity;
+                return (-1, float.PositiveInfinity);
             }
 
-            (Segment Segment, TrackPoint TrackPoint, Index Index) nearest = Enumerate().MinBy(GetDistance);
+            (
+                (
+                    (Segment Segment, TrackPoint TrackPoint, Index Index) Previous, 
+                    (Segment Segment, TrackPoint TrackPoint, Index Index) Next) nearest, 
+                (float Fraction, float Distance) result) 
+                = Enumerate()
+                .InPairs()
+                .MinByWithKey(GetDistance, new GetNearestComparer());
 
-            TrackPoint nearestPoint = GetPoint(nearest.Segment, nearest.TrackPoint);
-
-            (float Fraction, float Distance) previousDistance = (0, float.PositiveInfinity);
-            TrackPoint previous = default;
-            Index previousIndex = Decrement(nearest.Index);
-            if (previousIndex.IsValid)
+            if (float.IsInfinity(result.Distance))
             {
-                previous = this[previousIndex];
-                previousDistance = GeoCalculation.MinimalDistance(previous, nearestPoint, point);
+                return TrackPoint.Invalid;
             }
-
-            (float Fraction, float Distance) nextDistance = (0, float.PositiveInfinity);
-            TrackPoint next = default;
-            Index nextIndex = Increment(nearest.Index);
-            if (nextIndex.IsValid)
-            {
-                next = this[nextIndex];
-                nextDistance = GeoCalculation.MinimalDistance(nearestPoint, next, point);
-            }
-
-            return previousDistance.Distance < nextDistance.Distance
-                ? TrackPoint.Lerp(previous, nearestPoint, previousDistance.Fraction)
-                : TrackPoint.Lerp(nearestPoint, next, nextDistance.Fraction);
+                
+            return TrackPoint.Lerp(GetPoint(nearest.Previous.Segment, nearest.Previous.TrackPoint), GetPoint(nearest.Next.Segment, nearest.Next.TrackPoint), result.Fraction);
         }
 
         public (TrackPoint Point, float Distance)[] GetNearPoints(MapPoint location, float maxDistance, int minDistanceDelta)
