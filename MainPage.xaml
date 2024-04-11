@@ -10,6 +10,7 @@
 
     <Page.Resources>
         <ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml">
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
 
@@ -33,6 +34,38 @@
 
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
+
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush
+                        x:Key="ListViewItemBackgroundSelected"
+                        Opacity="0.3"
+                        Color="{StaticResource SystemAccentColorDark3}" />
+                    <SolidColorBrush
+                        x:Key="ListViewItemBackgroundSelectedPressed"
+                        Opacity="0.3"
+                        Color="{StaticResource SystemAccentColorDark3}" />
+                    <SolidColorBrush
+                        x:Key="ListViewItemBackgroundSelectedPointerOver"
+                        Opacity="0.3"
+                        Color="{StaticResource SystemAccentColorDark2}" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush
+                        x:Key="ListViewItemBackgroundSelected"
+                        Opacity="0.3"
+                        Color="{StaticResource SystemAccentColorDark3}" />
+                    <SolidColorBrush
+                        x:Key="ListViewItemBackgroundSelectedPressed"
+                        Opacity="0.3"
+                        Color="{StaticResource SystemAccentColorDark3}" />
+                    <SolidColorBrush
+                        x:Key="ListViewItemBackgroundSelectedPointerOver"
+                        Opacity="0.3"
+                        Color="{StaticResource SystemAccentColorDark2}" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
         </ResourceDictionary>
     </Page.Resources>
 
