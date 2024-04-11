@@ -39,7 +39,7 @@ public struct PointOfInterest
     public Point Location { get; set; }
     public DateTime Created { get; set; }
     public byte Mask { get; set; }
-    public int OnTrackCount { get; set; }
+    public int Count { get; set; }
     public InfoType Type { get; set; }
     public string Name { get; set; }
 }

@@ -8,7 +8,6 @@ using cycloid.Info;
 using cycloid.Routing;
 using Microsoft.VisualStudio.Threading;
 using Windows.Storage;
-using Windows.Storage.Streams;
 
 namespace cycloid.Serizalization;
 
@@ -43,7 +42,7 @@ public static class Serializer
                 Created = pointOfInterest.Created,
                 Location = new MapPoint(pointOfInterest.Location.Lat, pointOfInterest.Location.Lon),
             };
-            poi.InitOnTrackCount(pointOfInterest.OnTrackCount, pointOfInterest.Mask);
+            poi.InitOnTrackCount(pointOfInterest.Count + 1, pointOfInterest.Mask + 1);
 
             return poi;
         }));
@@ -114,8 +113,8 @@ public static class Serializer
                     Name = pointOfInterest.Name,
                     Type = pointOfInterest.Type,
                     Location = new Point { Lat = pointOfInterest.Location.Latitude, Lon = pointOfInterest.Location.Longitude },
-                    OnTrackCount = pointOfInterest.OnTrackCount.Value,
-                    Mask = pointOfInterest.TrackMask,
+                    Count = pointOfInterest.OnTrackCount.Value - 1,
+                    Mask = (byte)(pointOfInterest.TrackMask - 1),
                 })
                 .ToArray()
         };

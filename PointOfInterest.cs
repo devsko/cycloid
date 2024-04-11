@@ -28,12 +28,12 @@ public partial class PointOfInterest : ObservableObject
 
     public bool IsSection => InfoCategory.Section.Types.Contains(Type);
 
-    public void InitOnTrackCount(int value, byte? trackMask = null)
+    public void InitOnTrackCount(int value, int? trackMask = null)
     {
         OnTrackCount = value;
-        if (trackMask is byte mask)
+        if (trackMask is int mask)
         {
-            TrackMask = mask;
+            TrackMask = (byte)mask;
         }
         else
         {
