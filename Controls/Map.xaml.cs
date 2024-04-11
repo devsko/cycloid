@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +16,7 @@ using Windows.UI.Xaml.Input;
 
 namespace cycloid.Controls;
 
-public sealed partial class Map : ViewModelControl,
+public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     IRecipient<ModeChanged>,
     IRecipient<TrackChanged>,
     IRecipient<HoverPointChanged>,
@@ -24,6 +24,9 @@ public sealed partial class Map : ViewModelControl,
     IRecipient<SetMapCenterMessage>,
     IRecipient<TrackComplete>
 {
+    private static PropertyChangedEventArgs _centerChangedEventArgs = new PropertyChangedEventArgs(nameof(Center));
+    private static PropertyChangedEventArgs _headingChangedEventArgs = new PropertyChangedEventArgs(nameof(Heading));
+
     private readonly Throttle<object, Map> _loadInfosThrottle = new(
         static (_, @this, cancellationToken) => @this.LoadInfosAsync(cancellationToken),
         TimeSpan.FromSeconds(2));
@@ -36,9 +39,14 @@ public sealed partial class Map : ViewModelControl,
     private MapElementsLayer _infoLayer;
     private MapIcon _dummyIcon;
 
+    private PropertyChangedEventHandler _propertyChanged;
+
     public Map()
     {
         InitializeComponent();
+
+        MapControl.CenterChanged += (_, _) => _propertyChanged?.Invoke(this, _centerChangedEventArgs);
+        MapControl.HeadingChanged += (_, _) => _propertyChanged?.Invoke(this, _headingChangedEventArgs);
 
         StrongReferenceMessenger.Default.Register<ModeChanged>(this);
         StrongReferenceMessenger.Default.Register<TrackChanged>(this);
@@ -53,6 +61,8 @@ public sealed partial class Map : ViewModelControl,
     }
 
     public Geopoint Center => MapControl.Center;
+
+    public float Heading => (float)MapControl.Heading;
 
     public void ZoomTrackDifference(TrackDifference difference)
     {
@@ -295,6 +305,19 @@ public sealed partial class Map : ViewModelControl,
             MapControl.TryGetLocationFromOffset(position, out Geopoint location))
         {
             ShowMapMenu(position, (MapPoint)location.Position);
+        }
+    }
+
+    event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+    {
+        add
+        {
+            _propertyChanged += value;
+        }
+
+        remove
+        {
+            _propertyChanged -= value;
         }
     }
 

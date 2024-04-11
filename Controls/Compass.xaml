@@ -5,16 +5,15 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
-    xmlns:ui="using:CommunityToolkit.WinUI"
-    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(Point)}">
+    xmlns:ui="using:CommunityToolkit.WinUI">
 
     <controls:MapControlBorder>
 
         <Grid Width="80" Height="80">
             <Grid
-                x:Name="Grid"
+                x:Name="Root"
                 ui:VisualExtensions.CenterPoint="40,40,0"
-                ui:VisualExtensions.RotationAngleInDegrees="{x:Bind Mode=OneWay, Path=HeadingToRotationAngle(Point.Heading)}">
+                ui:VisualExtensions.RotationAngleInDegrees="{x:Bind Mode=OneWay, Path=HeadingToRootAngle(Heading)}">
                 <animations:Implicit.Animations>
                     <animations:RotationInDegreesAnimation Duration="0:0:1" />
                 </animations:Implicit.Animations>
@@ -30,6 +29,18 @@
                         <Setter Property="RenderTransformOrigin" Value=".5,.5" />
                         <Setter Property="HorizontalAlignment" Value="Center" />
                         <Setter Property="VerticalAlignment" Value="Center" />
+                    </Style>
+                    <Style TargetType="Line">
+                        <Setter Property="StrokeEndLineCap" Value="Round" />
+                        <Setter Property="StrokeStartLineCap" Value="Round" />
+                        <Setter Property="StrokeThickness" Value="1.5" />
+                        <Setter Property="Stroke" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                    </Style>
+                    <Style TargetType="Polygon">
+                        <Setter Property="StrokeEndLineCap" Value="Round" />
+                        <Setter Property="StrokeStartLineCap" Value="Round" />
+                        <Setter Property="StrokeThickness" Value="1.5" />
+                        <Setter Property="Stroke" Value="{ThemeResource TextFillColorDisabledBrush}" />
                     </Style>
                 </Grid.Resources>
 
@@ -58,51 +69,50 @@
                 </TextBlock>
 
                 <Canvas>
-                    <Canvas.RenderTransform>
-                        <TranslateTransform X="40" Y="40" />
-                    </Canvas.RenderTransform>
-                    <Canvas.Resources>
-                        <Style TargetType="Line">
-                            <Setter Property="StrokeEndLineCap" Value="Round" />
-                            <Setter Property="StrokeStartLineCap" Value="Round" />
-                            <Setter Property="StrokeThickness" Value="1.5" />
-                            <Setter Property="Stroke" Value="{ThemeResource TextFillColorDisabledBrush}" />
-                        </Style>
-                    </Canvas.Resources>
                     <Line
+                        Canvas.Left="40"
+                        Canvas.Top="40"
                         X1="21.6"
                         X2="24.8"
                         Y1="21.6"
                         Y2="24.8" />
                     <Line
+                        Canvas.Left="40"
+                        Canvas.Top="40"
                         X1="-21.6"
                         X2="-24.8"
                         Y1="21.6"
                         Y2="24.8" />
                     <Line
+                        Canvas.Left="40"
+                        Canvas.Top="40"
                         X1="-21.6"
                         X2="-24.8"
                         Y1="-21.6"
                         Y2="-24.8" />
                     <Line
+                        Canvas.Left="40"
+                        Canvas.Top="40"
                         X1="21.6"
                         X2="24.8"
                         Y1="-21.6"
                         Y2="-24.8" />
                 </Canvas>
-            </Grid>
-            <Grid>
-                <Ellipse
-                    Width="47"
-                    Height="47"
-                    Stroke="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(Point.Gradient)}"
-                    StrokeThickness="4" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="11"
-                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Gradient(Point.Gradient)}"
-                    TextLineBounds="Tight" />
+
+                <Canvas
+                    x:Name="Needle"
+                    ui:VisualExtensions.CenterPoint="40,40,0"
+                    ui:VisualExtensions.RotationAngleInDegrees="{x:Bind Mode=OneWay, Path=HeadingToNeedleAngle(Point.Heading)}"
+                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(Point)}">
+                    <animations:Implicit.Animations>
+                        <animations:RotationInDegreesAnimation Duration="0:0:1" />
+                    </animations:Implicit.Animations>
+                    <Polygon
+                        Canvas.Left="40"
+                        Canvas.Top="40"
+                        Fill="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(Point.Gradient)}"
+                        Points="0,-14 5,14 0,5 -5,14" />
+                </Canvas>
             </Grid>
         </Grid>
 
