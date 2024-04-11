@@ -450,8 +450,9 @@
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="24" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
                                             </Grid.ColumnDefinitions>
                                             <Image
                                                 Grid.RowSpan="2"
@@ -460,10 +461,19 @@
                                                 VerticalAlignment="Center"
                                                 Source="{x:Bind Mode=OneWay, Path=cycloid:Convert.InfoTypeIcon(PointOfInterest.Type)}" />
                                             <TextBlock Grid.Column="1" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                HorizontalTextAlignment="Right"
+                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}"
+                                                ToolTipService.ToolTip="Distance [km]" />
+                                            <TextBlock
+                                                Grid.Column="3"
+                                                HorizontalTextAlignment="Right"
+                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(Time)}" />
                                             <TextBox
                                                 Grid.Row="1"
                                                 Grid.Column="1"
-                                                Grid.ColumnSpan="2"
+                                                Grid.ColumnSpan="3"
                                                 CharacterReceived="TextBox_CharacterReceived"
                                                 IsSpellCheckEnabled="False"
                                                 Text="{x:Bind Mode=TwoWay, Path=Name}" />

@@ -76,9 +76,9 @@ public class InfoCategory
 public enum InfoType
 {
     // Section
+    Goal,
     MountainPass,
     Split,
-    Goal,
     // Water
     Water,
     Toilet,

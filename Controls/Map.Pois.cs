@@ -50,7 +50,7 @@ partial class Map :
                     OnTrack onTrack = (OnTrack)e.NewItems[0];
                     _poisLayer.MapElements.Add(new MapIcon
                     {
-                        Location = new Geopoint(onTrack.PointOfInterest.IsSection ? onTrack.TrackPoint : onTrack.PointOfInterest.Location),
+                        Location = new Geopoint(onTrack.Location),
                         MapStyleSheetEntry = $"POI.{onTrack.PointOfInterest.Type}",
                         Title = onTrack.Name ?? "",
                         Tag = onTrack

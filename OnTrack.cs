@@ -1,34 +1,114 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace cycloid;
 
-public partial class OnTrack(IList<OnTrack> onTracks) : ObservableObject
+public partial class OnTrack : ObservableObject
 {
-    public static OnTrack CreateOffTrack(PointOfInterest pointOfInterest, IList<OnTrack> onTracks)
-    {
-        return new OnTrack(onTracks)
-        {
-            TrackPoint = new TrackPoint(pointOfInterest.Location.Latitude, pointOfInterest.Location.Longitude),
-            PointOfInterest = pointOfInterest,
-            TrackFilePosition = "?",
-            IsOffTrack = true,
-        };
-    }
-
-    private readonly IList<OnTrack> _onTracks = onTracks;
-
-    private string _trackFilePosition;
-    public string TrackFilePosition
-    {
-        get => _trackFilePosition;
-        set => SetProperty(ref _trackFilePosition, value);
-    }
-
+    private readonly IList<OnTrack> _onTracks;
+    private TrackPoint _trackPoint;
     private TrackPoint.CommonValues _values;
-    public TrackPoint.CommonValues Values
+
+    public PointOfInterest PointOfInterest { get; set; }
+
+    public bool IsOffTrack { get; set; }
+ 
+    public string TrackFilePosition { get; set; }
+
+    public int MaskBitPosition { get; set; }
+
+    public OnTrack(IList<OnTrack> onTracks, TrackPoint trackPoint, PointOfInterest pointOfInterest, string trackFilePosition, int maskBitPosition)
+    {
+        _onTracks = onTracks;
+        _trackPoint = trackPoint;
+        PointOfInterest = pointOfInterest;
+        TrackFilePosition = trackFilePosition;
+        MaskBitPosition = maskBitPosition;
+
+        int? index = null;
+        TrackPoint.CommonValues previousValues = default;
+        OnTrack next = null;
+        for (int i = 0; i < _onTracks.Count; i++)
+        {
+            OnTrack onTrack = _onTracks[i];
+            if (onTrack.IsOffTrack)
+            {
+                break;
+            }
+            if (index is null && onTrack._trackPoint.Distance > _trackPoint.Distance)
+            {
+                index = i;
+            }
+            if (onTrack.PointOfInterest.Category == PointOfInterest.Category)
+            {
+                if (index is null)
+                {
+                    previousValues = onTrack._trackPoint.Values;
+                }
+                else
+                {
+                    next = onTrack;
+                    break;
+                }
+            }
+        }
+
+        Values = _trackPoint.Values - previousValues;
+        if (next is not null)
+        {
+            next.Values -= Values;
+        }
+
+        _onTracks.Insert(index ?? _onTracks.Count, this);
+    }
+
+    public OnTrack(IList<OnTrack> onTracks, PointOfInterest pointOfInterest)
+    {
+        _onTracks = onTracks;
+        PointOfInterest = pointOfInterest;
+        IsOffTrack = true;
+        TrackFilePosition = "?";
+        MaskBitPosition = -1;
+
+        onTracks.Add(this);
+    }
+
+    public MapPoint Location => IsOffTrack || !PointOfInterest.IsSection ? PointOfInterest.Location : _trackPoint;
+
+    public float? Distance => IsOffTrack ? null : Values.Distance;
+
+    public float? Ascent => IsOffTrack ? null : Values.Ascent;
+
+    public TimeSpan? Time => IsOffTrack ? null : Values.Time;
+
+    public float? Speed => IsOffTrack ? null : Values.Distance / 1000 / (float)Values.Time.TotalHours;
+
+    public string Name
+    {
+        get => PointOfInterest.Name;
+        set
+        {
+            if (!string.Equals(Name, value))
+            {
+                PointOfInterest.Name = value;
+                foreach (OnTrack onTrack in _onTracks)
+                {
+                    if (onTrack.PointOfInterest == PointOfInterest)
+                    {
+                        onTrack.OnPropertyChanged(nameof(Name));
+                    }
+                }
+            }
+        }
+    }
+
+    public TrackPoint.CommonValues Start => IsOffTrack ? default : _trackPoint.Values - Values;
+
+    public TrackPoint.CommonValues End => IsOffTrack ? default : _trackPoint.Values;
+
+    private TrackPoint.CommonValues Values
     {
         get => _values;
         set
@@ -43,38 +123,29 @@ public partial class OnTrack(IList<OnTrack> onTracks) : ObservableObject
         }
     }
 
-    public TrackPoint TrackPoint { get; set; }
-
-    public PointOfInterest PointOfInterest { get; set; }
-
-    public int TrackMaskBitPosition { get; set; }
-
-    public bool IsOffTrack { get; private set; }
-
-    public string Name
+    public OnTrack Remove()
     {
-        get => PointOfInterest.Name;
-        set
+        int index = _onTracks.IndexOf(this);
+        _onTracks.RemoveAt(index);
+
+        OnTrack next = _onTracks
+            .Skip(index)
+            .FirstOrDefault(onTrack =>
+                !onTrack.IsOffTrack &&
+                onTrack.PointOfInterest.Category == PointOfInterest.Category);
+
+        if (next is not null)
         {
-            if (!string.Equals(Name, value))
-            {
-                PointOfInterest.Name = value;
-                RaisePropertyChanged();
-            }
+            next.Values += Values;
         }
+
+        if (index == _onTracks.Count)
+        {
+            index--;
+        }
+
+        return index >= 0 ? _onTracks[index] : null;
     }
-
-    public TrackPoint.CommonValues Start => TrackPoint.Values - Values;
-
-    public TrackPoint.CommonValues End => TrackPoint.Values;
-
-    public float? Distance => IsOffTrack ? null : Values.Distance;
-
-    public float? Ascent => IsOffTrack ? null : Values.Ascent;
-
-    public TimeSpan? Time => IsOffTrack ? null : Values.Time;
-
-    public float? Speed => IsOffTrack ? null : Values.Distance / 1000 / (float)Values.Time.TotalHours;
 
     public bool IsCurrent(float distance)
     {
@@ -85,24 +156,13 @@ public partial class OnTrack(IList<OnTrack> onTracks) : ObservableObject
         else
         {
             int index = _onTracks.IndexOf(this);
-            if (distance <= TrackPoint.Distance)
+            if (distance <= _trackPoint.Distance)
             {
-                return index == 0 || distance > (TrackPoint.Distance + _onTracks[index - 1].TrackPoint.Distance) / 2;
+                return index == 0 || distance > (_trackPoint.Distance + _onTracks[index - 1]._trackPoint.Distance) / 2;
             }
             else
             {
-                return index >= _onTracks.Count - 1 || distance <= (TrackPoint.Distance + _onTracks[index + 1].TrackPoint.Distance) / 2;
-            }
-        }
-    }
-
-    private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
-    {
-        foreach (OnTrack onTrack in _onTracks)
-        {
-            if (onTrack.PointOfInterest == PointOfInterest)
-            {
-                onTrack.OnPropertyChanged(propertyName);
+                return index >= _onTracks.Count - 1 || distance <= (_trackPoint.Distance + _onTracks[index + 1]._trackPoint.Distance) / 2;
             }
         }
     }

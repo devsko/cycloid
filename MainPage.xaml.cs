@@ -173,7 +173,7 @@ public sealed partial class MainPage : Page,
 
     private void SendMapCenterMessage(OnTrack onTrack)
     {
-        StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.IsOffTrack ? onTrack.PointOfInterest.Location : onTrack.TrackPoint));
+        StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.Location));
     }
 
     private void TextBox_CharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs args)

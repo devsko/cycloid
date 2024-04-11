@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -151,34 +150,23 @@ partial class ViewModel
 
     private OnTrack DeleteOnTrack(OnTrack onTrack)
     {
+        OnTrack next = onTrack.Remove();
         PointOfInterest pointOfInterest = onTrack.PointOfInterest;
-        bool isSection = pointOfInterest.IsSection;
-        IList<OnTrack> onTracks = isSection ? Sections : Points;
 
-        int index = onTracks.IndexOf(onTrack);
-        int nextIndex = index == onTracks.Count - 1 ? index - 1 : index + 1;
-        OnTrack nextOnTrack = nextIndex < 0 ? null : onTracks[nextIndex];
-
-        if (isSection)
-        {
-            nextOnTrack.Values += onTrack.Values;
-        }
-
-        onTracks.RemoveAt(index);
-        
         if (!onTrack.IsOffTrack)
         {
-            pointOfInterest.ClearTrackMaskBit(onTrack.TrackMaskBitPosition);
+            pointOfInterest.ClearTrackMaskBit(onTrack.MaskBitPosition);
         }
 
         if (onTrack.IsOffTrack || pointOfInterest.IsTrackMaskZero())
         {
+            pointOfInterest.PropertyChanged -= PointOfInterest_PropertyChanged;
             Track.PointsOfInterest.Remove(pointOfInterest);
         }
 
         SaveTrackAsync().FireAndForget();
 
-        return nextOnTrack;
+        return next;
     }
 
     private void CreateAllOnTrackPoints()
@@ -197,14 +185,12 @@ partial class ViewModel
             using (await Track.RouteBuilder.ChangeLock.EnterAsync(default))
             {
                 TrackPoint lastTrackPoint = Track.Points.Last();
-                Sections.Add(new OnTrack(Sections)
-                {
-                    TrackPoint = lastTrackPoint,
-                    PointOfInterest = Track.PointsOfInterest.Single(poi => poi.Type == InfoType.Goal),
-                    TrackFilePosition = Track.FilePosition(lastTrackPoint.Distance),
-                    Values = lastTrackPoint.Values,
-                });
-
+                new OnTrack(
+                    Sections, 
+                    lastTrackPoint, 
+                    Track.PointsOfInterest.Single(poi => poi.Type == InfoType.Goal), 
+                    Track.FilePosition(lastTrackPoint.Distance), 
+                    0);
                 OnPropertyChanged(nameof(OnTrackCount));
 
                 foreach (PointOfInterest pointOfInterest in Track.PointsOfInterest.Where(poi => poi.Type != InfoType.Goal).ToArray()) 
@@ -241,55 +227,21 @@ partial class ViewModel
 
         OnTrack firstOnTrack = null;
         int i = 0;
-        bool offTrack = true;
         foreach ((TrackPoint trackPoint, float distance) in trackPoints)
         {
             if (initialize || pointOfInterest.IsTrackMaskBitSet(i))
             {
-                offTrack = false;
-
-                (OnTrack next, int index) = onTracks
-                    .Select((onTrack, index) => (onTrack, index))
-                    .FirstOrDefault(tuple => tuple.onTrack.IsOffTrack || tuple.onTrack.TrackPoint.Distance >= trackPoint.Distance);
-
-                TrackPoint.CommonValues values = default;
-                if (isSection)
-                {
-                    Debug.Assert(next is not null, "Where is the goal POI?");
-
-                    values = trackPoint.Values;
-                    if (index > 0)
-                    {
-                        values -= Sections[index - 1].TrackPoint.Values;
-                    }
-                    next.Values -= values;
-                }
-                else if (next is null)
-                {
-                    index = onTracks.Count;
-                }
-
-                OnTrack onTrack = new(onTracks)
-                {
-                    TrackPoint = trackPoint,
-                    PointOfInterest = pointOfInterest,
-                    TrackFilePosition = Track.FilePosition(trackPoint.Distance),
-                    TrackMaskBitPosition = i,
-                    Values = values,
-                };
+                OnTrack onTrack = new(onTracks, trackPoint, pointOfInterest, Track.FilePosition(trackPoint.Distance), i);
+                OnPropertyChanged(nameof(OnTrackCount));
 
                 firstOnTrack ??= onTrack;
-                onTracks.Insert(index, onTrack);
-
-                OnPropertyChanged(nameof(OnTrackCount));
             }
             i++;
         }
 
-        if (offTrack)
+        if (firstOnTrack is null)
         {
-            onTracks.Add(firstOnTrack = OnTrack.CreateOffTrack(pointOfInterest, onTracks));
-
+            firstOnTrack = new OnTrack(onTracks, pointOfInterest);
             OnPropertyChanged(nameof(OnTrackCount));
         }
 
