@@ -253,6 +253,15 @@ partial class ViewModel
         return firstOnTrack;
     }
 
+    private void InitializePointsOfInterest()
+    {
+        foreach (PointOfInterest pointOfInterest in Track.PointsOfInterest)
+        {
+            pointOfInterest.PropertyChanged += PointOfInterest_PropertyChanged;
+        }
+        CreateAllOnTrackPoints();
+    }
+
     private void PointOfInterest_PropertyChanged(object _1, PropertyChangedEventArgs _2)
     {
         SaveTrackAsync().FireAndForget();

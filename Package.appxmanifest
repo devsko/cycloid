@@ -36,7 +36,8 @@
   <Applications>
     <Application Id="App"
       Executable="$targetnametoken$.exe"
-      EntryPoint="cycloid.App">
+      EntryPoint="cycloid.App"
+      desktop4:SupportsMultipleInstances="true">
       <uap:VisualElements
         DisplayName="cycloid"
         Square150x150Logo="Assets\Square150x150Logo.png"
@@ -46,6 +47,17 @@
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
+      <Extensions>
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap:FileTypeAssociation Name="track">
+            <uap:SupportedFileTypes>
+              <uap:FileType>.track</uap:FileType>
+            </uap:SupportedFileTypes>
+            <uap:DisplayName>Track</uap:DisplayName>
+            <uap:EditFlags OpenIsSafe="true"/>
+          </uap:FileTypeAssociation>
+        </uap:Extension>
+      </Extensions>
     </Application>
   </Applications>
 

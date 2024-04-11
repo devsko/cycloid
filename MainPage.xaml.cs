@@ -10,11 +10,13 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.Devices.Geolocation;
 using Windows.Globalization.NumberFormatting;
 using Windows.Services.Maps;
+using Windows.Storage;
 using Windows.System;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Navigation;
 
 namespace cycloid;
 
@@ -44,6 +46,14 @@ public sealed partial class MainPage : Page,
 
         StrongReferenceMessenger.Default.Register<TrackChanged>(this);
         StrongReferenceMessenger.Default.Register<OnTrackAdded>(this);
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        if (ViewModel.Track is null && e.Parameter is IStorageFile file)
+        {
+            ViewModel.OpenTrackFileAsync(file).FireAndForget();
+        }
     }
 
     private TabViewItem GetTabItem(Modes mode)

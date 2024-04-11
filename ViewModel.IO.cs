@@ -9,6 +9,7 @@ using cycloid.Serizalization;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
+using Windows.UI.Xaml.Controls;
 
 namespace cycloid;
 
@@ -21,6 +22,7 @@ partial class ViewModel
 {
     private readonly SemaphoreSlim _saveTrackSemaphore = new(1);
     private CancellationTokenSource _saveTrackCts;
+    private int _saveCounter;
 
     [RelayCommand]
     public async Task OpenTrackAsync()
@@ -38,7 +40,6 @@ partial class ViewModel
             return;
         }
 
-        StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", file);
         await OpenTrackFileAsync(file);
     }
 
@@ -49,7 +50,7 @@ partial class ViewModel
             try
             {
                 StorageFile file = await StorageApplicationPermissions.FutureAccessList.GetFileAsync("LastTrack");
-                await OpenTrackFileAsync(file);
+                await OpenTrackFileAsync(file, dontShowDialog: true);
             }
             catch (FileNotFoundException)
             {
@@ -58,17 +59,20 @@ partial class ViewModel
         }
     }
 
-    private async Task OpenTrackFileAsync(StorageFile file)
+    public async Task OpenTrackFileAsync(IStorageFile file, bool dontShowDialog = false)
     {
-        Track = new Track(file);
-
-        Stopwatch watch = Stopwatch.StartNew();
-        
-        await Track.LoadAsync();
-
-        StrongReferenceMessenger.Default.Send(new TrackComplete(false));
-
-        Status = $"{Track.Name} opened ({watch.ElapsedMilliseconds} ms)";
+        if (!Program.RegisterForFile(file, out _))
+        {
+            if (!dontShowDialog)
+            {
+                await ShowFileAlreadyOpenAsync(file);
+            }
+        }
+        else
+        {
+            StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", file);
+            await LoadTrackFileAsync(file);
+        }
     }
 
     [RelayCommand]
@@ -87,40 +91,36 @@ partial class ViewModel
             return;
         }
 
-        if (StorageApplicationPermissions.FutureAccessList.ContainsItem("LastTrack"))
+        if (!Program.RegisterForFile(file, out _))
         {
-            StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
+            await ShowFileAlreadyOpenAsync(file);
         }
-
-        Track = new Track(file);
-
-        StrongReferenceMessenger.Default.Send(new TrackComplete(true));
-
-        Status = $"{Track.Name} created";
-    }
-
-    private void InitializePointsOfInterest()
-    {
-        foreach (PointOfInterest pointOfInterest in Track.PointsOfInterest)
+        else
         {
-            pointOfInterest.PropertyChanged += PointOfInterest_PropertyChanged;
-        }
-        CreateAllOnTrackPoints();
-    }
+            if (StorageApplicationPermissions.FutureAccessList.ContainsItem("LastTrack"))
+            {
+                StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
+            }
 
-    private int _saveCounter;
+            Track = new Track(file);
+
+            StrongReferenceMessenger.Default.Send(new TrackComplete(true));
+
+            Status = $"{Track.Name} created";
+        }
+    }
 
     [RelayCommand]
     public async Task SaveTrackAsync()
     {
         if (Track is not null)
-        {   
+        {
             _saveTrackCts?.Cancel();
             _saveTrackCts = new CancellationTokenSource();
             try
             {
                 await _saveTrackSemaphore.WaitAsync(_saveTrackCts.Token);
-                
+
                 Stopwatch watch = Stopwatch.StartNew();
 
                 await Serializer.SaveAsync(Track, _saveTrackCts.Token);
@@ -136,5 +136,28 @@ partial class ViewModel
                 _saveTrackSemaphore.Release();
             }
         }
+    }
+
+    private async Task LoadTrackFileAsync(IStorageFile file)
+    {
+        Track = new Track(file);
+
+        Stopwatch watch = Stopwatch.StartNew();
+
+        await Track.LoadAsync();
+
+        StrongReferenceMessenger.Default.Send(new TrackComplete(false));
+
+        Status = $"{Track.Name} opened ({watch.ElapsedMilliseconds} ms)";
+    }
+
+    private async Task ShowFileAlreadyOpenAsync(IStorageFile file)
+    {
+        await new ContentDialog
+        {
+            Title = "Cannot open file",
+            Content = $"{file.Name} is already open.",
+            CloseButtonText = "Close",
+        }.ShowAsync();
     }
 }
