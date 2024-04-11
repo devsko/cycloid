@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Optimized" />
+    <BuildType Name="Release" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="cycloid.csproj" Type="Classic C#">
+    <Configuration Solution="*|*" Project="*|x64|Deploy" />
+  </Project>
+</Solution>
