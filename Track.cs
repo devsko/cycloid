@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using cycloid.Info;
 using cycloid.Routing;
-using cycloid.Serizalization;
 using Windows.Storage;
 
 namespace cycloid;
 
 public partial class Track : ObservableObject
 {
-    public IStorageFile File { get; }
+    public IStorageFile File { get; set; }
 
     public RouteBuilder RouteBuilder { get; }
 
@@ -36,11 +34,6 @@ public partial class Track : ObservableObject
     }
 
     public string Name => File is null ? "" : Path.GetFileNameWithoutExtension(File.Name);
-
-    public async Task LoadAsync()
-    {
-        await Serializer.LoadAsync(this);
-    }
 
     public string FilePosition(float distance)
     {

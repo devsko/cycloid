@@ -111,7 +111,8 @@ public sealed partial class Profile : ViewModelControl,
     private void ThrottledPointerMoved(PointerRoutedEventArgs e)
     {
         HoverPointValues.Enabled = true;
-        ViewModel.HoverPoint = ViewModel.Track.Points.Search((float)(e.GetCurrentPoint(Root).Position.X / _horizontalScale)).Point;
+        float distance = Math.Clamp((float)(e.GetCurrentPoint(Root).Position.X / _horizontalScale), 0, ViewModel.Track.Points.Total.Distance);
+        ViewModel.HoverPoint = ViewModel.Track.Points.Search(distance).Point;
     }
 
     private double GetOffset(TrackPoint point) => point.IsValid ? point.Distance * _horizontalScale - _scrollerOffset : 0;

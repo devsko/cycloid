@@ -21,7 +21,7 @@ using Windows.UI.Xaml.Navigation;
 namespace cycloid;
 
 public sealed partial class MainPage : Page,
-    IRecipient<TrackChanged>,
+    IRecipient<FileChanged>,
     IRecipient<OnTrackAdded>
 {
     private bool _ignoreTextChange;
@@ -44,7 +44,7 @@ public sealed partial class MainPage : Page,
         };
         DownhillCutoff.NumberFormatter = UphillCutoff.NumberFormatter = cutoffFormatter;
 
-        StrongReferenceMessenger.Default.Register<TrackChanged>(this);
+        StrongReferenceMessenger.Default.Register<FileChanged>(this);
         StrongReferenceMessenger.Default.Register<OnTrackAdded>(this);
     }
 
@@ -195,9 +195,9 @@ public sealed partial class MainPage : Page,
         }
     }
 
-    void IRecipient<TrackChanged>.Receive(TrackChanged message)
+    void IRecipient<FileChanged>.Receive(FileChanged message)
     {
-        ApplicationView.GetForCurrentView().Title = message.NewValue is null ? string.Empty : message.NewValue.Name;
+        ApplicationView.GetForCurrentView().Title = message.Value is null ? string.Empty : message.Value.Name;
     }
 
     void IRecipient<OnTrackAdded>.Receive(OnTrackAdded message)

@@ -16,6 +16,10 @@
 
                     <cycloid:ViewModel x:Name="ViewModel" />
 
+                    <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
+                        <Setter Property="Width" Value="60" />
+                    </Style>
+                    
                     <Style x:Key="OnTracksListViewStyle" TargetType="ListView">
                         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
                         <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
@@ -111,9 +115,16 @@
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <AppBarButton
-                    Command="{x:Bind Mode=OneTime, Path=ViewModel.SaveTrackCommand}"
+                    Command="{x:Bind ViewModel.SaveTrackAsCommand}"
+                    Icon="SaveLocal"
+                    Label="Save As">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="S" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
                     Icon="CellPhone"
-                    Label="Wahoo" />
+                    Label="Export" />
             </StackPanel>
 
             <AutoSuggestBox

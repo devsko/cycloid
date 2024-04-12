@@ -50,7 +50,7 @@
                                 x:Key="MapOverlayBackgroundBrush"
                                 BackgroundSource="Backdrop"
                                 FallbackColor="#ff008000"
-                                TintColor="#ffC0C0C0"
+                                TintColor="#ffFFFFFF"
                                 TintOpacity="0.2" />
                         </ResourceDictionary>
                     </ResourceDictionary.ThemeDictionaries>

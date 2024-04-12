@@ -83,6 +83,7 @@ public partial class ViewModel : ObservableObject,
 
                 ConnectRouting(value);
 
+                SaveTrackAsCommand.NotifyCanExecuteChanged();
                 RecalculateCommand.NotifyCanExecuteChanged();
                 AddPointOfInterestCommand.NotifyCanExecuteChanged();
                 RemoveCurrentSectionCommand.NotifyCanExecuteChanged();
@@ -199,6 +200,7 @@ public partial class ViewModel : ObservableObject,
 
     void IRecipient<TrackComplete>.Receive(TrackComplete message)
     {
+        RemoveAllOnTrackPoints();
         InitializePointsOfInterest();
         TrackIsInitialized = true;
     }

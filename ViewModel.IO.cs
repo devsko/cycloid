@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using cycloid.Serizalization;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
@@ -12,6 +13,8 @@ using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Controls;
 
 namespace cycloid;
+
+public class FileChanged(IStorageFile value) : ValueChangedMessage<IStorageFile>(value);
 
 public class TrackComplete(bool isNew)
 {
@@ -75,6 +78,38 @@ partial class ViewModel
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanSaveTrackAs))]
+    public async Task SaveTrackAsAsync()
+    {
+        FileSavePicker picker = new()
+        {
+            SuggestedFileName = "Save Track",
+            SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+        };
+        picker.FileTypeChoices.Add("Track", [".track"]);
+        StorageFile file = await picker.PickSaveFileAsync();
+
+        if (file is null)
+        {
+            return;
+        }
+
+        if (!Program.RegisterForFile(file, out _))
+        {
+            await ShowFileAlreadyOpenAsync(file);
+        }
+        else
+        {
+            await Track.File.CopyAndReplaceAsync(file);
+            Track.File = file;
+
+            StrongReferenceMessenger.Default.Send(new FileChanged(file));
+        }
+    }
+
+    private bool CanSaveTrackAs()
+        => Track is not null;
+
     [RelayCommand]
     public async Task NewTrackAsync()
     {
@@ -104,6 +139,7 @@ partial class ViewModel
 
             Track = new Track(file);
 
+            StrongReferenceMessenger.Default.Send(new FileChanged(file));
             StrongReferenceMessenger.Default.Send(new TrackComplete(true));
 
             Status = $"{Track.Name} created";
@@ -141,10 +177,12 @@ partial class ViewModel
     private async Task LoadTrackFileAsync(IStorageFile file)
     {
         Track = new Track(file);
+        
+        StrongReferenceMessenger.Default.Send(new FileChanged(file));
 
         Stopwatch watch = Stopwatch.StartNew();
 
-        await Track.LoadAsync();
+        await Serializer.LoadAsync(Track);
 
         StrongReferenceMessenger.Default.Send(new TrackComplete(false));
 
