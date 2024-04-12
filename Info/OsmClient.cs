@@ -58,7 +58,7 @@ public class OsmClient
 
                 OverpassResponse overpass = await JsonSerializer.DeserializeAsync(stream, OsmContext.Default.OverpassResponse, cancellationToken).ConfigureAwait(false);
 
-                return overpass.elements;
+                return overpass.Elements;
             }
             else if (++retryCount > 3 || response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
@@ -70,13 +70,12 @@ public class OsmClient
     }
 }
 
-#pragma warning disable IDE1006 // Naming Styles
+public record struct OverpassResponse(OverpassPoint[] Elements);
+public record struct OverpassPoint(float Lat, float Lon, OverpassTags Tags, OverpassBounds? Bounds);
+public record struct OverpassTags(OverpassAmenities? Amenity, OverpassShops? Shop, string Name, string Ele, OverpassBool? MountainPass);
+public record struct OverpassBounds(float Minlat, float Maxlat, float Minlon, float Maxlon);
 
-public record struct OverpassResponse(OverpassPoint[] elements);
-public record struct OverpassPoint(float lat, float lon, OverpassTags tags, OverpassBounds? bounds);
-public record struct OverpassTags(OverpassAmenities? amenity, OverpassShops? shop, string name, string ele, OverpassBool? mountain_pass);
-public record struct OverpassBounds(float minlat, float maxlat, float minlon, float maxlon);
-
+[JsonConverter(typeof(OverpassEnumConverter<OverpassAmenities>))]
 public enum OverpassAmenities
 {
     drinking_water,
@@ -90,6 +89,7 @@ public enum OverpassAmenities
     restaurant,
 }
 
+[JsonConverter(typeof(OverpassEnumConverter<OverpassShops>))]
 public enum OverpassShops
 {
     bakery,
@@ -100,18 +100,16 @@ public enum OverpassShops
     supermarket,
 }
 
+[JsonConverter(typeof(OverpassEnumConverter<OverpassBool>))]
 public enum OverpassBool
 {
     yes,
     no,
 }
 
-#pragma warning restore IDE1006 // Naming Styles
-
 [JsonSerializable(typeof(OverpassResponse))]
 [JsonSourceGenerationOptions(
-    Converters = [typeof(OverpassEnumConverter<OverpassAmenities>), typeof(OverpassEnumConverter<OverpassShops>)],
-    UseStringEnumConverter = true, 
+    PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower,
     NumberHandling = JsonNumberHandling.AllowReadingFromString)]
 public partial class OsmContext : JsonSerializerContext
 { }

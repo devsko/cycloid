@@ -27,35 +27,26 @@ public sealed partial class Compass : PointControl
         _needleVisual = Needle.GetVisual();
     }
 
-    private double HeadingToRootAngle(float heading)
+    private double HeadingToRootAngle(float heading) => HeadingToAngle(-heading, _rootVisual, ref _rootRounds);
+
+    private double HeadingToNeedleAngle(float heading) => HeadingToAngle(heading, _needleVisual, ref _needleRounds);
+
+    private double HeadingToAngle(float rotation, Visual visual, ref int rounds)
     {
-        double rotation = -heading + 360;
-        var current = _rootVisual.RotationAngleInDegrees - _rootRounds * 360;
+        if (rotation < 0)
+        {
+            rotation += 360;
+        }
+        var current = visual.RotationAngleInDegrees - rounds * 360;
         if (rotation is >= 270 and <= 360 && current is > 0 and <= 90)
         {
-            _rootRounds--;
+            rounds--;
         }
         else if (rotation is >= 0 and <= 90 && current is >= 270 and <= 360)
         {
-            _rootRounds++;
+            rounds++;
         }
 
-        return rotation + _rootRounds * 360;
-    }
-
-    private double HeadingToNeedleAngle(float heading)
-    {
-        double rotation = heading;
-        var current = _needleVisual.RotationAngleInDegrees - _needleRounds * 360;
-        if (rotation is >= 270 and <= 360 && current is > 0 and <= 90)
-        {
-            _needleRounds--;
-        }
-        else if (rotation is >= 0 and <= 90 && current is >= 270 and <= 360)
-        {
-            _needleRounds++;
-        }
-
-        return rotation + _needleRounds * 360;
+        return rotation + rounds * 360;
     }
 }

@@ -17,8 +17,8 @@
                                 Color="{StaticResource TextFillColorSecondary}" />
                             <SolidColorBrush
                                 x:Key="SectionGraphFill"
-                                Opacity="0.3"
-                                Color="{StaticResource SystemAccentColorDark2}" />
+                                Opacity="0.4"
+                                Color="{StaticResource TextFillColorTertiary}" />
                             <StaticResource x:Key="TrackSelectionGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
                             <SolidColorBrush
                                 x:Key="TrackHoverGraphOutline"
@@ -39,8 +39,8 @@
                                 Color="{StaticResource TextFillColorSecondary}" />
                             <SolidColorBrush
                                 x:Key="SectionGraphFill"
-                                Opacity="0.3"
-                                Color="{StaticResource SystemAccentColorDark2}" />
+                                Opacity="0.4"
+                                Color="{StaticResource TextFillColorTertiary}" />
                             <StaticResource x:Key="TrackSelectionGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
                             <SolidColorBrush
                                 x:Key="TrackHoverGraphOutline"

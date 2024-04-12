@@ -11,22 +11,22 @@ public record InfoPoint(MapPoint Location, string Name, InfoCategory Category, I
     public static InfoPoint FromOverpassPoint(OverpassPoint overpass)
     {
         MapPoint location;
-        if (overpass.bounds is OverpassBounds bounds)
+        if (overpass.Bounds is OverpassBounds bounds)
         {
-            location = new MapPoint((bounds.minlat + bounds.maxlat) / 2, (bounds.minlon + bounds.maxlon) / 2);
+            location = new MapPoint((bounds.Minlat + bounds.Maxlat) / 2, (bounds.Minlon + bounds.Maxlon) / 2);
         }
         else
         {
-            location = new MapPoint(overpass.lat, overpass.lon);
+            location = new MapPoint(overpass.Lat, overpass.Lon);
         }
 
-        string name = overpass.tags.name ?? "";
-        if (!string.IsNullOrEmpty(overpass.tags.ele))
+        string name = overpass.Tags.Name ?? "";
+        if (!string.IsNullOrEmpty(overpass.Tags.Ele))
         {
-            name = $"{name}{(name.Length > 0 ? " " : "")}({overpass.tags.ele})";
+            name = $"{name}{(name.Length > 0 ? " " : "")}({overpass.Tags.Ele})";
         }
 
-        (InfoCategory category, InfoType type) = ((overpass.tags.mountain_pass, overpass.tags.amenity, overpass.tags.shop)) switch
+        (InfoCategory category, InfoType type) = ((overpass.Tags.MountainPass, overpass.Tags.Amenity, overpass.Tags.Shop)) switch
         {
             (OverpassBool.yes, _, _) => (InfoCategory.Section, InfoType.MountainPass),
             (_, _, OverpassShops.bakery) => (InfoCategory.Shop, InfoType.Bakery),

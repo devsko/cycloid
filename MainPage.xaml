@@ -39,30 +39,30 @@
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush
                         x:Key="ListViewItemBackgroundSelected"
-                        Opacity="0.3"
-                        Color="{StaticResource SystemAccentColorDark3}" />
+                        Opacity="0.2"
+                        Color="{StaticResource SystemAccentColorLight3}" />
                     <SolidColorBrush
                         x:Key="ListViewItemBackgroundSelectedPressed"
-                        Opacity="0.3"
-                        Color="{StaticResource SystemAccentColorDark3}" />
+                        Opacity="0.2"
+                        Color="{StaticResource SystemAccentColorLight3}" />
                     <SolidColorBrush
                         x:Key="ListViewItemBackgroundSelectedPointerOver"
-                        Opacity="0.3"
-                        Color="{StaticResource SystemAccentColorDark2}" />
+                        Opacity="0.2"
+                        Color="{StaticResource SystemAccentColorLight2}" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush
                         x:Key="ListViewItemBackgroundSelected"
-                        Opacity="0.3"
-                        Color="{StaticResource SystemAccentColorDark3}" />
+                        Opacity="0.2"
+                        Color="{StaticResource SystemAccentColorLight3}" />
                     <SolidColorBrush
                         x:Key="ListViewItemBackgroundSelectedPressed"
-                        Opacity="0.3"
-                        Color="{StaticResource SystemAccentColorDark3}" />
+                        Opacity="0.2"
+                        Color="{StaticResource SystemAccentColorLight3}" />
                     <SolidColorBrush
                         x:Key="ListViewItemBackgroundSelectedPointerOver"
-                        Opacity="0.3"
-                        Color="{StaticResource SystemAccentColorDark2}" />
+                        Opacity="0.2"
+                        Color="{StaticResource SystemAccentColorLight2}" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 
