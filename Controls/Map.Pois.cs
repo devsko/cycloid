@@ -100,10 +100,10 @@ partial class Map :
     { 
         IReadOnlyList<MapElement> elements = MapControl.FindMapElementsAtOffset(value.Offset, 7);
 
-        (MapIcon nearestIcon, float distance) = elements
+        MapIcon nearestIcon = elements
             .Where(element => element.Tag is InfoPoint)
             .Cast<MapIcon>()
-            .MinByWithKey(element => GeoCalculation.Distance((MapPoint)element.Location.Position, value.Location));
+            .MinBy(element => GeoCalculation.Distance((MapPoint)element.Location.Position, value.Location));
 
         InfoPoint nearestInfo = nearestIcon?.Tag as InfoPoint ?? InfoPoint.Invalid;
         if (nearestInfo != ViewModel.HoverInfo)

@@ -45,7 +45,7 @@ public sealed partial class Profile : ViewModelControl,
 
     private readonly Throttle<double, Profile> _pointerMovedThrottle = new(
         static (x, @this) => @this.ThrottledPointerMoved(x),
-        TimeSpan.FromMilliseconds(50));
+        TimeSpan.FromMilliseconds(100));
 
     public double HorizontalZoom
     {
@@ -326,6 +326,8 @@ public sealed partial class Profile : ViewModelControl,
                 {
                     scroll = -10;
                 }
+
+                // TODO -> PeriodicAction.Start/Stop
                 if (scroll is int amount && _timedScrollCts is null)
                 {
                     TimedScrollAsync(amount).FireAndForget();

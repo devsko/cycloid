@@ -286,6 +286,7 @@ partial class Track
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+        // TODO return (Segment, TrackPoint, Index)
         private Index GetIndex(float distance, out bool exactMatch, int step = 1)
         {
             if (_segments.Count == 0)
@@ -294,6 +295,7 @@ partial class Track
                 return Index.Invalid;
             }
 
+            // TODO -> Array.BinarySearch in SegmentCollection.Search
             int segmentIndex = 0;
             for (; segmentIndex < _segments.Count; segmentIndex++)
             {
@@ -323,6 +325,7 @@ partial class Track
                 pointIndex = (pointIndex + segment.StartIndex) / step * step - segment.StartIndex;
                 if (pointIndex < 0)
                 {
+                    // TODO wann passiert das? Besser den richtigen Punkt im Segment davor?
                     pointIndex += step;
                 }
             }
