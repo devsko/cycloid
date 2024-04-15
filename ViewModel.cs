@@ -27,6 +27,8 @@ public class TrackChanged(object sender, Track oldValue, Track newValue) : Prope
 
 public class HoverPointChanged(object sender, TrackPoint oldValue, TrackPoint newValue) : PropertyChangedMessage<TrackPoint>(sender, null, oldValue, newValue);
 
+public class SelectionChanged(object sender, Selection oldValue, Selection newValue) : PropertyChangedMessage<Selection>(sender, null, oldValue, newValue);
+
 public partial class ViewModel : ObservableObject,
     IRecipient<TrackComplete>
 {
@@ -128,6 +130,20 @@ public partial class ViewModel : ObservableObject,
         }
     }
 
+    private Selection _currentSelection = Selection.Invalid;
+    public Selection CurrentSelection
+    {
+        get => _currentSelection;
+        set
+        {
+            Selection oldValue = _currentSelection;
+            if (SetProperty(ref _currentSelection, value))
+            {
+                StrongReferenceMessenger.Default.Send(new SelectionChanged(this, oldValue, value));
+            }
+        }
+    }
+
     private TrackPoint _hoverPoint = TrackPoint.Invalid;
     public TrackPoint HoverPoint
     {
@@ -184,6 +200,41 @@ public partial class ViewModel : ObservableObject,
     {
         get => !MapHoverPointValuesEnabled;
         set => MapHoverPointValuesEnabled = !value;
+    }
+
+    public class SelectionStarting(TrackPoint point)
+    {
+        public TrackPoint Point => point;
+    }
+
+    private TrackPoint _selectionCapture = TrackPoint.Invalid;
+    public void StartSelection()
+    {
+        CurrentSelection = Selection.Invalid;
+        if (HoverPoint.IsValid)
+        {
+            StrongReferenceMessenger.Default.Send(new SelectionStarting(HoverPoint));
+            _selectionCapture = HoverPoint;
+        }
+    }
+
+    public void ContinueSelection()
+    {
+        if (_selectionCapture.IsValid && HoverPoint.IsValid)
+        {
+            CurrentSelection = _selectionCapture.Distance < HoverPoint.Distance
+                ? new Selection(_selectionCapture, HoverPoint)
+                : new Selection(HoverPoint, _selectionCapture);
+        }
+    }
+
+    public void EndSelection()
+    {
+        _selectionCapture = TrackPoint.Invalid;
+        if (CurrentSelection.End.Distance - CurrentSelection.Start.Distance < 10)
+        {
+            CurrentSelection = Selection.Invalid;
+        }
     }
 
     [RelayCommand]

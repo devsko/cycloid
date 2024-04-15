@@ -3,7 +3,7 @@ using Windows.UI.Xaml;
 
 namespace cycloid.Controls;
 
-public sealed partial class StreetView : PointControl
+public sealed partial class StreetView : TrackPointControl
 {
     private readonly DispatcherTimer _requestTimeout;
     private readonly string _apiKey = App.Current.Configuration["Google:ServiceApiKey"];

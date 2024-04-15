@@ -19,9 +19,13 @@
                                 x:Key="SectionGraphFill"
                                 Opacity="0.4"
                                 Color="{StaticResource TextFillColorTertiary}" />
-                            <StaticResource x:Key="TrackSelectionGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
                             <SolidColorBrush
-                                x:Key="TrackHoverGraphOutline"
+                                x:Key="SelectionGraphFill"
+                                Opacity="0.3"
+                                Color="{StaticResource SystemAccentColorDark1}" />
+                            <StaticResource x:Key="TrackCurrentPointGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
+                            <SolidColorBrush
+                                x:Key="TrackHoverPointGraphOutline"
                                 Opacity="0.7"
                                 Color="{StaticResource TextFillColorPrimary}" />
                             <AcrylicBrush
@@ -38,12 +42,16 @@
                                 Opacity="0.4"
                                 Color="{StaticResource TextFillColorSecondary}" />
                             <SolidColorBrush
+                                x:Key="SelectionGraphFill"
+                                Opacity="0.3"
+                                Color="{StaticResource SystemAccentColorDark1}" />
+                            <SolidColorBrush
                                 x:Key="SectionGraphFill"
                                 Opacity="0.4"
                                 Color="{StaticResource TextFillColorTertiary}" />
-                            <StaticResource x:Key="TrackSelectionGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
+                            <StaticResource x:Key="TrackCurrentPointGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
                             <SolidColorBrush
-                                x:Key="TrackHoverGraphOutline"
+                                x:Key="TrackHoverPointGraphOutline"
                                 Opacity="0.7"
                                 Color="{StaticResource TextFillColorPrimary}" />
                             <AcrylicBrush

@@ -19,8 +19,12 @@
             <Canvas
                 x:Name="Root"
                 Background="{ThemeResource ControlFillColorDefaultBrush}"
+                PointerEntered="Root_PointerEntered"
                 PointerExited="Root_PointerExited"
+                PointerPressed="Root_PointerPressed"
+                PointerReleased="Root_PointerReleased"
                 PointerMoved="Root_PointerMoved"
+                PointerCaptureLost="Root_PointerCaptureLost"
                 SizeChanged="Root_SizeChanged"
                 Tapped="Root_Tapped"
                 DoubleTapped="Root_DoubleTapped">
@@ -46,6 +50,15 @@
                         <RectangleGeometry x:Name="GraphBottom" Transform="{StaticResource GraphBottomTransform}" />
                     </Path.Data>
                 </Path>
+                <Path Fill="{ThemeResource SelectionGraphFill}">
+                    <Path.Data>
+                        <PathGeometry Transform="{StaticResource GraphTransform}">
+                            <PathFigure x:Name="SelectionGraphFigure">
+                                <PolyLineSegment x:Name="SelectionGraph" />
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
                 <Path Fill="{ThemeResource SectionGraphFill}">
                     <Path.Data>
                         <PathGeometry Transform="{StaticResource GraphTransform}">
@@ -58,7 +71,7 @@
                 <Canvas x:Name="TrackPois" />
                 <Canvas x:Name="HorizontalRuler" />
                 <Path
-                    Stroke="{ThemeResource TrackSelectionGraphOutline}"
+                    Stroke="{ThemeResource TrackCurrentPointGraphOutline}"
                     StrokeThickness="1.5"
                     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.CurrentPoint)}">
                     <Path.Data>
@@ -73,7 +86,7 @@
                     </Path.Data>
                 </Path>
                 <Path
-                    Stroke="{ThemeResource TrackHoverGraphOutline}"
+                    Stroke="{ThemeResource TrackHoverPointGraphOutline}"
                     StrokeThickness="1.5"
                     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.HoverPoint)}">
                     <Path.Data>

@@ -138,7 +138,6 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         menu.ShowAt(MapControl, location, position);
     }
 
-
     // WORKAROUND Change the view slightly to update moved child controls.
     private void Nudge()
     {

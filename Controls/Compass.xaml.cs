@@ -4,7 +4,7 @@ using Windows.UI.Xaml;
 
 namespace cycloid.Controls;
 
-public sealed partial class Compass : PointControl
+public sealed partial class Compass : TrackPointControl
 {
     private readonly Visual _rootVisual;
     private int _rootRounds;

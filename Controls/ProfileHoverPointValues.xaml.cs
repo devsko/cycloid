@@ -1,6 +1,6 @@
 ﻿namespace cycloid.Controls;
 
-public sealed partial class ProfileHoverPointValues : PointValuesControl
+public sealed partial class ProfileHoverPointValues : TrackPointValuesControl
 {
     public ProfileHoverPointValues()
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
@@ -15,6 +16,7 @@ namespace cycloid.Controls;
 public sealed partial class Profile : ViewModelControl,
     IRecipient<TrackChanged>,
     IRecipient<HoverPointChanged>,
+    IRecipient<SelectionChanged>,
     IRecipient<CurrentSectionChanged>,
     IRecipient<RouteChanged>
 {
@@ -41,9 +43,9 @@ public sealed partial class Profile : ViewModelControl,
     private const float HorizontalRulerTickMinimumGap = 50;
     private const float VerticalRulerTickMinimumGap = 25;
 
-    private readonly Throttle<PointerRoutedEventArgs, Profile> _pointerMovedThrottle = new(
-        static (e, @this) => @this.ThrottledPointerMoved(e),
-        TimeSpan.FromMilliseconds(70));
+    private readonly Throttle<double, Profile> _pointerMovedThrottle = new(
+        static (x, @this) => @this.ThrottledPointerMoved(x),
+        TimeSpan.FromMilliseconds(50));
 
     public double HorizontalZoom
     {
@@ -75,6 +77,7 @@ public sealed partial class Profile : ViewModelControl,
 
         StrongReferenceMessenger.Default.Register<TrackChanged>(this);
         StrongReferenceMessenger.Default.Register<HoverPointChanged>(this);
+        StrongReferenceMessenger.Default.Register<SelectionChanged>(this);
         StrongReferenceMessenger.Default.Register<CurrentSectionChanged>(this);
     }
 
@@ -106,13 +109,6 @@ public sealed partial class Profile : ViewModelControl,
         {
             ProcessChangeAsync(Change.Zoom).FireAndForget();
         }
-    }
-
-    private void ThrottledPointerMoved(PointerRoutedEventArgs e)
-    {
-        HoverPointValues.Enabled = true;
-        float distance = Math.Clamp((float)(e.GetCurrentPoint(Root).Position.X / _horizontalScale), 0, ViewModel.Track.Points.Total.Distance);
-        ViewModel.HoverPoint = ViewModel.Track.Points.Search(distance).Point;
     }
 
     private double GetOffset(TrackPoint point) => point.IsValid ? point.Distance * _horizontalScale - _scrollerOffset : 0;
@@ -153,6 +149,7 @@ public sealed partial class Profile : ViewModelControl,
                     }
 
                     ResetTrack();
+                    ResetSelection();
                     ResetSection();
                     ResetHorizontalRuler();
 
@@ -184,6 +181,7 @@ public sealed partial class Profile : ViewModelControl,
                     if (ViewModel.Track.Points.Count > 0)
                     {
                         EnsureTrack();
+                        EnsureSelection();
                         EnsureSection();
                         EnsureHorizontalRuler();
 
@@ -298,19 +296,114 @@ public sealed partial class Profile : ViewModelControl,
         }
     }
 
+    private bool _isCaptured;
+    private bool _isEntered;
+
+    private void Root_PointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        _isCaptured = Root.CapturePointer(e.Pointer);
+        ViewModel.StartSelection();
+    }
+
+    private void Root_PointerReleased(object sender, PointerRoutedEventArgs e)
+    {
+        Root.ReleasePointerCapture(e.Pointer);
+    }
+
     private void Root_PointerMoved(object _, PointerRoutedEventArgs e)
     {
         if (ViewModel.Track is not null)
         {
-            _pointerMovedThrottle.Next(e, this);
+            double x = e.GetCurrentPoint(Root).Position.X;
+            if (_isCaptured)
+            {
+                int? scroll = null;
+                if (x > _scrollerOffset + ActualWidth - 2)
+                {
+                    scroll = 10;
+                }
+                else if (x < _scrollerOffset + 2)
+                {
+                    scroll = -10;
+                }
+                if (scroll is int amount && _timedScrollCts is null)
+                {
+                    TimedScrollAsync(amount).FireAndForget();
+                }
+                else if (scroll is null && _timedScrollCts is not null)
+                {
+                    _timedScrollCts.Cancel();
+                }
+            }
+
+            _pointerMovedThrottle.Next(x, this);
         }
+    }
+
+    private CancellationTokenSource _timedScrollCts;
+
+    private async Task TimedScrollAsync(int amount)
+    {
+        _timedScrollCts = new CancellationTokenSource();
+        try
+        {
+            while (true)
+            {
+                Scroller.ChangeView(_scrollerOffset + amount, null, null, true);
+                Scroller.UpdateLayout();
+                ThrottledPointerMoved(Scroller.HorizontalOffset + (amount < 0 ? 0 : ActualWidth), true);
+                await Task.Delay(50, _timedScrollCts.Token);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _timedScrollCts = null;
+            return;
+        }
+    }
+
+    private void ThrottledPointerMoved(double x, bool isTimedScroll = false)
+    {
+        if (_timedScrollCts is null || isTimedScroll)
+        {
+            HoverPointValues.Enabled = true;
+            float distance = Math.Clamp((float)(x / _horizontalScale), 0, ViewModel.Track.Points.Total.Distance);
+            ViewModel.HoverPoint = ViewModel.Track.Points.Search(distance).Point;
+            ViewModel.ContinueSelection();
+        }
+
+    }
+
+    private void Root_PointerEntered(object _1, PointerRoutedEventArgs _2)
+    {
+        _isEntered = true;
     }
 
     private void Root_PointerExited(object _1, PointerRoutedEventArgs _2)
     {
+        _isEntered = false;
+        if (!_isCaptured)
+        {
+            PointerExit();
+        }
+    }
+
+    private void PointerExit()
+    {
         _pointerMovedThrottle.Clear();
         ViewModel.HoverPoint = TrackPoint.Invalid;
         HoverPointValues.Enabled = false;
+    }
+
+    private void Root_PointerCaptureLost(object _1, PointerRoutedEventArgs _2)
+    {
+        _isCaptured = false;
+        _timedScrollCts?.Cancel();
+        ViewModel.EndSelection();
+        if (!_isEntered)
+        {
+            PointerExit();
+        }
     }
 
     private void Root_Tapped(object _1, TappedRoutedEventArgs _2)
@@ -375,6 +468,12 @@ public sealed partial class Profile : ViewModelControl,
     void IRecipient<HoverPointChanged>.Receive(HoverPointChanged message)
     {
         UpdateMarker(message.NewValue, HoverPointLine1, HoverPointLine2, HoverPointCircle);
+    }
+
+    void IRecipient<SelectionChanged>.Receive(SelectionChanged message)
+    {
+        ResetSelection();
+        EnsureSelection();
     }
 
     void IRecipient<CurrentSectionChanged>.Receive(CurrentSectionChanged message)

@@ -5,7 +5,7 @@ using Windows.UI.Xaml;
 namespace cycloid.Controls;
 
 [ObservableObject]
-public partial class PointValuesControl : PointControl
+public partial class PointValuesControl<T> : PointControl<T> where T : struct, ICanBeInvalid<T>
 {
     private static readonly PropertyChangedEventArgs _isVisibleChangedArgs = new(nameof(IsVisible));
 
@@ -21,7 +21,7 @@ public partial class PointValuesControl : PointControl
     }
 
     public static readonly DependencyProperty TrackProperty =
-    DependencyProperty.Register(nameof(Track), typeof(Track), typeof(PointValuesControl), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(Track), typeof(Track), typeof(PointValuesControl<T>), new PropertyMetadata(null));
 
     public bool Enabled
     {
@@ -30,13 +30,13 @@ public partial class PointValuesControl : PointControl
     }
 
     public static DependencyProperty EnabledProperty =
-        DependencyProperty.Register(nameof(Enabled), typeof(bool), typeof(PointValuesControl), new PropertyMetadata(false, (sender, _) => ((PointValuesControl)sender).EnabledChanged()));
+        DependencyProperty.Register(nameof(Enabled), typeof(bool), typeof(PointValuesControl<T>), new PropertyMetadata(false, (sender, _) => ((PointValuesControl<T>)sender).EnabledChanged()));
 
     public bool IsVisible => Enabled && Point.IsValid;
 
     protected override void PointChanged(DependencyPropertyChangedEventArgs e)
     {
-        if (((TrackPoint)e.OldValue).IsValid != ((TrackPoint)e.NewValue).IsValid)
+        if (((T)e.OldValue).IsValid != ((T)e.NewValue).IsValid)
         {
             RaiseIsVisibleChanged();
         }
@@ -51,7 +51,10 @@ public partial class PointValuesControl : PointControl
     {
         PropertyChanged?.Invoke(this, _isVisibleChangedArgs);
     }
+}
 
+public class TrackPointValuesControl : PointValuesControl<TrackPoint>
+{
     protected string FilePosition(TrackPoint point) => Track?.FilePosition(point.Distance);
 
     protected string DistanceFromStart(TrackPoint point) => Track?.DistanceFromStart(point.Distance);

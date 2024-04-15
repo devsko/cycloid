@@ -3,17 +3,20 @@ using Windows.UI.Xaml.Controls;
 
 namespace cycloid.Controls;
 
-public class PointControl : UserControl
+public class PointControl<T> : UserControl where T : struct, ICanBeInvalid<T>
 {
-    public TrackPoint Point
+    public T Point
     {
-        get => (TrackPoint)GetValue(PointProperty);
+        get => (T)GetValue(PointProperty);
         set => SetValue(PointProperty, value);
     }
 
     public static readonly DependencyProperty PointProperty =
-        DependencyProperty.Register(nameof(Point), typeof(TrackPoint), typeof(PointControl), new PropertyMetadata(TrackPoint.Invalid, (sender, e) => ((PointControl)sender).PointChanged(e)));
+        DependencyProperty.Register(nameof(Point), typeof(T), typeof(PointControl<T>), new PropertyMetadata(default(T).Invalid, (sender, e) => ((PointControl<T>)sender).PointChanged(e)));
 
     protected virtual void PointChanged(DependencyPropertyChangedEventArgs e)
     { }
 }
+
+public class TrackPointControl : PointControl<TrackPoint>
+{ }

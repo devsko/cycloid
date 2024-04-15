@@ -13,6 +13,9 @@ partial class Profile
     private float _trackStartDistance;
     private float _trackEndDistance;
 
+    private float _selectionStartDistance;
+    private float _selectionEndDistance;
+
     private float _sectionStartDistance;
     private float _sectionEndDistance;
 
@@ -22,6 +25,14 @@ partial class Profile
 
         _trackStartDistance = float.PositiveInfinity;
         _trackEndDistance = -1;
+    }
+
+    private void ResetSelection()
+    {
+        SelectionGraph.Points.Clear();
+
+        _selectionStartDistance = float.PositiveInfinity;
+        _selectionEndDistance = -1;
     }
 
     private void ResetSection()
@@ -42,6 +53,24 @@ partial class Profile
         GraphFigure.StartPoint = Graph.Points[0];
         _trackStartDistance = Math.Min(_trackStartDistance, startDistance);
         _trackEndDistance = Math.Max(_trackEndDistance, endDistance);
+    }
+
+    private void EnsureSelection()
+    {
+        if (ViewModel.CurrentSelection.IsValid)
+        {
+            float startDistance = Math.Max(ViewModel.CurrentSelection.Start.Distance, (float)(_scrollerOffset / _horizontalScale));
+            float endDistance = Math.Min(ViewModel.CurrentSelection.End.Distance, (float)((ActualWidth + _scrollerOffset) / _horizontalScale));
+
+            if (startDistance <= endDistance)
+            {
+                EnsureGraph(startDistance, endDistance, SelectionGraph, _selectionStartDistance, _selectionEndDistance);
+
+                SelectionGraphFigure.StartPoint = SelectionGraph.Points[0];
+                _selectionStartDistance = Math.Min(_selectionStartDistance, startDistance);
+                _selectionEndDistance = Math.Max(_selectionEndDistance, endDistance);
+            }
+        }
     }
 
     private void EnsureSection()
