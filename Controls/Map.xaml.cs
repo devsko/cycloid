@@ -29,7 +29,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
     private readonly AsyncThrottle<object, Map> _loadInfosThrottle = new(
         static (_, @this, cancellationToken) => @this.LoadInfosAsync(cancellationToken),
-        TimeSpan.FromSeconds(2));
+        TimeSpan.FromSeconds(10));
 
     private MapTileSource _heatmap;
     private MapTileSource _osm;

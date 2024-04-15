@@ -43,9 +43,13 @@ public sealed partial class Profile : ViewModelControl,
     private const float HorizontalRulerTickMinimumGap = 50;
     private const float VerticalRulerTickMinimumGap = 25;
 
-    private readonly Throttle<double, Profile> _pointerMovedThrottle = new(
-        static (x, @this) => @this.ThrottledPointerMoved(x),
+    private readonly Throttle<double, Profile> _setHoverPointThrottle = new(
+        static (x, @this) => @this.SetHoverPoint(x),
         TimeSpan.FromMilliseconds(100));
+
+    private readonly PeriodicAction<Profile, int> _periodicScroll = new(
+        static (@this, amount) => @this.ScrollToRelative(amount), 
+        TimeSpan.FromMilliseconds(50));
 
     public double HorizontalZoom
     {
@@ -317,63 +321,40 @@ public sealed partial class Profile : ViewModelControl,
             double x = e.GetCurrentPoint(Root).Position.X;
             if (_isCaptured)
             {
-                int? scroll = null;
                 if (x > _scrollerOffset + ActualWidth - 2)
                 {
-                    scroll = 10;
+                    _periodicScroll.Start(this, 10);
                 }
                 else if (x < _scrollerOffset + 2)
                 {
-                    scroll = -10;
+                    _periodicScroll.Start(this, -10);
                 }
-
-                // TODO -> PeriodicAction.Start/Stop
-                if (scroll is int amount && _timedScrollCts is null)
+                else
                 {
-                    TimedScrollAsync(amount).FireAndForget();
-                }
-                else if (scroll is null && _timedScrollCts is not null)
-                {
-                    _timedScrollCts.Cancel();
+                    _periodicScroll.Stop();
                 }
             }
 
-            _pointerMovedThrottle.Next(x, this);
-        }
-    }
-
-    private CancellationTokenSource _timedScrollCts;
-
-    private async Task TimedScrollAsync(int amount)
-    {
-        _timedScrollCts = new CancellationTokenSource();
-        try
-        {
-            while (true)
+            if (!_periodicScroll.IsRunning)
             {
-                Scroller.ChangeView(_scrollerOffset + amount, null, null, true);
-                Scroller.UpdateLayout();
-                ThrottledPointerMoved(Scroller.HorizontalOffset + (amount < 0 ? 0 : ActualWidth), true);
-                await Task.Delay(50, _timedScrollCts.Token);
+                _setHoverPointThrottle.Next(x, this);
             }
-        }
-        catch (OperationCanceledException)
-        {
-            _timedScrollCts = null;
-            return;
         }
     }
 
-    private void ThrottledPointerMoved(double x, bool isTimedScroll = false)
+    private void ScrollToRelative(int amount)
     {
-        if (_timedScrollCts is null || isTimedScroll)
-        {
-            HoverPointValues.Enabled = true;
-            float distance = Math.Clamp((float)(x / _horizontalScale), 0, ViewModel.Track.Points.Total.Distance);
-            ViewModel.HoverPoint = ViewModel.Track.Points.Search(distance).Point;
-            ViewModel.ContinueSelection();
-        }
+        Scroller.ChangeView(_scrollerOffset + amount, null, null, true);
+        Scroller.UpdateLayout();
+        SetHoverPoint(Scroller.HorizontalOffset + (amount < 0 ? 0 : ActualWidth));
+    }
 
+    private void SetHoverPoint(double x)
+    {
+        HoverPointValues.Enabled = true;
+        float distance = Math.Clamp((float)(x / _horizontalScale), 0, ViewModel.Track.Points.Total.Distance);
+        ViewModel.HoverPoint = ViewModel.Track.Points.Search(distance).Point;
+        ViewModel.ContinueSelection();
     }
 
     private void Root_PointerEntered(object _1, PointerRoutedEventArgs _2)
@@ -392,7 +373,7 @@ public sealed partial class Profile : ViewModelControl,
 
     private void PointerExit()
     {
-        _pointerMovedThrottle.Clear();
+        _setHoverPointThrottle.Clear();
         ViewModel.HoverPoint = TrackPoint.Invalid;
         HoverPointValues.Enabled = false;
     }
@@ -400,7 +381,7 @@ public sealed partial class Profile : ViewModelControl,
     private void Root_PointerCaptureLost(object _1, PointerRoutedEventArgs _2)
     {
         _isCaptured = false;
-        _timedScrollCts?.Cancel();
+        _periodicScroll.Stop();
         ViewModel.EndSelection();
         if (!_isEntered)
         {
@@ -469,7 +450,7 @@ public sealed partial class Profile : ViewModelControl,
 
     void IRecipient<HoverPointChanged>.Receive(HoverPointChanged message)
     {
-        UpdateMarker(message.NewValue, HoverPointLine1, HoverPointLine2, HoverPointCircle);
+        UpdateMarker(message.Value, HoverPointLine1, HoverPointLine2, HoverPointCircle);
     }
 
     void IRecipient<SelectionChanged>.Receive(SelectionChanged message)

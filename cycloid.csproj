@@ -74,6 +74,7 @@
     <Compile Include="Info\InfoCache.cs" />
     <Compile Include="Info\InfoPoint.cs" />
     <Compile Include="OnTrack.cs" />
+    <Compile Include="PeriodicAction.cs" />
     <Compile Include="PointOfInterest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Selection.cs" />

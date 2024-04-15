@@ -25,7 +25,7 @@ public class ModeChanged(object sender, Modes oldValue, Modes newValue) : Proper
 
 public class TrackChanged(object sender, Track oldValue, Track newValue) : PropertyChangedMessage<Track>(sender, null, oldValue, newValue);
 
-public class HoverPointChanged(object sender, TrackPoint oldValue, TrackPoint newValue) : PropertyChangedMessage<TrackPoint>(sender, null, oldValue, newValue);
+public class HoverPointChanged(TrackPoint value) : ValueChangedMessage<TrackPoint>(value);
 
 public class SelectionChanged(object sender, Selection oldValue, Selection newValue) : PropertyChangedMessage<Selection>(sender, null, oldValue, newValue);
 
@@ -150,10 +150,9 @@ public partial class ViewModel : ObservableObject,
         get => _hoverPoint;
         set
         {
-            TrackPoint oldValue = _hoverPoint;
             if (SetProperty(ref _hoverPoint, value))
             {
-                StrongReferenceMessenger.Default.Send(new HoverPointChanged(this, oldValue, value));
+                StrongReferenceMessenger.Default.Send(new HoverPointChanged(value));
             }
         }
     }
