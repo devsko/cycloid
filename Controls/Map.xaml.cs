@@ -37,6 +37,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     private MapElementsLayer _differenceLayer;
     private MapElementsLayer _poisLayer;
     private MapElementsLayer _infoLayer;
+    private MapPolyline _selectionLine;
     private MapIcon _dummyIcon;
 
     private PropertyChangedEventHandler _propertyChanged;
@@ -216,6 +217,15 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
         _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
         MapControl.Layers.Add(_routingLayer);
+
+        _selectionLine = new MapPolyline
+        {
+            Path = new Geopath([new BasicGeoposition()]),
+            MapStyleSheetEntry = "Routing.Selection",
+            IsEnabled = false,
+            ZIndex = 90
+        };
+        _routingLayer.MapElements.Add(_selectionLine);
     }
 
     private void MapControl_ActualCameraChanged(MapControl _1, MapActualCameraChangedEventArgs _2)

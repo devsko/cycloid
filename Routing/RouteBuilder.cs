@@ -234,6 +234,18 @@ public partial class RouteBuilder
         }
     }
 
+    public async Task InsertPointsAsync(IEnumerable<WayPoint> wayPoints, WayPoint insertAfter)
+    {
+        using (await ChangeLock.EnterCalculationAsync())
+        {
+            int index = insertAfter is null ? 0 : Points.IndexOf(insertAfter) + 1;
+            foreach (WayPoint wayPoint in wayPoints)
+            {
+                AddPoint(wayPoint, index++);
+            }
+        }
+    }
+
     public Task AddLastPointAsync(WayPoint wayPoint) => AddPointAsync(wayPoint, Points.Count);
 
     public Task AddFirstPointAsync(WayPoint wayPoint) => AddPointAsync(wayPoint, 0);

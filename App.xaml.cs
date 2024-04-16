@@ -64,6 +64,8 @@ sealed partial class App : Application
 
     protected override void OnFileActivated(FileActivatedEventArgs args)
     {
+        _dispatcher = Window.Current.Dispatcher;
+
         if (Window.Current.Content is not Frame rootFrame)
         {
             rootFrame = new Frame();

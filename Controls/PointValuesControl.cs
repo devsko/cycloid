@@ -65,3 +65,6 @@ public class TrackPointValuesControl : PointValuesControl<TrackPoint>
 
     protected string TimeToEnd(TrackPoint point) => Track?.TimeToEnd(point.Time);
 }
+
+public class SelectionValuesControl : PointValuesControl<Selection>
+{ }

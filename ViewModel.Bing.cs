@@ -33,13 +33,15 @@ partial class ViewModel
         }
     }
 
-    public static async Task<string> GetAddressAsync(Geopoint point)
+    public static async Task<string> GetAddressAsync(Geopoint point, bool shorter = false)
     {
         MapLocationFinderResult result = await MapLocationFinder.FindLocationsAtAsync(point);
         if (result.Status == MapLocationFinderStatus.Success && result.Locations is [MapLocation location, ..])
         {
             MapAddress address = location.Address;
-            return $"{address.Town}, {address.District}, {address.Region}, {address.Country}";
+            return shorter
+                ? $"{address.Town}, {address.CountryCode}"
+                : $"{address.Town}, {address.District}, {address.Region}, {address.Country}";
         }
 
         return null;

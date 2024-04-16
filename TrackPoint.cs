@@ -67,7 +67,7 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
 
     public TimeSpan Time => _values.Time;
 
-    public float Distance => _values.Distance;
+    public float Distance => IsValid ? _values.Distance : float.NaN;
 
     public float Heading => (float)_heading / 10;
 

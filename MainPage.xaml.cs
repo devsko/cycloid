@@ -24,6 +24,7 @@ public sealed partial class MainPage : Page,
     IRecipient<FileChanged>,
     IRecipient<OnTrackAdded>
 {
+    private IStorageFile _initialFile;
     private bool _ignoreTextChange;
     private OnTrack _lastAddedOnTrack;
 
@@ -50,9 +51,9 @@ public sealed partial class MainPage : Page,
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (ViewModel.Track is null && e.Parameter is IStorageFile file)
+        if (e.Parameter is IStorageFile file)
         {
-            ViewModel.OpenTrackFileAsync(file).FireAndForget();
+            _initialFile = file;
         }
     }
 
@@ -69,11 +70,19 @@ public sealed partial class MainPage : Page,
     private void Page_Loaded(object _1, RoutedEventArgs _2)
     {
         ViewModel.ToggleHeatmapVisibleCommand.Execute(null);
-        InitialSceneAsync().FireAndForget();
+        OpenTrackAsync().FireAndForget();
 
-        async Task InitialSceneAsync()
+        async Task OpenTrackAsync()
         {
-            await ViewModel.OpenLastTrackAsync();
+            if (_initialFile is not null)
+            {
+                await ViewModel.OpenTrackFileAsync(_initialFile);
+                _initialFile = null;
+            }
+            else
+            {
+                await ViewModel.OpenLastTrackAsync();
+            }
         }
     }
 

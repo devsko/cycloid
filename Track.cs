@@ -37,7 +37,7 @@ public partial class Track : ObservableObject
 
     public string FilePosition(float distance)
     {
-        if (distance == 0 && Points.Count == 0)
+        if (float.IsNaN(distance) || (distance == 0 && Points.Count == 0))
         {
             return "";
         }

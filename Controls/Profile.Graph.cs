@@ -120,9 +120,9 @@ partial class Profile
         }
     }
 
-    private void IterateTrack(float startDistance, float endDistance, bool skipFirst, bool skipLast, Action<(float Distance, float Elevation)> action)
+    private void IterateTrack(float startDistance, float endDistance, bool skipFirst, bool skipLast, Action<(MapPoint Location, float Distance, float Elevation)> action)
     {
-        IEnumerable<(float Distance, float Elevation)> points = ViewModel.Track.Points.Enumerate(startDistance, endDistance, _trackIndexStep);
+        IEnumerable<(MapPoint Location, float Distance, float Elevation)> points = ViewModel.Track.Points.Enumerate(startDistance, endDistance, _trackIndexStep);
 
         if (skipFirst)
         {

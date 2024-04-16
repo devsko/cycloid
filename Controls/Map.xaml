@@ -10,6 +10,9 @@
 
     <controls:ViewModelControl.Resources>
 
+        <x:Boolean x:Key="True">True</x:Boolean>
+        <x:Boolean x:Key="False">False</x:Boolean>
+        
         <Style
             x:Key="LocationMenuItemStyle"
             BasedOn="{StaticResource DefaultMenuFlyoutItemStyle}"
@@ -56,7 +59,16 @@
                 CommandParameter="{x:Bind Mode=OneWay, Path=MapEditMenu.Location}"
                 Text="Add new start" />
             <MenuFlyoutSeparator />
-            <MenuFlyoutItem IsEnabled="False" Text="Add forbidden area" />
+            <MenuFlyoutItem IsEnabled="False" Text="Add forbidden area (NYI)" />
+            <MenuFlyoutSeparator />
+            <MenuFlyoutItem
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.PasteWayPointsAtStartCommand}"
+                CommandParameter="{StaticResource False}"
+                Text="Paste waypoints at start" />
+            <MenuFlyoutItem
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.PasteWayPointsAtStartCommand}"
+                CommandParameter="{StaticResource True}"
+                Text="Paste waypoints reversed at start" />
         </controls:MapMenuFlyout>
         <controls:MapMenuFlyout x:Name="MapEditPointMenu">
             <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.DeleteWayPointCommand}" Text="Delete waypoint" />
@@ -71,6 +83,15 @@
                 Command="{x:Bind Mode=OneTime, Path=ViewModel.TogglePointIsFileSplitCommand}"
                 Text="Don't split GPX here"
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(SplitGpxHere.Visibility)}" />
+            <MenuFlyoutSeparator />
+            <MenuFlyoutItem
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.PasteWayPointsCommand}"
+                CommandParameter="{StaticResource False}"
+                Text="Paste waypoints" />
+            <MenuFlyoutItem
+                Command="{x:Bind Mode=OneTime, Path=ViewModel.PasteWayPointsCommand}"
+                CommandParameter="{StaticResource True}"
+                Text="Paste waypoints reversed" />
         </controls:MapMenuFlyout>
         <controls:MapMenuFlyout x:Name="MapEditSectionMenu">
             <MenuFlyoutItem

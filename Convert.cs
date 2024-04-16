@@ -112,6 +112,8 @@ public static class Convert
     
     public static Visibility VisibleIfValid(TrackPoint value) => !value.IsValid ? Visibility.Collapsed : Visibility.Visible;
 
+    public static Visibility VisibleIfValid(Selection value) => !value.IsValid ? Visibility.Collapsed : Visibility.Visible;
+
     public static Visibility VisibleIfValid(Info.InfoPoint value) => !value.IsValid ? Visibility.Collapsed : Visibility.Visible;
 
     public static Visibility VisibleIfNotNullOrEmpty(string value) => string.IsNullOrEmpty(value) ? Visibility.Collapsed : Visibility.Visible;
@@ -119,6 +121,8 @@ public static class Convert
     public static Visibility VisibleIfNotVisible(Visibility visibility) => visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
 
     public static ImageSource InfoTypeIcon(InfoType type) => _infoTypeIcons[type];
+
+    public static bool IsValid(Selection value) => value.IsValid;
 
     public static bool IsNotNull(object value) => value is not null;
 }

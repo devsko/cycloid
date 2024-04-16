@@ -67,6 +67,9 @@
     <Compile Include="Controls\Map.CompareSession.cs" />
     <Compile Include="Controls\Map.Pois.cs" />
     <Compile Include="Controls\Map.Routing.cs" />
+    <Compile Include="Controls\ProfileSelectionValues.xaml.cs">
+      <DependentUpon>ProfileSelectionValues.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ViewModelControl.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="ICanBeInvalid.cs" />
@@ -201,6 +204,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\ProfileHoverPointValues.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ProfileSelectionValues.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

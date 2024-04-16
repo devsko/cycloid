@@ -32,8 +32,7 @@ partial class Map :
                     TrackDifference difference = (TrackDifference)e.NewItems[0];
                     _differenceLayer.MapElements.Add(new MapPolyline
                     {
-                        MapStyleSheetEntry = "Routing.Line",
-                        MapStyleSheetEntryState = "Routing.diff",
+                        MapStyleSheetEntry = "Routing.Difference",
                         Tag = difference,
                         Path = new Geopath(difference.OriginalPoints.Select(p => new BasicGeoposition { Longitude = p.Longitude, Latitude = p.Latitude })),
                     });

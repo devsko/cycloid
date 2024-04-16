@@ -19,15 +19,15 @@
             <Canvas
                 x:Name="Root"
                 Background="{ThemeResource ControlFillColorDefaultBrush}"
+                DoubleTapped="Root_DoubleTapped"
+                PointerCaptureLost="Root_PointerCaptureLost"
                 PointerEntered="Root_PointerEntered"
                 PointerExited="Root_PointerExited"
+                PointerMoved="Root_PointerMoved"
                 PointerPressed="Root_PointerPressed"
                 PointerReleased="Root_PointerReleased"
-                PointerMoved="Root_PointerMoved"
-                PointerCaptureLost="Root_PointerCaptureLost"
                 SizeChanged="Root_SizeChanged"
-                Tapped="Root_Tapped"
-                DoubleTapped="Root_DoubleTapped">
+                Tapped="Root_Tapped">
                 <Canvas.Resources>
                     <CompositeTransform x:Name="GraphTransform" />
                     <CompositeTransform x:Name="GraphBottomTransform" />
@@ -112,12 +112,10 @@
             Orientation="Vertical"
             Spacing="5">
             <Button
-                x:Name="ZoomIn"
                 HorizontalAlignment="Right"
                 Click="ZoomIn_Click"
                 Content="{ui:SymbolIcon Symbol=ZoomIn}" />
             <Button
-                x:Name="ZoomOut"
                 HorizontalAlignment="Right"
                 Click="ZoomOut_Click"
                 Content="{ui:SymbolIcon Symbol=ZoomOut}" />
@@ -131,6 +129,12 @@
                 Point="{x:Bind Mode=OneWay, Path=ViewModel.HoverPoint}"
                 Track="{x:Bind Mode=OneWay, Path=ViewModel.Track}" />
         </Canvas>
+
+        <controls:ProfileSelectionValues
+            HorizontalAlignment="Center"
+            CopyCommand="{x:Bind Mode=OneTime, Path=ViewModel.CopySelectionCommand}"
+            Enabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.IsValid(ViewModel.CurrentSelection)}"
+            Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentSelection}" />
 
     </Grid>
 

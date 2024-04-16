@@ -24,7 +24,8 @@ partial class Map :
     IRecipient<CalculationStarting>,
     IRecipient<CalculationRetry>,
     IRecipient<CalculationFinished>,
-    IRecipient<FileSplitChanged>
+    IRecipient<FileSplitChanged>,
+    IRecipient<SelectionChanged>
 {
     private struct DragState(MapPolyline line, bool compareStart)
     {
@@ -105,6 +106,7 @@ partial class Map :
         StrongReferenceMessenger.Default.Register<DragNewWayPointStarting>(this);
         StrongReferenceMessenger.Default.Register<DragWayPointStarted>(this);
         StrongReferenceMessenger.Default.Register<DragWayPointEnded>(this);
+        StrongReferenceMessenger.Default.Register<SelectionChanged>(this);
    }
 
     private void ConnectRouting(Track track)
@@ -410,6 +412,21 @@ partial class Map :
     void IRecipient<FileSplitChanged>.Receive(FileSplitChanged message)
     {
         GetWayPointIcon(message.WayPoint).MapStyleSheetEntry = message.WayPoint.IsFileSplit ? "Routing.SplitPoint" : "Routing.Point";
+    }
+
+    void IRecipient<SelectionChanged>.Receive(SelectionChanged message)
+    {
+        if (!message.Value.IsValid)
+        {
+            _selectionLine.Path = new Geopath([new BasicGeoposition()]);
+        }
+        else
+        {
+            _selectionLine.Path = new Geopath(
+                ViewModel.Track.Points
+                .Enumerate(message.Value.Start.Distance, message.Value.End.Distance)
+                .Select(p => (BasicGeoposition)p.Location));
+        }
     }
 
     //private void RouteBuilder_CalculationDelayed(RouteSection section)

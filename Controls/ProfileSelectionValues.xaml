@@ -1,0 +1,92 @@
+﻿<controls:SelectionValuesControl
+    x:Class="cycloid.Controls.ProfileSelectionValues"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:cycloid.Controls"
+    xmlns:cycloid="using:cycloid"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    Margin="0,-65,0,0"
+    VerticalAlignment="Top"
+    IsHitTestVisible="True"
+    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(IsVisible)}">
+
+    <StackPanel Orientation="Horizontal" Spacing="4">
+
+        <controls:MapControlBorder IsHitTestVisible="False">
+
+            <Grid
+                Width="140"
+                ColumnSpacing="4"
+                RowSpacing="2">
+
+                <Grid.Resources>
+                    <Style BasedOn="{StaticResource BaseTextBlockStyle}" TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="11" />
+                    </Style>
+                </Grid.Resources>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    Grid.ColumnSpan="4"
+                    HorizontalAlignment="Center"
+                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Point.Distance)}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.ColumnSpan="2"
+                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(Point.Duration)}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Grid.ColumnSpan="2"
+                    HorizontalAlignment="Right"
+                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Speed(Point.Speed)}" />
+                <FontIcon
+                    Grid.Row="2"
+                    FontSize="9"
+                    Glyph="&#xF0AD;" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Point.Ascent)}" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    HorizontalAlignment="Right"
+                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Point.Descent)}" />
+                <FontIcon
+                    Grid.Row="2"
+                    Grid.Column="3"
+                    FontSize="9"
+                    Glyph="&#xF0AE;" />
+
+            </Grid>
+
+        </controls:MapControlBorder>
+
+        <StackPanel
+            MaxHeight="50"
+            Orientation="Vertical"
+            Spacing="2">
+            <ui:VisualExtensions.Scale>.7,.7,1</ui:VisualExtensions.Scale>
+            <Border Background="{ThemeResource MapOverlayBackgroundBrush}">
+                <Button Command="{x:Bind Mode=OneTime, Path=CopyCommand}" Content="{ui:SymbolIcon Symbol=Copy}" />
+            </Border>
+            <Border Background="{ThemeResource MapOverlayBackgroundBrush}">
+                <Button Command="{x:Bind Mode=OneTime, Path=DeleteCommand}" Content="{ui:SymbolIcon Symbol=Delete}" />
+            </Border>
+        </StackPanel>
+
+    </StackPanel>
+
+</controls:SelectionValuesControl>

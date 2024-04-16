@@ -147,4 +147,27 @@ public static class Serializer
             return binary;
         }
     }
+
+    public static async Task SerializeAsync(Stream stream, cycloid.WayPoint[] wayPoints)
+    {
+        await JsonSerializer.SerializeAsync(
+            stream, 
+            wayPoints.Select(wayPoint => new WayPoint
+            {
+                Location = new Point { Lat = wayPoint.Location.Latitude, Lon = wayPoint.Location.Longitude },
+                IsDirectRoute = wayPoint.IsDirectRoute,
+                IsFileSplit = wayPoint.IsFileSplit,
+            }).ToArray(), 
+            PoiContext.Default.WayPointArray).ConfigureAwait(false);
+        await stream.FlushAsync().ConfigureAwait(false);
+    }
+
+    public static async Task<cycloid.WayPoint[]> DeserializeAsync(Stream stream)
+    {
+        WayPoint[] wayPoints = await JsonSerializer.DeserializeAsync(stream, PoiContext.Default.WayPointArray);
+
+        return wayPoints
+            .Select(wayPoint => new cycloid.WayPoint(new MapPoint(wayPoint.Location.Lat, wayPoint.Location.Lon), wayPoint.IsDirectRoute, wayPoint.IsFileSplit))
+            .ToArray();
+    }
 }

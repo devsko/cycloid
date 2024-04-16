@@ -16,10 +16,10 @@
 
                     <cycloid:ViewModel x:Name="ViewModel" />
 
-                    <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
+                    <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}" TargetType="AppBarButton">
                         <Setter Property="Width" Value="60" />
                     </Style>
-                    
+
                     <Style x:Key="OnTracksListViewStyle" TargetType="ListView">
                         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
                         <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
@@ -73,7 +73,10 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid ColumnSpacing="3" RowSpacing="3">
+    <Grid
+        Padding="3,0,0,0"
+        ColumnSpacing="3"
+        RowSpacing="3">
         <Grid.RowDefinitions>
             <RowDefinition Height="4*" />
             <RowDefinition />
@@ -122,9 +125,7 @@
                         <KeyboardAccelerator Key="S" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
-                <AppBarButton
-                    Icon="CellPhone"
-                    Label="Export" />
+                <AppBarButton Icon="CellPhone" Label="Export" />
             </StackPanel>
 
             <AutoSuggestBox
@@ -547,6 +548,7 @@
 
             <TextBlock
                 Grid.Row="5"
+                Margin="5,0,0,2"
                 FontSize="11"
                 Text="{x:Bind Mode=OneWay, Path=ViewModel.Status}" />
 

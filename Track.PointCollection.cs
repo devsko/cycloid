@@ -249,6 +249,18 @@ partial class Track
             }
         }
 
+        public async Task<(WayPoint[] WayPoints, TrackPoint.CommonValues[] Starts)> GetSegmentStartsAsync(CancellationToken cancellationToken)
+        {
+            using (await _track.RouteBuilder.ChangeLock.EnterAsync(cancellationToken))
+            {
+                return
+                (
+                    _track.RouteBuilder.Points.ToArray(),
+                    _segments.Select(segment => segment.Start).ToArray()
+                );
+            }
+        }
+
         public IEnumerator<TrackPoint> GetEnumerator()
         {
             foreach ((Segment segment, TrackPoint point, _) in Enumerate())
@@ -257,7 +269,7 @@ partial class Track
             }
         }
 
-        public IEnumerable<(float Distance, float Altitude)> Enumerate(float fromDistance, float toDistance, int step = 1)
+        public IEnumerable<(MapPoint Location, float Distance, float Altitude)> Enumerate(float fromDistance, float toDistance, int step = 1)
         {
             IEnumerator<(Segment Segment, TrackPoint Point, Index index)> enumerator = Enumerate(GetIndex(fromDistance, out _, step)).GetEnumerator();
             if (enumerator.MoveNext())
@@ -271,7 +283,7 @@ partial class Track
                         break;
                     }
 
-                    yield return (distance, point.Altitude);
+                    yield return (point, distance, point.Altitude);
 
                     for (int i = 0; i < step; i++)
                     {

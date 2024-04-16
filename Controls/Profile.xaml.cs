@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using cycloid.Routing;
 using Windows.Foundation;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -306,7 +306,7 @@ public sealed partial class Profile : ViewModelControl,
     private void Root_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
         _isCaptured = Root.CapturePointer(e.Pointer);
-        ViewModel.StartSelection();
+        ViewModel.StartSelection(5 / _horizontalScale);
     }
 
     private void Root_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -318,6 +318,11 @@ public sealed partial class Profile : ViewModelControl,
     {
         if (ViewModel.Track is not null)
         {
+            Window.Current.CoreWindow.PointerCursor =
+                ViewModel.GetHoveredSelectionBorder(5 / _horizontalScale) == null
+                ? new CoreCursor(CoreCursorType.Arrow, 0)
+                : new CoreCursor(CoreCursorType.SizeWestEast, 10);
+
             double x = e.GetCurrentPoint(Root).Position.X;
             if (_isCaptured)
             {
@@ -376,6 +381,7 @@ public sealed partial class Profile : ViewModelControl,
         _setHoverPointThrottle.Clear();
         ViewModel.HoverPoint = TrackPoint.Invalid;
         HoverPointValues.Enabled = false;
+        Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
     }
 
     private void Root_PointerCaptureLost(object _1, PointerRoutedEventArgs _2)
