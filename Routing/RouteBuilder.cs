@@ -32,6 +32,8 @@ public class CalculationFinished(RouteSection section, RouteResult result) : Cal
     public RouteResult Result => result;
 }
 
+public class RouteChanging();
+
 public class RouteChanged(bool initialization)
 {
     public bool Initialization => initialization;

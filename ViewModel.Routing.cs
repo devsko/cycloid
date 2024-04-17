@@ -23,6 +23,7 @@ public class DragWayPointEnded();
 partial class ViewModel :
     IRecipient<CalculationStarting>,
     IRecipient<CalculationFinished>,
+    IRecipient<RouteChanging>,
     IRecipient<RouteChanged>,
     IRecipient<FileSplitChanged>
 {
@@ -246,6 +247,7 @@ partial class ViewModel :
         {
             StrongReferenceMessenger.Default.Register<CalculationStarting>(this);
             StrongReferenceMessenger.Default.Register<CalculationFinished>(this);
+            StrongReferenceMessenger.Default.Register<RouteChanging>(this);
             StrongReferenceMessenger.Default.Register<RouteChanged>(this);
             StrongReferenceMessenger.Default.Register<FileSplitChanged>(this);
         }
@@ -257,6 +259,7 @@ partial class ViewModel :
         {
             StrongReferenceMessenger.Default.Unregister<CalculationStarting>(this);
             StrongReferenceMessenger.Default.Unregister<CalculationFinished>(this);
+            StrongReferenceMessenger.Default.Unregister<RouteChanging>(this);
             StrongReferenceMessenger.Default.Unregister<RouteChanged>(this);
             StrongReferenceMessenger.Default.Unregister<FileSplitChanged>(this);
         }
@@ -270,6 +273,11 @@ partial class ViewModel :
     void IRecipient<CalculationFinished>.Receive(CalculationFinished message)
     {
         TrackCalculationCounter--;
+    }
+
+    void IRecipient<RouteChanging>.Receive(RouteChanging message)
+    {
+        CurrentSelection = Selection.Invalid;
     }
 
     void IRecipient<RouteChanged>.Receive(RouteChanged message)

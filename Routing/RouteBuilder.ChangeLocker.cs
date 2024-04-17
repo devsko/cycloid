@@ -29,6 +29,8 @@ partial class RouteBuilder
 
         public async Task<Releaser> EnterCalculationAsync(CancellationToken cancellationToken = default)
         {
+            StrongReferenceMessenger.Default.Send(new RouteChanging());
+
             if (_runningCalculationCounter == 0)
             {
                 await _semaphore.WaitAsync(cancellationToken);
