@@ -107,8 +107,7 @@ partial class ViewModel
         }
     }
 
-    private bool CanSaveTrackAs()
-        => Track is not null;
+    private bool CanSaveTrackAs() => Track is not null;
 
     [RelayCommand]
     public async Task NewTrackAsync()

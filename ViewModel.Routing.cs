@@ -29,6 +29,11 @@ partial class ViewModel :
     IRecipient<FileSplitChanged>
 {
     private int _trackCalculationCounter;
+    private WayPoint _hoveredWayPoint;
+    private RouteSection _hoveredSection;
+    private WayPoint _capturedWayPoint;
+    private MapPoint _capturedWayPointOriginalLocation;
+
     public int TrackCalculationCounter
     {
         get => _trackCalculationCounter;
@@ -42,22 +47,17 @@ partial class ViewModel :
         }
     }
 
-    private WayPoint _hoveredWayPoint;
     public WayPoint HoveredWayPoint
     {
         get => _hoveredWayPoint;
         set => SetProperty(ref _hoveredWayPoint, value);
     }
 
-    private RouteSection _hoveredSection;
     public RouteSection HoveredSection
     {
         get => _hoveredSection;
         set => SetProperty(ref _hoveredSection, value);
     }
-
-    private WayPoint _capturedWayPoint;
-    private MapPoint _capturedWayPointOriginalLocation;
 
     public bool TrackIsCalculating => TrackCalculationCounter > 0;
 

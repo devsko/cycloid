@@ -9,9 +9,9 @@ using Windows.UI.Xaml.Controls.Maps;
 
 namespace cycloid;
 
-public class PoisVisibleChanged(object sender, bool oldValue, bool newValue) : PropertyChangedMessage<bool>(sender, null, oldValue, newValue);
+public class PoisVisibleChanged(bool value) : ValueChangedMessage<bool>(value);
 
-public class InfoVisibleChanged(object sender, bool oldValue, bool newValue) : PropertyChangedMessage<bool>(sender, null, oldValue, newValue);
+public class InfoVisibleChanged(bool value) : ValueChangedMessage<bool>(value);
 
 public readonly record struct MapStyleAndColor(string Name, MapStyleSheet StyleSheet, bool Osm = false);
 
@@ -28,91 +28,50 @@ partial class ViewModel
 
     public const double MinInfoZoomLevel = 13;
 
+    private readonly Dictionary<InfoCategory, bool> _poisCategories = InfoCategory.All.ToDictionary(category => category, _ => true);
+    private readonly Dictionary<InfoCategory, bool> _infoCategories = InfoCategory.All.ToDictionary(category => category, _ => true);
     private MapStyleAndColor _mapStyleAndColor = MapStyleAndColors[0];
+    private bool _heatmapVisible;
+    private bool _trackVisible = true;
+    private bool _poisShouldVisible = true;
+    private bool _infoShouldVisible = true;
+    private bool _poisAreLoading;
+    private bool _infoIsLoading;
+    private double _mapZoomLevel;
+
     public MapStyleAndColor MapStyleAndColor
     {
         get => _mapStyleAndColor;
         set => SetProperty(ref _mapStyleAndColor, value);
     }
 
-    private bool _heatmapVisible;
     public bool HeatmapVisible
     {
         get => _heatmapVisible;
         set => SetProperty(ref _heatmapVisible, value);
     }
 
-    private bool _trackVisible = true;
     public bool TrackVisible
     {
         get => _trackVisible;
         set => SetProperty(ref _trackVisible, value);
     }
 
-    private bool _poisShouldVisible = true;
+    public bool PoisEnabled => Mode != Modes.Edit;
+
     public bool PoisShouldVisible
     {
         get => _poisShouldVisible;
         set
         {
-            bool oldValue = _poisShouldVisible;
             if (SetProperty(ref _poisShouldVisible, value))
             {
                 OnPropertyChanged(nameof(PoisVisible));
 
-                StrongReferenceMessenger.Default.Send(new PoisVisibleChanged(this, oldValue, value));
+                StrongReferenceMessenger.Default.Send(new PoisVisibleChanged(value));
             }
         }
     }
-
-    private bool _infoShouldVisible = true;
-    public bool InfoShouldVisible
-    {
-        get => _infoShouldVisible;
-        set
-        {
-            bool oldValue = _infoShouldVisible;
-            if (SetProperty(ref _infoShouldVisible, value))
-            {
-                OnPropertyChanged(nameof(InfoVisible));
-
-                StrongReferenceMessenger.Default.Send(new InfoVisibleChanged(this, oldValue, value));
-            }
-        }
-    }
-
-    private bool _poisAreLoading;
-    public bool PoisAreLoading
-    {
-        get => _poisAreLoading;
-        set => SetProperty(ref _poisAreLoading, value);
-    }
-
-    private bool _infoIsLoading;
-    public bool InfoIsLoading
-    {
-        get => _infoIsLoading;
-        set => SetProperty(ref _infoIsLoading, value);
-    }
-
-    private double _mapZoomLevel;
-    public double MapZoomLevel
-    {
-        get => _mapZoomLevel;
-        set
-        {
-            if (SetProperty(ref _mapZoomLevel, value))
-            {
-                OnPropertyChanged(nameof(InfoEnabled));
-                OnPropertyChanged(nameof(InfoVisible));
-            }
-        }
-    }
-
-    private readonly Dictionary<InfoCategory, bool> _poisCategories = InfoCategory.All.ToDictionary(category => category, _ => true);
-    private readonly Dictionary<InfoCategory, bool> _infoCategories = InfoCategory.All.ToDictionary(category => category, _ => true);
-
-    public bool PoisEnabled => Mode != Modes.Edit;
 
     public bool PoisVisible
     {
@@ -128,7 +87,27 @@ partial class ViewModel
         }
     }
 
+    public bool PoisAreLoading
+    {
+        get => _poisAreLoading;
+        set => SetProperty(ref _poisAreLoading, value);
+    }
+
     public bool InfoEnabled => MapZoomLevel >= MinInfoZoomLevel;
+
+    public bool InfoShouldVisible
+    {
+        get => _infoShouldVisible;
+        set
+        {
+            if (SetProperty(ref _infoShouldVisible, value))
+            {
+                OnPropertyChanged(nameof(InfoVisible));
+
+                StrongReferenceMessenger.Default.Send(new InfoVisibleChanged(value));
+            }
+        }
+    }
 
     public bool InfoVisible
     {
@@ -141,6 +120,25 @@ partial class ViewModel
             }
             // Notify property changed again to convinvce the toggle button
             OnPropertyChanged(nameof(InfoVisible));
+        }
+    }
+
+    public bool InfoIsLoading
+    {
+        get => _infoIsLoading;
+        set => SetProperty(ref _infoIsLoading, value);
+    }
+
+    public double MapZoomLevel
+    {
+        get => _mapZoomLevel;
+        set
+        {
+            if (SetProperty(ref _mapZoomLevel, value))
+            {
+                OnPropertyChanged(nameof(InfoEnabled));
+                OnPropertyChanged(nameof(InfoVisible));
+            }
         }
     }
 

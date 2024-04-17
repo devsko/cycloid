@@ -13,6 +13,14 @@ public class CompareSessionChanged(object sender, Track.CompareSession oldValue,
 partial class ViewModel
 {
     private Track.CompareSession _compareSession;
+    private bool _recalculationComplete;
+    private int _downhillCost;
+    private float _downhillCutoff;
+    private int _uphillCost;
+    private float _uphillCutoff;
+    private int _bikerPower;
+    private Routing.Profile _originalProfile;
+
     public Track.CompareSession CompareSession
     {
         get => _compareSession;
@@ -41,7 +49,6 @@ partial class ViewModel
         }
     }
 
-    private bool _recalculationComplete;
     public bool RecalculationComplete
     {
         get => _recalculationComplete;
@@ -57,52 +64,45 @@ partial class ViewModel
         }
     }
 
-    private int _downhillCost;
     public int DownhillCost
     {
         get => _downhillCost;
         set => SetProperty(ref _downhillCost, value);
     }
 
-    private float _downhillCutoff;
     public float DownhillCutoff
     {
         get => _downhillCutoff;
         set => SetProperty(ref _downhillCutoff, value);
     }
 
-    private int _uphillCost;
     public int UphillCost
     {
         get => _uphillCost;
         set => SetProperty(ref _uphillCost, value);
     }
 
-    private float _uphillCutoff;
     public float UphillCutoff
     {
         get => _uphillCutoff;
         set => SetProperty(ref _uphillCutoff, value);
     }
 
-    private int _bikerPower;
     public int BikerPower
     {
         get => _bikerPower;
         set => SetProperty(ref _bikerPower, value);
     }
 
-    private Routing.Profile _originalProfile;
-
-    public string CompareSessionState => 
-        CompareSession is null 
-        ? "" 
-        : (CompareSession.Differences.Count) switch 
+    public string CompareSessionState =>
+        CompareSession is null
+        ? ""
+        : (CompareSession.Differences.Count) switch
         {
             0 => "No differences",
             1 => "1 difference",
             int n => $"{n} differences",
-        } + 
+        } +
         (RecalculationComplete ? "" : $" ({CompareSession.OriginalSegmentsCount - TrackCalculationCounter} / {CompareSession.OriginalSegmentsCount})");
 
     public string RecalculateCommandName => RecalculationComplete ? "Accept" : "Recalculate";

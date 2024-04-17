@@ -9,8 +9,8 @@ namespace cycloid;
 partial class ViewModel
 {
     private readonly AsyncThrottle<TrackPoint, ViewModel> _getAddressThrottle = new(GetAddressAsync, TimeSpan.FromSeconds(5));
-
     private string _currentPointAddress;
+
     public string CurrentPointAddress
     {
         get => _currentPointAddress;

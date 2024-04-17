@@ -211,7 +211,7 @@ public sealed partial class MainPage : Page,
 
     void IRecipient<OnTrackAdded>.Receive(OnTrackAdded message)
     {
-        Debug.WriteLine($"OnTrackAdded {message.OnTrack}");
-        _lastAddedOnTrack = message.OnTrack;
+        Debug.WriteLine($"OnTrackAdded {message.Value}");
+        _lastAddedOnTrack = message.Value;
     }
 }

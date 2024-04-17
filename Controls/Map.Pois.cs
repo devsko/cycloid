@@ -137,9 +137,9 @@ partial class Map :
 
     void IRecipient<HoverInfoChanged>.Receive(HoverInfoChanged message)
     {
-        if (message.NewValue.IsValid)
+        if (message.Value.IsValid)
         {
-            string name = message.NewValue.Name;
+            string name = message.Value.Name;
             if (name.Length > 14)
             {
                 name = name[..14] + "... ";
@@ -148,10 +148,10 @@ partial class Map :
             {
                 name += " ";
             }
-            ConvertInfoMenuItem.Text = $"Add {name}as {message.NewValue.Category.Name.ToLower()} point ({message.NewValue.Type})";
+            ConvertInfoMenuItem.Text = $"Add {name}as {message.Value.Category.Name.ToLower()} point ({message.Value.Type})";
         }
 
-        Visibility visibility = message.NewValue.IsValid ? Visibility.Collapsed : Visibility.Visible;
+        Visibility visibility = message.Value.IsValid ? Visibility.Collapsed : Visibility.Visible;
         foreach (MenuFlyoutSubItem menuItem in MapOnTrackMenu.Items.OfType<MenuFlyoutSubItem>())
         {
             menuItem.Visibility = visibility;

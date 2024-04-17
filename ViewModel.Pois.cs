@@ -13,14 +13,11 @@ using Microsoft.VisualStudio.Threading;
 
 namespace cycloid;
 
-public class OnTrackAdded(OnTrack onTrack)
-{
-    public OnTrack OnTrack => onTrack;
-}
+public class OnTrackAdded(OnTrack value) : ValueChangedMessage<OnTrack>(value);
 
-public class CurrentSectionChanged(object sender, OnTrack oldValue, OnTrack newValue) : PropertyChangedMessage<OnTrack>(sender, null, oldValue, newValue);
+public class CurrentSectionChanged(OnTrack value) : ValueChangedMessage<OnTrack>(value);
 
-public class HoverInfoChanged(object sender, InfoPoint oldValue, InfoPoint newValue) : PropertyChangedMessage<InfoPoint>(sender, null, oldValue, newValue);
+public class HoverInfoChanged(InfoPoint value) : ValueChangedMessage<InfoPoint>(value);
 
 public class InfoCategoryVisibleChanged(object sender, bool pois, InfoCategory category, bool oldValue, bool newValue) : PropertyChangedMessage<bool>(sender, null, oldValue, newValue)
 {
@@ -37,22 +34,27 @@ public class PointOfInterestCommandParameter
 partial class ViewModel
 {
     private OnTrack _currentSection;
+    private OnTrack _currentPoi;
+    private InfoPoint _hoverInfo = InfoPoint.Invalid;
+
+    public ObservableCollection<OnTrack> Sections { get; } = [];
+
+    public ObservableCollection<OnTrack> Points { get; } = [];
+
     public OnTrack CurrentSection
     {
         get => _currentSection;
         set
         {
-            OnTrack oldValue = _currentSection;
             if (SetProperty(ref _currentSection, value))
             {
                 RemoveCurrentSectionCommand.NotifyCanExecuteChanged();
 
-                StrongReferenceMessenger.Default.Send(new CurrentSectionChanged(this, oldValue, value));
+                StrongReferenceMessenger.Default.Send(new CurrentSectionChanged(value));
             }
         }
     }
 
-    private OnTrack _currentPoi;
     public OnTrack CurrentPoi
     {
         get => _currentPoi;
@@ -66,23 +68,17 @@ partial class ViewModel
         }
     }
 
-    private InfoPoint _hoverInfo = InfoPoint.Invalid;
     public InfoPoint HoverInfo
     {
         get => _hoverInfo;
         set
         {
-            InfoPoint oldValue = _hoverInfo;
             if (SetProperty(ref _hoverInfo, value))
             {
-                StrongReferenceMessenger.Default.Send(new HoverInfoChanged(this, oldValue, value));
+                StrongReferenceMessenger.Default.Send(new HoverInfoChanged(value));
             }
         }
     }
-
-    public ObservableCollection<OnTrack> Sections { get; } = [];
-
-    public ObservableCollection<OnTrack> Points { get; } = [];
 
     public int OnTrackCount => Sections.Count + Points.Count;
 

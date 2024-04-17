@@ -349,7 +349,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
     void IRecipient<InfoVisibleChanged>.Receive(InfoVisibleChanged message)
     {
-        if (message.NewValue)
+        if (message.Value)
         {
             _loadInfosThrottle.Next(null, this);
         }

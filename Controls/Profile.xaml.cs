@@ -465,7 +465,7 @@ public sealed partial class Profile : ViewModelControl,
         EnsureSelection();
     }
 
-    void IRecipient<CurrentSectionChanged>.Receive(CurrentSectionChanged message)
+    void IRecipient<CurrentSectionChanged>.Receive(CurrentSectionChanged _)
     {
         ResetSection();
         EnsureSection();
