@@ -16,11 +16,9 @@ public class DragNewWayPointStarting(RouteSection section)
     public RouteSection Section => section;
 }
 
-public class DragWayPointStarted
-{ }
+public class DragWayPointStarted();
 
-public class DragWayPointEnded
-{ }
+public class DragWayPointEnded();
 
 partial class ViewModel :
     IRecipient<CalculationStarting>,
@@ -50,13 +48,50 @@ partial class ViewModel :
     public WayPoint HoveredWayPoint
     {
         get => _hoveredWayPoint;
-        set => SetProperty(ref _hoveredWayPoint, value);
+        set
+        {
+            if (SetProperty(ref _hoveredWayPoint, value))
+            {
+                if (value is null)
+                {
+                    HoverPoint = TrackPoint.Invalid;
+                }
+                else
+                {
+                    (RouteSection to, RouteSection from) = Track.RouteBuilder.GetSections(value);
+                    if (from is null)
+                    {
+                        HoverPoint = Track.Points.Last();
+                    }
+                    else
+                    {
+                        HoverPoint = Track.Points[new Track.Index(Track.RouteBuilder.GetSectionIndex(from), 0)];
+                    }
+                }
+            }
+        }
     }
 
     public RouteSection HoveredSection
     {
         get => _hoveredSection;
-        set => SetProperty(ref _hoveredSection, value);
+        set
+        {
+            if (SetProperty(ref _hoveredSection, value))
+            {
+                if (value is null)
+                {
+                    HoverPoint = TrackPoint.Invalid;
+                }
+                else
+                {
+                    int index = Track.RouteBuilder.GetSectionIndex(value);
+                    int pointCount = Track.Points.GetPointCount(index);
+
+                    HoverPoint = Track.Points[new Track.Index(index, pointCount / 2)];
+                }
+            }
+        }
     }
 
     public bool TrackIsCalculating => TrackCalculationCounter > 0;

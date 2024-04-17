@@ -36,7 +36,7 @@ public partial class ViewModel : ObservableObject,
     private bool _trackIsInitialized;
     private TrackPoint _currentPoint = TrackPoint.Invalid;
     private TrackPoint _hoverPoint = TrackPoint.Invalid;
-    private bool _mapHoverPointValuesEnabled;
+    private bool _profileHoverPointValuesEnabled;
     private string _status;
 
     public InfoCache Infos { get; } = new();
@@ -69,6 +69,7 @@ public partial class ViewModel : ObservableObject,
                 if (isEditMode != (oldValue == Modes.Edit))
                 {
                     OnPropertyChanged(nameof(IsEditMode));
+                    OnPropertyChanged(nameof(MapHoverPointVisible));
                     OnPropertyChanged(nameof(PoisEnabled));
                     OnPropertyChanged(nameof(PoisVisible));
 
@@ -77,10 +78,12 @@ public partial class ViewModel : ObservableObject,
                     if (isEditMode)
                     {
                         RemoveAllOnTrackPoints();
+                        MapHoverPointValuesEnabled = false;
                     }
                     else
                     {
                         CreateAllOnTrackPoints();
+                        MapHoverPointValuesEnabled = true;
                     }
                 }
 
@@ -161,27 +164,32 @@ public partial class ViewModel : ObservableObject,
         {
             if (SetProperty(ref _hoverPoint, value))
             {
+                OnPropertyChanged(nameof(MapHoverPointVisible));
+
                 StrongReferenceMessenger.Default.Send(new HoverPointChanged(value));
+            }
+        }
+    }
+
+    public bool MapHoverPointVisible => HoverPoint.IsValid && (!IsEditMode || ProfileHoverPointValuesEnabled);
+
+    public bool ProfileHoverPointValuesEnabled
+    {
+        get => _profileHoverPointValuesEnabled;
+        set
+        {
+            if (SetProperty(ref _profileHoverPointValuesEnabled, value))
+            {
+                OnPropertyChanged(nameof(MapHoverPointValuesEnabled));
+                OnPropertyChanged(nameof(MapHoverPointVisible));
             }
         }
     }
 
     public bool MapHoverPointValuesEnabled
     {
-        get => _mapHoverPointValuesEnabled;
-        set
-        {
-            if (SetProperty(ref _mapHoverPointValuesEnabled, value))
-            {
-                OnPropertyChanged(nameof(ProfileHoverPointValuesEnabled));
-            }
-        }
-    }
-
-    public bool ProfileHoverPointValuesEnabled
-    {
-        get => !MapHoverPointValuesEnabled;
-        set => MapHoverPointValuesEnabled = !value;
+        get => !ProfileHoverPointValuesEnabled && !IsEditMode;
+        set => ProfileHoverPointValuesEnabled = !value;
     }
 
     public string Status

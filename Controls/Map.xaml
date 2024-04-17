@@ -210,7 +210,7 @@
             maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.HoverPoint)}"
             maps:MapControl.NormalizedAnchorPoint=".5 .5"
             UseLayoutRounding="False"
-            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.HoverPoint)}">
+            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.MapHoverPointVisible)}">
             <Grid>
                 <Ellipse
                     Width="15"

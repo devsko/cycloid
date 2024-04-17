@@ -72,32 +72,39 @@ partial class ViewModel
     [RelayCommand(CanExecute = nameof(CanPasteWayPoints))]
     public async Task PasteWayPointsAtStartAsync(bool reversed)
     {
-        (IEnumerable<WayPoint> wayPoints, int length) = await GetWayPointsFromClipboardAsync(reversed);
+        WayPoint[] wayPoints = await GetWayPointsFromClipboardAsync(reversed);
         await Track.RouteBuilder.InsertPointsAsync(wayPoints, null);
 
-        Status = $"{length} way points pasted.";
+        Status = $"{wayPoints.Length} way points pasted.";
     }
 
     [RelayCommand(CanExecute = nameof(CanPasteWayPoints))]
     public async Task PasteWayPointsAsync(bool reversed)
     {
-        (IEnumerable<WayPoint> wayPoints, int length) = await GetWayPointsFromClipboardAsync(reversed);
+        WayPoint[] wayPoints = await GetWayPointsFromClipboardAsync(reversed);
         await Track.RouteBuilder.InsertPointsAsync(wayPoints, HoveredWayPoint);
 
-        Status = $"{length} way points pasted.";
+        Status = $"{wayPoints.Length} way points pasted.";
     }
 
-    private async Task<(IEnumerable<WayPoint> WayPoints, int Length)> GetWayPointsFromClipboardAsync(bool reversed)
+    private async Task<WayPoint[]> GetWayPointsFromClipboardAsync(bool reversed)
     {
         IRandomAccessStream stream = await Clipboard.GetContent().GetDataAsync("cycloid/route") as IRandomAccessStream;
         WayPoint[] wayPoints = await Serializer.DeserializeAsync(stream.GetInputStreamAt(0).AsStreamForRead());
-        IEnumerable<WayPoint> wp = wayPoints;
         if (reversed)
         {
-            wp = wp.Reverse();
+            Array.Reverse(wayPoints);
+            for (int i = 0; i < wayPoints.Length; i++)
+            {
+                if (wayPoints[i].IsDirectRoute)
+                {
+                    wayPoints[i].IsDirectRoute = false;
+                    wayPoints[i - 1].IsDirectRoute = true;
+                }
+            }
         }
 
-        return (wp, wayPoints.Length);
+        return wayPoints;
     }
 
     private bool CanPasteWayPoints()

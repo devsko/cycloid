@@ -79,6 +79,17 @@ partial class Track
             }
         }
 
+        public int GetPointCount(int segmentIndex)
+        {
+            int count = _segments[segmentIndex].Points.Length;
+            if (segmentIndex < _segments.Count - 1)
+            {
+                count--;
+            }
+
+            return count;
+        }
+
         public Index LastIndex()
         {
             int segmentIndex = _segments.Count - 1;
