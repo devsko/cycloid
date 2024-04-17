@@ -67,9 +67,9 @@ partial class ViewModel
                     "strokeWidthScale": 6
                   },
                   "Selection": {
-                    "fillColor": "#C0FFFF00",
-                    "strokeColor": "#C00000FF",
-                    "strokeWidthScale": 10
+                    "fillColor": "#FFFF1010",
+                    "strokeColor": "#FFFF1010",
+                    "strokeWidthScale": 8
                   }
                 },
                 "Info": {

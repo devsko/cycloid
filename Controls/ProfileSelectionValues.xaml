@@ -10,7 +10,7 @@
     IsHitTestVisible="True"
     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(IsVisible)}">
 
-    <StackPanel Orientation="Horizontal" Spacing="4">
+    <StackPanel Orientation="Horizontal" Spacing="2">
 
         <controls:MapControlBorder IsHitTestVisible="False">
 
@@ -75,14 +75,15 @@
         </controls:MapControlBorder>
 
         <StackPanel
-            MaxHeight="50"
+            Height="57.6"
             Orientation="Vertical"
-            Spacing="2">
-            <ui:VisualExtensions.Scale>.7,.7,1</ui:VisualExtensions.Scale>
-            <Border Background="{ThemeResource MapOverlayBackgroundBrush}">
+            Spacing="2"
+            Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(EnableCommands)}">
+            <ui:VisualExtensions.Scale>.8,.8,1</ui:VisualExtensions.Scale>
+            <Border Background="{ThemeResource MapOverlayBackgroundBrush}" CornerRadius="5">
                 <Button Command="{x:Bind Mode=OneTime, Path=CopyCommand}" Content="{ui:SymbolIcon Symbol=Copy}" />
             </Border>
-            <Border Background="{ThemeResource MapOverlayBackgroundBrush}">
+            <Border Background="{ThemeResource MapOverlayBackgroundBrush}" CornerRadius="5">
                 <Button Command="{x:Bind Mode=OneTime, Path=DeleteCommand}" Content="{ui:SymbolIcon Symbol=Delete}" />
             </Border>
         </StackPanel>

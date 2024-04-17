@@ -52,6 +52,12 @@ public partial class ViewModel : ObservableObject,
                 bool isEditMode = value == Modes.Edit;
                 if (isEditMode != (oldValue == Modes.Edit))
                 {
+                    OnPropertyChanged(nameof(IsEditMode));
+                    OnPropertyChanged(nameof(PoisEnabled));
+                    OnPropertyChanged(nameof(PoisVisible));
+
+                    RecalculateCommand.NotifyCanExecuteChanged();
+
                     if (isEditMode)
                     {
                         RemoveAllOnTrackPoints();
@@ -62,10 +68,6 @@ public partial class ViewModel : ObservableObject,
                     }
                 }
 
-                OnPropertyChanged(nameof(PoisEnabled));
-                OnPropertyChanged(nameof(PoisVisible));
-
-                RecalculateCommand.NotifyCanExecuteChanged();
                 AddPointOfInterestCommand.NotifyCanExecuteChanged();
                 RemoveCurrentSectionCommand.NotifyCanExecuteChanged();
 
@@ -88,6 +90,7 @@ public partial class ViewModel : ObservableObject,
                 TrackIsInitialized = false;
                 CurrentPoint = TrackPoint.Invalid;
                 HoverPoint = TrackPoint.Invalid;
+                CurrentSelection = Selection.Invalid;
 
                 ConnectRouting(value);
 
@@ -200,6 +203,8 @@ public partial class ViewModel : ObservableObject,
 
         StrongReferenceMessenger.Default.Register<TrackComplete>(this);
     }
+
+    public bool IsEditMode => Mode == Modes.Edit;
 
     public bool ProfileHoverPointValuesEnabled
     {

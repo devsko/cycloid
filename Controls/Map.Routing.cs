@@ -416,16 +416,23 @@ partial class Map :
 
     void IRecipient<SelectionChanged>.Receive(SelectionChanged message)
     {
-        if (!message.Value.IsValid)
+        _routingLayer.MapElements.Remove(_selectionLine);
+        if (message.Value.IsValid)
         {
-            _selectionLine.Path = new Geopath([new BasicGeoposition()]);
-        }
-        else
-        {
-            _selectionLine.Path = new Geopath(
-                ViewModel.Track.Points
+            BasicGeoposition[] positions = ViewModel.Track.Points
                 .Enumerate(message.Value.Start.Distance, message.Value.End.Distance)
-                .Select(p => (BasicGeoposition)p.Location));
+                .Select(p => (BasicGeoposition)p.Location)
+                .ToArray();
+            if (positions.Length > 0)
+            {
+                _selectionLine = new MapPolyline
+                {
+                    Path = new Geopath(positions),
+                    MapStyleSheetEntry = "Routing.Selection",
+                    ZIndex = -100,
+                };
+                _routingLayer.MapElements.Add(_selectionLine);
+            }
         }
     }
 

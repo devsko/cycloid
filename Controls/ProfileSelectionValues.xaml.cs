@@ -5,6 +5,14 @@ namespace cycloid.Controls;
 
 public sealed partial class ProfileSelectionValues : SelectionValuesControl
 {
+    public bool EnableCommands
+    {
+        get => (bool)GetValue(EnableCommandsProperty);
+        set => SetValue(EnableCommandsProperty, value);
+    }
+
+    public static readonly DependencyProperty EnableCommandsProperty = DependencyProperty.Register(nameof(EnableCommands), typeof(bool), typeof(ProfileSelectionValues), new PropertyMetadata(true));
+
     public ICommand CopyCommand
     {
         get => (ICommand)GetValue(CopyCommandProperty);
