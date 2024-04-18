@@ -5,7 +5,7 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
-    xmlns:ui="using:CommunityToolkit.WinUI" 
+    xmlns:ui="using:CommunityToolkit.WinUI"
     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotNullOrEmpty(Address)}">
 
     <Grid>

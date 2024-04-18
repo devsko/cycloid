@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using cycloid.Controls;
 using cycloid.Info;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Devices.Geolocation;
@@ -22,7 +23,8 @@ namespace cycloid;
 
 public sealed partial class MainPage : Page,
     IRecipient<FileChanged>,
-    IRecipient<OnTrackAdded>
+    IRecipient<OnTrackAdded>,
+    IRecipient<RequestPasteSelectionDetails>
 {
     private IStorageFile _initialFile;
     private bool _ignoreTextChange;
@@ -47,6 +49,7 @@ public sealed partial class MainPage : Page,
 
         StrongReferenceMessenger.Default.Register<FileChanged>(this);
         StrongReferenceMessenger.Default.Register<OnTrackAdded>(this);
+        StrongReferenceMessenger.Default.Register<RequestPasteSelectionDetails>(this);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -213,5 +216,10 @@ public sealed partial class MainPage : Page,
     {
         Debug.WriteLine($"OnTrackAdded {message.Value}");
         _lastAddedOnTrack = message.Value;
+    }
+
+    void IRecipient<RequestPasteSelectionDetails>.Receive(RequestPasteSelectionDetails message)
+    {
+        message.Reply(new PasteSelectionDialog(message).GetResultAsync());
     }
 }

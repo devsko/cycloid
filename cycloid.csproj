@@ -67,6 +67,9 @@
     <Compile Include="Controls\Map.CompareSession.cs" />
     <Compile Include="Controls\Map.Pois.cs" />
     <Compile Include="Controls\Map.Routing.cs" />
+    <Compile Include="Controls\PasteSelectionDialog.xaml.cs">
+      <DependentUpon>PasteSelectionDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ProfileSelectionValues.xaml.cs">
       <DependentUpon>ProfileSelectionValues.xaml</DependentUpon>
     </Compile>
@@ -81,6 +84,7 @@
     <Compile Include="PointOfInterest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Selection.cs" />
+    <Compile Include="Serialization\TrackContext.cs" />
     <Compile Include="Track.Index.cs" />
     <Compile Include="Track.CompareSession.cs" />
     <Compile Include="Controls\Bing.xaml.cs">
@@ -134,7 +138,7 @@
     <Compile Include="External\Strava.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Serialization\Serializer.cs" />
-    <Compile Include="Serialization\TrackFile.cs" />
+    <Compile Include="Serialization\Track.cs" />
     <Compile Include="Throttle.cs" />
     <Compile Include="Track.cs" />
     <Compile Include="Convert.cs" />
@@ -201,6 +205,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\MapHoverPointValues.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\PasteSelectionDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

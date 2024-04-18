@@ -167,7 +167,7 @@ partial class ViewModel
 
     private void CreateAllOnTrackPoints()
     {
-        if (Mode == Modes.Edit)
+        if (Mode == Modes.Edit || Track.Points.Count == 0)
         {
             return;
         }

@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using cycloid.Serizalization;
+using Microsoft.VisualStudio.Threading;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
@@ -152,17 +153,31 @@ partial class ViewModel
         {
             _saveTrackCts?.Cancel();
             _saveTrackCts = new CancellationTokenSource();
+            CancellationToken cancellationToken = _saveTrackCts.Token;
             try
             {
-                await _saveTrackSemaphore.WaitAsync(_saveTrackCts.Token);
+                await _saveTrackSemaphore.WaitAsync(cancellationToken);
 
                 Stopwatch watch = Stopwatch.StartNew();
 
-                await Serializer.SaveAsync(Track, _saveTrackCts.Token);
+                await SaveAsync();
 
                 Status = $"{Track.Name} saved ({watch.ElapsedMilliseconds} ms) {++_saveCounter}";
 
                 StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", Track.File);
+
+                async Task SaveAsync()
+                {
+                    await TaskScheduler.Default;
+
+                    StorageFile tempFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("current", CreationCollisionOption.ReplaceExisting);
+                    using (Stream stream = await tempFile.OpenStreamForWriteAsync().ConfigureAwait(false))
+                    {
+                        await Serializer.SerializeAsync(stream, Track, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    await tempFile.CopyAndReplaceAsync(Track.File);
+                }
             }
             catch (OperationCanceledException)
             { }
@@ -176,16 +191,27 @@ partial class ViewModel
     private async Task LoadTrackFileAsync(IStorageFile file)
     {
         Track = new Track(file);
-        
+
         StrongReferenceMessenger.Default.Send(new FileChanged(file));
 
         Stopwatch watch = Stopwatch.StartNew();
 
-        await Serializer.LoadAsync(Track);
+        await LoadAsync();
+
+        Status = $"{Track.Name} opened ({watch.ElapsedMilliseconds} ms)";
 
         StrongReferenceMessenger.Default.Send(new TrackComplete(false));
 
-        Status = $"{Track.Name} opened ({watch.ElapsedMilliseconds} ms)";
+        async Task LoadAsync()
+        {
+            SynchronizationContext ui = SynchronizationContext.Current;
+            await TaskScheduler.Default;
+
+            Stream stream = await Track.File.OpenStreamForReadAsync().ConfigureAwait(false);
+            {
+                await Serializer.LoadAsync(stream, Track, ui).ConfigureAwait(false);
+            }
+        }
     }
 
     private async Task ShowFileAlreadyOpenAsync(IStorageFile file)

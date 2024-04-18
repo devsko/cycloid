@@ -14,9 +14,30 @@ using Windows.Storage.Streams;
 namespace cycloid;
 
 public class SelectionChanged(Selection value) : ValueChangedMessage<Selection>(value);
+public class RequestPasteSelectionDetails(string sourceTrack, string startLocation, string endLocation, WayPoint[] wayPoints, WayPoint pasteAt) : AsyncRequestMessage<PasteSelectionDetails>()
+{
+    public string SourceTrack { get; } = sourceTrack;
+
+    public string StartLocation { get; } = startLocation;
+
+    public string EndLocation { get; } = endLocation;
+
+    public int WayPointCount { get; } = wayPoints.Length;
+
+    public WayPoint PasteAt { get; } = pasteAt;
+}
+
+public class PasteSelectionDetails
+{
+    public bool Reverse { get; set; }
+
+    public bool AtStartOrBefore { get; set; }
+}
 
 partial class ViewModel
 {
+    private const string DataFormat = "cycloid/route";
+
     private Selection _currentSelection = Selection.Invalid;
     private TrackPoint _selectionCapture = TrackPoint.Invalid;
 
@@ -56,42 +77,59 @@ partial class ViewModel
             return;
         }
 
+        PointOfInterest[] pointsOfInterest = 
+            Sections
+            .Concat(Points)
+            .Where(poi => !poi.IsOffTrack && poi.TrackPoint.Distance >= CurrentSelection.Start.Distance && poi.TrackPoint.Distance <= CurrentSelection.End.Distance)
+            .Select(poi => poi.PointOfInterest)
+            .ToHashSet()
+            .ToArray();
+
         InMemoryRandomAccessStream stream = new();
-        await Serializer.SerializeAsync(stream.GetOutputStreamAt(0).AsStreamForWrite(), wayPoints);
-        DataPackage data = new() { RequestedOperation = DataPackageOperation.Copy };
-        data.SetData("cycloid/route", stream);
-        data.SetText($"{wayPoints.Length} cycloid waypoints\r\n{await GetAddressAsync(new Geopoint(wayPoints[0].Location), shorter: true)} - {await GetAddressAsync(new Geopoint(wayPoints[^1].Location), shorter: true)}");
-        Clipboard.SetContent(data);
+        var output = stream.GetOutputStreamAt(0).AsStreamForWrite();
+        await Serializer.SerializeAsync(
+            output, 
+            Track.File.Name, 
+            await GetAddressAsync(new Geopoint(wayPoints[0].Location), shorter: true),
+            await GetAddressAsync(new Geopoint(wayPoints[^1].Location), shorter: true),
+            wayPoints, 
+            pointsOfInterest
+        ).ConfigureAwait(false);
+
+        DataPackage package = new() { RequestedOperation = DataPackageOperation.Copy };
+        package.SetData(DataFormat, stream);
+        Clipboard.SetContent(package);
         Clipboard.Flush();
 
         Status = $"{wayPoints.Length} waypoints copied.";
     }
 
-    private bool CanCopySelection() => CurrentSelection.IsValid;
-
-    [RelayCommand(CanExecute = nameof(CanPasteWayPoints))]
-    public async Task PasteWayPointsAtStartAsync(bool reversed)
+    private bool CanCopySelection()
     {
-        WayPoint[] wayPoints = await GetWayPointsFromClipboardAsync(reversed);
-        await Track.RouteBuilder.InsertPointsAsync(wayPoints, null);
-
-        Status = $"{wayPoints.Length} way points pasted.";
+        return CurrentSelection.IsValid;
     }
 
     [RelayCommand(CanExecute = nameof(CanPasteWayPoints))]
-    public async Task PasteWayPointsAsync(bool reversed)
+    public async Task PasteWayPointsAsync()
     {
-        WayPoint[] wayPoints = await GetWayPointsFromClipboardAsync(reversed);
-        await Track.RouteBuilder.InsertPointsAsync(wayPoints, HoveredWayPoint);
+        string sourceTrack, startLocation, endLocation;
+        WayPoint[] wayPoints;
+        PointOfInterest[] pointsOfInterest;
+        using (IRandomAccessStream stream = (IRandomAccessStream)await Clipboard.GetContent().GetDataAsync(DataFormat))
+        using (Stream input = stream.GetInputStreamAt(0).AsStreamForRead())
+        {
+            (sourceTrack, startLocation, endLocation, wayPoints, pointsOfInterest) = await Serializer.DeserializeSelectionAsync(input);
+        }
 
-        Status = $"{wayPoints.Length} way points pasted.";
-    }
+        PasteSelectionDetails pasteDetails = await StrongReferenceMessenger.Default.Send(
+            new RequestPasteSelectionDetails(sourceTrack, startLocation, endLocation, wayPoints, HoveredWayPoint));
 
-    private async Task<WayPoint[]> GetWayPointsFromClipboardAsync(bool reversed)
-    {
-        IRandomAccessStream stream = await Clipboard.GetContent().GetDataAsync("cycloid/route") as IRandomAccessStream;
-        WayPoint[] wayPoints = await Serializer.DeserializeAsync(stream.GetInputStreamAt(0).AsStreamForRead());
-        if (reversed)
+        if (pasteDetails is null)
+        {
+            return;
+        }
+
+        if (pasteDetails.Reverse)
         {
             Array.Reverse(wayPoints);
             for (int i = 0; i < wayPoints.Length; i++)
@@ -104,14 +142,35 @@ partial class ViewModel
             }
         }
 
-        return wayPoints;
+        WayPoint pasteAt = HoveredWayPoint;
+        if (pasteAt is not null && pasteDetails.AtStartOrBefore)
+        {
+            int index = Track.RouteBuilder.Points.IndexOf(pasteAt);
+            pasteAt = index == 0 ? null : Track.RouteBuilder.Points[index - 1];
+        }
+        else if (pasteAt is null && !pasteDetails.AtStartOrBefore)
+        {
+            pasteAt = Track.RouteBuilder.Points.LastOrDefault();
+        }
+
+        await Track.RouteBuilder.InsertPointsAsync(wayPoints, pasteAt);
+
+        using (await Track.RouteBuilder.ChangeLock.EnterAsync(default))
+        {
+            foreach (PointOfInterest poi in pointsOfInterest)
+            {
+                Track.PointsOfInterest.Add(poi);
+            }
+        }
+
+        Status = $"{wayPoints.Length} way points pasted.";
     }
 
     private bool CanPasteWayPoints()
     {
         try
         {
-            return Clipboard.GetContent().AvailableFormats.Contains("cycloid/route");
+            return Clipboard.GetContent().AvailableFormats.Contains(DataFormat);
         }
         catch (UnauthorizedAccessException)
         {

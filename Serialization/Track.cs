@@ -1,10 +1,9 @@
 using System;
-using System.Text.Json.Serialization;
 using cycloid.Info;
 
 namespace cycloid.Serizalization;
 
-public class TrackFile
+public class Track
 {
     public Profile Profile { get; set; }
     public WayPoint[] WayPoints { get; set; }
@@ -12,12 +11,21 @@ public class TrackFile
     public PointOfInterest[] PointsOfInterest { get; set; }
 }
 
+public class Selection
+{
+    public string SourceTrack { get; set; }
+    public string StartLocation { get; set; }
+    public string EndLocation { get; set; }
+    public WayPoint[] WayPoints { get; set; }
+    public PointOfInterest[] PointsOfInterest { get; set; }
+}
+
 public struct Profile
 {
     public int DownhillCost { get; set; }
-    public float DownhillCuttoff { get; set; }
+    public float DownhillCutoff { get; set; }
     public int UphillCost { get; set; }
-    public float UphillCuttoff { get; set; }
+    public float UphillCutoff { get; set; }
     public int BikerPower { get; set; }
 }
 
@@ -42,13 +50,4 @@ public struct PointOfInterest
     public int Count { get; set; }
     public InfoType Type { get; set; }
     public string Name { get; set; }
-}
-
-[JsonSerializable(typeof(TrackFile))]
-[JsonSourceGenerationOptions(
-    WriteIndented = true, 
-    UseStringEnumConverter = true,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault)]
-public partial class PoiContext : JsonSerializerContext
-{
 }

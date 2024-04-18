@@ -85,6 +85,8 @@ public partial class OnTrack : ObservableObject
 
     public float? Speed => IsOffTrack ? null : Values.Distance / 1000 / (float)Values.Time.TotalHours;
 
+    public TrackPoint TrackPoint => IsOffTrack ? throw new InvalidOperationException() : _trackPoint;
+
     public string Name
     {
         get => PointOfInterest.Name;

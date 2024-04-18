@@ -1,0 +1,36 @@
+﻿<ContentDialog
+    x:Class="cycloid.Controls.PasteSelectionDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Paste waypoints"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    PrimaryButtonText="Paste">
+
+    <Grid>
+
+        <StackPanel Spacing="16">
+            <TextBlock>
+                <Run Text="{x:Bind Mode=OneTime, Path=Request.StartLocation}" />
+                <Run Text=" - " />
+                <Run Text="{x:Bind Mode=OneTime, Path=Request.EndLocation}" />
+                <LineBreak />
+                <Run Text="Do you want to paste " />
+                <Run Text="{x:Bind Mode=OneTime, Path=Request.WayPointCount}" />
+                <Run Text="waypoints from " />
+                <Run Text="{x:Bind Mode=OneTime, Path=Request.SourceTrack}" />
+                <Run Text="?" />
+            </TextBlock>
+            <StackPanel>
+                <RadioButton
+                    Content="{x:Bind Mode=OneTime, Path=Option1Text}"
+                    GroupName="Where"
+                    IsChecked="{x:Bind Mode=TwoWay, Path=Response.AtStartOrBefore}" />
+                <RadioButton Content="{x:Bind Mode=OneTime, Path=Option2Text}" GroupName="Where" />
+            </StackPanel>
+            <CheckBox Content="Paste in reverse order" IsChecked="{x:Bind Mode=TwoWay, Path=Response.Reverse}" />
+        </StackPanel>
+
+    </Grid>
+
+</ContentDialog>
