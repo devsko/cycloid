@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -21,30 +22,18 @@ public class DragWayPointStarted();
 public class DragWayPointEnded();
 
 partial class ViewModel :
+    IRecipient<SectionAdded>,
+    IRecipient<SectionRemoved>,
     IRecipient<CalculationStarting>,
     IRecipient<CalculationFinished>,
     IRecipient<RouteChanging>,
     IRecipient<RouteChanged>,
     IRecipient<FileSplitChanged>
 {
-    private int _trackCalculationCounter;
     private WayPoint _hoveredWayPoint;
     private RouteSection _hoveredSection;
     private WayPoint _capturedWayPoint;
     private MapPoint _capturedWayPointOriginalLocation;
-
-    public int TrackCalculationCounter
-    {
-        get => _trackCalculationCounter;
-        set
-        {
-            if (SetProperty(ref _trackCalculationCounter, value))
-            {
-                OnPropertyChanged(nameof(TrackIsCalculating));
-                OnPropertyChanged(nameof(CompareSessionState));
-            }
-        }
-    }
 
     public WayPoint HoveredWayPoint
     {
@@ -57,12 +46,12 @@ partial class ViewModel :
                 {
                     HoverPoint = TrackPoint.Invalid;
                 }
-                else
+                else if (!Track.RouteBuilder.IsCalculating)
                 {
                     (RouteSection to, RouteSection from) = Track.RouteBuilder.GetSections(value);
                     if (from is null)
                     {
-                        HoverPoint = Track.Points.Last();
+                        HoverPoint = to is null ? TrackPoint.Invalid : Track.Points.Last();
                     }
                     else
                     {
@@ -84,7 +73,7 @@ partial class ViewModel :
                 {
                     HoverPoint = TrackPoint.Invalid;
                 }
-                else
+                else if (!Track.RouteBuilder.IsCalculating)
                 {
                     int index = Track.RouteBuilder.GetSectionIndex(value);
                     int pointCount = Track.Points.GetPointCount(index);
@@ -95,14 +84,14 @@ partial class ViewModel :
         }
     }
 
-    public bool TrackIsCalculating => TrackCalculationCounter > 0;
+    public bool TrackIsCalculating => Track is not null && Track.RouteBuilder.IsCalculating;
 
     public bool IsCaptured => _capturedWayPoint is not null;
 
     [RelayCommand]
     public async Task AddDestinationAsync(MapPoint location)
     {
-        if (Mode == Modes.Edit && Track is not null && !IsCaptured)
+        if (IsEditMode && Track is not null && !IsCaptured)
         {
             await Track.RouteBuilder.AddLastPointAsync(new WayPoint(location, false, false));
         }
@@ -111,7 +100,7 @@ partial class ViewModel :
     [RelayCommand]
     public async Task AddStartAsync(MapPoint location)
     {
-        if (Mode == Modes.Edit && Track is not null && !IsCaptured)
+        if (IsEditMode && Track is not null && !IsCaptured)
         {
             await Track.RouteBuilder.AddFirstPointAsync(new WayPoint(location, false, false));
         }
@@ -120,22 +109,17 @@ partial class ViewModel :
     [RelayCommand]
     public async Task AddWayPointAsync(MapPoint location)
     {
-        if (Mode == Modes.Edit && Track is not null && !IsCaptured)
+        if (IsEditMode && Track is not null && !IsCaptured)
         {
-            RouteSection nearestSection = null;
-            float smallestDistance = float.PositiveInfinity;
-            foreach (RouteSection section in Track.RouteBuilder.Sections)
+            if (Track.Points.IsEmpty)
             {
-                (_, float distance) = GeoCalculation.MinimalDistance(section.Start.Location, section.End.Location, location);
-                if (distance < smallestDistance)
-                {
-                    smallestDistance = distance;
-                    nearestSection = section;
-                }
+                await Track.RouteBuilder.AddLastPointAsync(new WayPoint(location, false, false));
             }
-
-            if (nearestSection is not null)
+            else
             {
+                RouteSection nearestSection = Track.RouteBuilder.Sections
+                    .MinBy(section => GeoCalculation.MinimalDistance(section.Start.Location, section.End.Location, location).Distance);
+                
                 await Track.RouteBuilder.InsertPointAsync(location, nearestSection);
             }
         }
@@ -144,7 +128,7 @@ partial class ViewModel :
     [RelayCommand]
     public async Task DeleteWayPointAsync()
     {
-        if (Mode == Modes.Edit && Track is not null && !IsCaptured && HoveredWayPoint is not null)
+        if (IsEditMode && Track is not null && !IsCaptured && HoveredWayPoint is not null)
         {
             await Track.RouteBuilder.RemovePointAsync(HoveredWayPoint);
         }
@@ -153,7 +137,7 @@ partial class ViewModel :
     [RelayCommand]
     public void StartDragWayPoint()
     {
-        if (Mode == Modes.Edit && Track is not null && !IsCaptured && HoveredWayPoint is not null)
+        if (IsEditMode && Track is not null && !IsCaptured && HoveredWayPoint is not null)
         {
             Track.RouteBuilder.DelayCalculation = true;
 
@@ -169,7 +153,7 @@ partial class ViewModel :
     [RelayCommand]
     public async Task StartDragNewWayPointAsync(MapPoint location)
     {
-        if (Mode == Modes.Edit && Track is not null && !IsCaptured && HoveredSection is not null)
+        if (IsEditMode && Track is not null && !IsCaptured && HoveredSection is not null)
         {
             Track.RouteBuilder.DelayCalculation = true;
 
@@ -184,7 +168,7 @@ partial class ViewModel :
 
     public async Task ContinueDragWayPointAsync(MapPoint location)
     {
-        if (Mode == Modes.Edit && Track is not null && IsCaptured)
+        if (IsEditMode && Track is not null && IsCaptured)
         {
             _capturedWayPoint = await Track.RouteBuilder.MovePointAsync(_capturedWayPoint, location);
         }
@@ -192,7 +176,7 @@ partial class ViewModel :
 
     public void EndDragWayPoint()
     {
-        if (Mode == Modes.Edit && Track is not null && IsCaptured)
+        if (IsEditMode && Track is not null && IsCaptured)
         {
             StrongReferenceMessenger.Default.Send(new DragWayPointEnded());
 
@@ -205,7 +189,7 @@ partial class ViewModel :
 
     public async Task CancelDragWayPointAsync()
     {
-        if (Mode == Modes.Edit && Track is not null && IsCaptured)
+        if (IsEditMode && Track is not null && IsCaptured)
         {
             StrongReferenceMessenger.Default.Send(new DragWayPointEnded());
 
@@ -226,7 +210,7 @@ partial class ViewModel :
     [RelayCommand]
     public void TogglePointIsFileSplit()
     {
-        if (Mode == Modes.Edit && Track is not null && HoveredWayPoint is not null)
+        if (IsEditMode && Track is not null && HoveredWayPoint is not null)
         {
             Track.RouteBuilder.SetFileSplit(HoveredWayPoint, !HoveredWayPoint.IsFileSplit);
         }
@@ -235,7 +219,7 @@ partial class ViewModel :
     [RelayCommand]
     public void ToggleSectionIsDirectRoute()
     {
-        if (Mode == Modes.Edit && Track is not null && HoveredSection is not null)
+        if (IsEditMode && Track is not null && HoveredSection is not null)
         {
             Track.RouteBuilder.SetIsDirectRoute(HoveredSection, !HoveredSection.IsDirectRoute);
         }
@@ -245,6 +229,8 @@ partial class ViewModel :
     {
         if (track is not null)
         {
+            StrongReferenceMessenger.Default.Register<SectionAdded>(this);
+            StrongReferenceMessenger.Default.Register<SectionRemoved>(this);
             StrongReferenceMessenger.Default.Register<CalculationStarting>(this);
             StrongReferenceMessenger.Default.Register<CalculationFinished>(this);
             StrongReferenceMessenger.Default.Register<RouteChanging>(this);
@@ -257,6 +243,8 @@ partial class ViewModel :
     {
         if (track is not null)
         {
+            StrongReferenceMessenger.Default.Unregister<SectionAdded>(this);
+            StrongReferenceMessenger.Default.Unregister<SectionRemoved>(this);
             StrongReferenceMessenger.Default.Unregister<CalculationStarting>(this);
             StrongReferenceMessenger.Default.Unregister<CalculationFinished>(this);
             StrongReferenceMessenger.Default.Unregister<RouteChanging>(this);
@@ -265,23 +253,43 @@ partial class ViewModel :
         }
     }
 
-    void IRecipient<CalculationStarting>.Receive(CalculationStarting message)
+    void IRecipient<SectionAdded>.Receive(SectionAdded _)
     {
-        TrackCalculationCounter++;
+        OnPropertyChanged(nameof(CanEditProfile));
     }
 
-    void IRecipient<CalculationFinished>.Receive(CalculationFinished message)
+    void IRecipient<SectionRemoved>.Receive(SectionRemoved _)
     {
-        TrackCalculationCounter--;
+        OnPropertyChanged(nameof(CanEditProfile));
     }
 
-    void IRecipient<RouteChanging>.Receive(RouteChanging message)
+    void IRecipient<CalculationStarting>.Receive(CalculationStarting _)
     {
+        OnPropertyChanged(nameof(CompareSessionState));
+
+        DownhillCost = Track.RouteBuilder.Profile.DownhillCost;
+        DownhillCutoff = Track.RouteBuilder.Profile.DownhillCutoff;
+        UphillCost = Track.RouteBuilder.Profile.UphillCost;
+        UphillCutoff = Track.RouteBuilder.Profile.UphillCutoff;
+        BikerPower = Track.RouteBuilder.Profile.BikerPower;
+    }
+
+    void IRecipient<CalculationFinished>.Receive(CalculationFinished _)
+    {
+        OnPropertyChanged(nameof(CompareSessionState));
+    }
+
+    void IRecipient<RouteChanging>.Receive(RouteChanging _)
+    {
+        OnPropertyChanged(nameof(TrackIsCalculating));
+
         CurrentSelection = Selection.Invalid;
     }
 
     void IRecipient<RouteChanged>.Receive(RouteChanged message)
     {
+        OnPropertyChanged(nameof(TrackIsCalculating));
+
         if (!message.Initialization && !IsCaptured)
         {
             SaveTrackAsync().FireAndForget();

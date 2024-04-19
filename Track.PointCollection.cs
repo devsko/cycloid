@@ -79,6 +79,8 @@ partial class Track
             }
         }
 
+        public bool IsEmpty => _segments.Count == 0;
+
         public int GetPointCount(int segmentIndex)
         {
             int count = _segments[segmentIndex].Points.Length;

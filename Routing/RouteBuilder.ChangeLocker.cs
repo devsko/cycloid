@@ -25,17 +25,18 @@ partial class RouteBuilder
         }
 
         private readonly SemaphoreSlim _semaphore = new(1);
-        private volatile int _runningCalculationCounter;
+
+        public int RunningCalculationCounter { get; private set; }
 
         public async Task<Releaser> EnterCalculationAsync(CancellationToken cancellationToken = default)
         {
             StrongReferenceMessenger.Default.Send(new RouteChanging());
 
-            if (_runningCalculationCounter == 0)
+            if (RunningCalculationCounter == 0)
             {
                 await _semaphore.WaitAsync(cancellationToken);
             }
-            _runningCalculationCounter++;
+            RunningCalculationCounter++;
 
             return new Releaser(this, true);
         }
@@ -49,8 +50,8 @@ partial class RouteBuilder
 
         private void ReleaseCalculation()
         {
-            _runningCalculationCounter--;
-            if (_runningCalculationCounter == 0)
+            RunningCalculationCounter--;
+            if (RunningCalculationCounter == 0)
             {
                 _semaphore.Release();
 

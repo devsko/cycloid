@@ -182,7 +182,16 @@ public sealed partial class Profile : ViewModelControl,
 
                 using (await ViewModel.Track.RouteBuilder.ChangeLock.EnterAsync(default))
                 {
-                    if (ViewModel.Track.Points.Count > 0)
+                    if (ViewModel.Track.Points.IsEmpty)
+                    {
+                        if (_maxElevation != 0)
+                        {
+                            _maxElevation = 0;
+                            _elevationDiff = 0;
+                            change |= Change.MaxElevation;
+                        }
+                    }
+                    else
                     {
                         EnsureTrack();
                         EnsureSelection();
@@ -206,12 +215,13 @@ public sealed partial class Profile : ViewModelControl,
             {
                 change &= ~Change._VerticalRuler;
 
+                VerticalRuler.Children.Clear();
+
                 if (_elevationDiff != 0)
                 {
                     GraphTransform.ScaleY = -ActualHeight / _elevationDiff / (1 + GraphBottomMarginRatio + GraphTopMarginRatio);
                     GraphBottomTransform.ScaleY = -ActualHeight;
 
-                    VerticalRuler.Children.Clear();
                     DrawVerticalRuler();
                 }
             }

@@ -219,6 +219,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition />
                             </Grid.RowDefinitions>
                             <Grid
@@ -272,8 +273,24 @@
                                     Grid.Column="1"
                                     Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Descent)}" />
                             </Grid>
+                            <Grid Grid.Row="1" ColumnSpacing="5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Button
+                                    Grid.Column="0"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.RecalculateCommand}"
+                                    Content="{x:Bind Mode=OneWay, Path=ViewModel.RecalculateCommandName}" />
+                                <Button
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.CancelCommand}"
+                                    Content="Rollback" />
+                            </Grid>
                             <Grid
-                                Grid.Row="1"
+                                Grid.Row="2"
                                 ColumnSpacing="10"
                                 RowSpacing="5">
                                 <Grid.RowDefinitions>
@@ -295,6 +312,7 @@
                                 <mux:NumberBox
                                     Grid.Row="0"
                                     Grid.Column="1"
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
                                     LargeChange="5"
                                     Minimum="0"
                                     SmallChange="1"
@@ -303,6 +321,7 @@
                                     x:Name="DownhillCutoff"
                                     Grid.Row="0"
                                     Grid.Column="2"
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
                                     LargeChange="1"
                                     Minimum="0"
                                     SmallChange="0.1"
@@ -316,6 +335,7 @@
                                 <mux:NumberBox
                                     Grid.Row="1"
                                     Grid.Column="1"
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
                                     LargeChange="5"
                                     Minimum="0"
                                     SmallChange="1"
@@ -324,6 +344,7 @@
                                     x:Name="UphillCutoff"
                                     Grid.Row="1"
                                     Grid.Column="2"
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
                                     LargeChange="1"
                                     Minimum="0"
                                     SmallChange="0.1"
@@ -337,33 +358,28 @@
                                 <mux:NumberBox
                                     Grid.Row="2"
                                     Grid.Column="1"
+                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
                                     LargeChange="20"
                                     Minimum="0"
                                     SmallChange="5"
                                     Value="{x:Bind Mode=TwoWay, Path=ViewModel.BikerPower}" />
                             </Grid>
-                            <Grid Grid.Row="2" ColumnSpacing="5">
+                            <Grid Grid.Row="3" ColumnSpacing="5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
                                 <Button
-                                    Grid.Column="0"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.RecalculateCommand}"
-                                    Content="{x:Bind Mode=OneWay, Path=ViewModel.RecalculateCommandName}" />
-                                <Button
                                     Grid.Column="1"
                                     HorizontalAlignment="Stretch"
-                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.CancelCommand}"
-                                    Content="Cancel" />
+                                    Content="Recalculate" />
                             </Grid>
                             <TextBlock
-                                Grid.Row="3"
+                                Grid.Row="4"
                                 HorizontalTextAlignment="Center"
                                 Text="{x:Bind Mode=OneWay, Path=ViewModel.CompareSessionState}" />
                             <ListView
-                                Grid.Row="4"
+                                Grid.Row="5"
                                 ItemsSource="{x:Bind Mode=OneWay, Path=ViewModel.CompareSession.Differences}"
                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
                                 ScrollViewer.VerticalScrollMode="Auto"

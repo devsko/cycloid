@@ -122,7 +122,11 @@ public readonly record struct Profile(int DownhillCost, float DownhillCutoff, in
     public const int DefaultUphillCost = 100;
     public const float DefaultUphillCutoff = 3.6f;
     public const int DefaultBikerPower = 170;
+
+    public Profile() : this(DefaultDownhillCost, DefaultDownhillCutoff, DefaultUphillCost, DefaultUphillCutoff, DefaultBikerPower)
+    { }
 }
+
 public readonly record struct NoGoArea(MapPoint Center, ulong Radius);
 
 public class ProfileResponse

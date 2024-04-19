@@ -62,14 +62,7 @@ public partial class RouteBuilder
         Points = [];
         NoGoAreas = [];
         Client = new BrouterClient();
-        Profile = new Profile
-        {
-            DownhillCost = Profile.DefaultDownhillCost,
-            DownhillCutoff = Profile.DefaultDownhillCutoff,
-            UphillCost = Profile.DefaultUphillCost,
-            UphillCutoff = Profile.DefaultUphillCutoff,
-            BikerPower = Profile.DefaultBikerPower,
-        };
+        Profile = new Profile();
         ChangeLock = new ChangeLocker();
         DelayCalculation = false;
     }
@@ -92,6 +85,8 @@ public partial class RouteBuilder
             }
         }
     }
+
+    public bool IsCalculating => ChangeLock.RunningCalculationCounter > 0;
 
     public void SetIsDirectRoute(RouteSection section, bool value)
     {

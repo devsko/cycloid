@@ -116,6 +116,8 @@ public partial class ViewModel : ObservableObject,
 
                 ConnectRouting(value);
 
+                OnPropertyChanged(nameof(CanEditProfile));
+
                 SaveTrackAsCommand.NotifyCanExecuteChanged();
                 RecalculateCommand.NotifyCanExecuteChanged();
                 AddPointOfInterestCommand.NotifyCanExecuteChanged();
@@ -199,6 +201,8 @@ public partial class ViewModel : ObservableObject,
         get => _status;
         set => SetProperty(ref _status, value);
     }
+
+    public bool CanEditProfile => Track is not null && (Track.Points.IsEmpty || CompareSession is not null);
 
     [RelayCommand]
     public Task OpenLocationAsync(MapPoint location)

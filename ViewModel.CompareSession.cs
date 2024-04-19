@@ -38,6 +38,7 @@ partial class ViewModel
                     value.Differences.CollectionChanged += CompareSessionDifferences_CollectionChanged;
                 }
 
+                OnPropertyChanged(nameof(CanEditProfile));
                 OnPropertyChanged(nameof(RecalculateCommandName));
                 OnPropertyChanged(nameof(CompareSessionState));
 
@@ -67,31 +68,76 @@ partial class ViewModel
     public int DownhillCost
     {
         get => _downhillCost;
-        set => SetProperty(ref _downhillCost, value);
+        set
+        {
+            if (SetProperty(ref _downhillCost, value))
+            {
+                if (Track.Points.IsEmpty)
+                {
+                    Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { DownhillCost = value };
+                }
+            }
+        }
     }
 
     public float DownhillCutoff
     {
         get => _downhillCutoff;
-        set => SetProperty(ref _downhillCutoff, value);
+        set
+        {
+            if (SetProperty(ref _downhillCutoff, value))
+            {
+                if (Track.Points.IsEmpty)
+                {
+                    Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { DownhillCutoff = value };
+                }
+            }
+        }
     }
 
     public int UphillCost
     {
         get => _uphillCost;
-        set => SetProperty(ref _uphillCost, value);
+        set
+        {
+            if (SetProperty(ref _uphillCost, value))
+            {
+                if (Track.Points.IsEmpty)
+                {
+                    Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { UphillCost = value };
+                }
+            }
+        }
     }
 
     public float UphillCutoff
     {
         get => _uphillCutoff;
-        set => SetProperty(ref _uphillCutoff, value);
+        set
+        {
+            if (SetProperty(ref _uphillCutoff, value))
+            {
+                if (Track.Points.IsEmpty)
+                {
+                    Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { UphillCutoff = value };
+                }
+            }
+        }
     }
 
     public int BikerPower
     {
         get => _bikerPower;
-        set => SetProperty(ref _bikerPower, value);
+        set
+        {
+            if (SetProperty(ref _bikerPower, value))
+            {
+                if (Track.Points.IsEmpty)
+                {
+                    Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { BikerPower = value };
+                }
+            }
+        }
     }
 
     public string CompareSessionState =>
@@ -103,9 +149,9 @@ partial class ViewModel
             1 => "1 difference",
             int n => $"{n} differences",
         } +
-        (RecalculationComplete ? "" : $" ({CompareSession.OriginalSegmentsCount - TrackCalculationCounter} / {CompareSession.OriginalSegmentsCount})");
+        (RecalculationComplete ? "" : $" ({CompareSession.OriginalSegmentsCount - Track.RouteBuilder.ChangeLock.RunningCalculationCounter} / {CompareSession.OriginalSegmentsCount})");
 
-    public string RecalculateCommandName => RecalculationComplete ? "Accept" : "Recalculate";
+    public string RecalculateCommandName => RecalculationComplete ? "Accept" : "Restore point";
 
     [RelayCommand(CanExecute = nameof(CanRecalculate))]
     public async Task RecalculateAsync(CancellationToken cancellationToken)
