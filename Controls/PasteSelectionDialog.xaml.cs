@@ -6,22 +6,25 @@ namespace cycloid.Controls;
 
 public sealed partial class PasteSelectionDialog : ContentDialog
 {
-    private RequestPasteSelectionDetails Request { get; }
+    private SelectionDescription Selection { get; }
+
+    private WayPoint PasteAt { get; }
 
     private PasteSelectionDetails Response { get; } = new();
 
-    private string Option1Text => Request.PasteAt is null ? "Paste at start" : "Paste before current point";
+    private string Option1Text => PasteAt is null ? "Paste at start" : "Paste before current point";
 
-    private string Option2Text => Request.PasteAt is null ? "Paste at destination" : "Paste after current point";
+    private string Option2Text => PasteAt is null ? "Paste at destination" : "Paste after current point";
 
     public PasteSelectionDialog()
     {
         InitializeComponent();
     }
 
-    public PasteSelectionDialog(RequestPasteSelectionDetails message) : this()
+    public PasteSelectionDialog(SelectionDescription selection, WayPoint pasteAt) : this()
     {
-        Request = message;
+        Selection = selection;
+        PasteAt = pasteAt;
     }
 
     public async Task<PasteSelectionDetails> GetResultAsync()
@@ -33,5 +36,4 @@ public sealed partial class PasteSelectionDialog : ContentDialog
 
         return Response;
     }
-
 }

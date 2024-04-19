@@ -24,7 +24,8 @@ namespace cycloid;
 public sealed partial class MainPage : Page,
     IRecipient<FileChanged>,
     IRecipient<OnTrackAdded>,
-    IRecipient<RequestPasteSelectionDetails>
+    IRecipient<RequestPasteSelectionDetails>,
+    IRecipient<RequestDeleteSelectionDetails>
 {
     private IStorageFile _initialFile;
     private bool _ignoreTextChange;
@@ -50,6 +51,7 @@ public sealed partial class MainPage : Page,
         StrongReferenceMessenger.Default.Register<FileChanged>(this);
         StrongReferenceMessenger.Default.Register<OnTrackAdded>(this);
         StrongReferenceMessenger.Default.Register<RequestPasteSelectionDetails>(this);
+        StrongReferenceMessenger.Default.Register<RequestDeleteSelectionDetails>(this);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -220,6 +222,11 @@ public sealed partial class MainPage : Page,
 
     void IRecipient<RequestPasteSelectionDetails>.Receive(RequestPasteSelectionDetails message)
     {
-        message.Reply(new PasteSelectionDialog(message).GetResultAsync());
+        message.Reply(new PasteSelectionDialog(message.Selection, message.PasteAt).GetResultAsync());
+    }
+
+    void IRecipient<RequestDeleteSelectionDetails>.Receive(RequestDeleteSelectionDetails message)
+    {
+        message.Reply(new DeleteSelectionDialog(message.Selection).GetResultAsync());
     }
 }

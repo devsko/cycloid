@@ -133,6 +133,7 @@
         <controls:ProfileSelectionValues
             HorizontalAlignment="Center"
             CopyCommand="{x:Bind Mode=OneTime, Path=ViewModel.CopySelectionCommand}"
+            DeleteCommand="{x:Bind Mode=OneTime, Path=ViewModel.DeleteSelectionCommand}"
             Enabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.IsValid(ViewModel.CurrentSelection)}"
             Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentSelection}" />
 

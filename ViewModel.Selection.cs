@@ -14,18 +14,18 @@ using Windows.Storage.Streams;
 namespace cycloid;
 
 public class SelectionChanged(Selection value) : ValueChangedMessage<Selection>(value);
-public class RequestPasteSelectionDetails(string sourceTrack, string startLocation, string endLocation, WayPoint[] wayPoints, WayPoint pasteAt) : AsyncRequestMessage<PasteSelectionDetails>()
+public class RequestDeleteSelectionDetails(SelectionDescription selection) : AsyncRequestMessage<bool>()
 {
-    public string SourceTrack { get; } = sourceTrack;
-
-    public string StartLocation { get; } = startLocation;
-
-    public string EndLocation { get; } = endLocation;
-
-    public int WayPointCount { get; } = wayPoints.Length;
+    public SelectionDescription Selection { get; } = selection;
+}
+public class RequestPasteSelectionDetails(SelectionDescription selection, WayPoint pasteAt) : AsyncRequestMessage<PasteSelectionDetails>()
+{
+    public SelectionDescription Selection { get; } = selection;
 
     public WayPoint PasteAt { get; } = pasteAt;
 }
+
+public record class SelectionDescription(string SourceTrack, string StartLocation, string EndLocation, int WayPointCount);
 
 public class PasteSelectionDetails
 {
@@ -49,31 +49,45 @@ partial class ViewModel
             if (SetProperty(ref _currentSelection, value))
             {
                 CopySelectionCommand.NotifyCanExecuteChanged();
+                DeleteSelectionCommand.NotifyCanExecuteChanged();
 
                 StrongReferenceMessenger.Default.Send(new SelectionChanged(value));
             }
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanDeleteSelection))]
+    public async Task DeleteSelectionAsync()
+    {
+        WayPoint[] wayPoints = await GetSelectedWayPointsAsync();
+        if (wayPoints.Length == 0)
+        {
+            Status = "No waypoints copied.";
+            return;
+        }
+
+        string startLocation = await GetAddressAsync(new Geopoint(wayPoints[0].Location), shorter: true);
+        string endLocation = await GetAddressAsync(new Geopoint(wayPoints[^1].Location), shorter: true);
+
+        if (await StrongReferenceMessenger.Default.Send(
+            new RequestDeleteSelectionDetails(new SelectionDescription(null, startLocation, endLocation, wayPoints.Length))))
+        {
+            await Track.RouteBuilder.DeletePointsAsync(wayPoints);
+        }
+    }
+
+    private bool CanDeleteSelection()
+    {
+        return IsEditMode && CurrentSelection.IsValid;
+    }
+
     [RelayCommand(CanExecute = nameof(CanCopySelection))]
     public async Task CopySelectionAsync()
     {
-        (WayPoint[] WayPoints, TrackPoint.CommonValues[] Starts) segments = await Track.Points.GetSegmentStartsAsync(default);
-        IEnumerable<WayPoint> wp = segments.WayPoints
-            .Zip(segments.Starts, (wayPoint, start) => (WayPoint: wayPoint, Start: start.Distance))
-            .SkipWhile(tuple => tuple.Start < CurrentSelection.Start.Distance)
-            .TakeWhile(tuple => tuple.Start <= CurrentSelection.End.Distance)
-            .Select(tuple => tuple.WayPoint);
-
-        if (CurrentSelection.End.Equals(Track.Points.Last()))
-        {
-            wp = wp.Append(segments.WayPoints.Last());
-        }
-
-        WayPoint[] wayPoints = wp.ToArray();
+        WayPoint[] wayPoints = await GetSelectedWayPointsAsync();
         if (wayPoints.Length == 0)
         {
-            Status = "no waypoints copied.";
+            Status = "No waypoints copied.";
             return;
         }
 
@@ -122,7 +136,7 @@ partial class ViewModel
         }
 
         PasteSelectionDetails pasteDetails = await StrongReferenceMessenger.Default.Send(
-            new RequestPasteSelectionDetails(sourceTrack, startLocation, endLocation, wayPoints, HoveredWayPoint));
+            new RequestPasteSelectionDetails(new SelectionDescription(sourceTrack, startLocation, endLocation, wayPoints.Length), HoveredWayPoint));
 
         if (pasteDetails is null)
         {
@@ -170,7 +184,7 @@ partial class ViewModel
     {
         try
         {
-            return Clipboard.GetContent().AvailableFormats.Contains(DataFormat);
+            return IsEditMode && Clipboard.GetContent().AvailableFormats.Contains(DataFormat);
         }
         catch (UnauthorizedAccessException)
         {
@@ -235,5 +249,22 @@ partial class ViewModel
         {
             CurrentSelection = Selection.Invalid;
         }
+    }
+
+    private async Task<WayPoint[]> GetSelectedWayPointsAsync()
+    {
+        (WayPoint[] WayPoints, TrackPoint.CommonValues[] Starts) segments = await Track.Points.GetSegmentStartsAsync(default);
+        IEnumerable<WayPoint> wayPoints = segments.WayPoints
+            .Zip(segments.Starts, (wayPoint, start) => (WayPoint: wayPoint, Start: start.Distance))
+            .SkipWhile(tuple => tuple.Start < CurrentSelection.Start.Distance)
+            .TakeWhile(tuple => tuple.Start <= CurrentSelection.End.Distance)
+            .Select(tuple => tuple.WayPoint);
+
+        if (CurrentSelection.End.Equals(Track.Points.Last()))
+        {
+            wayPoints = wayPoints.Append(segments.WayPoints.Last());
+        }
+
+        return wayPoints.ToArray();
     }
 }

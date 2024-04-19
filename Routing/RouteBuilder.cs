@@ -236,6 +236,17 @@ public partial class RouteBuilder
         }
     }
 
+    public async Task DeletePointsAsync(IEnumerable<WayPoint> wayPoints)
+    {
+        using (await ChangeLock.EnterCalculationAsync())
+        {
+            foreach (WayPoint wayPoint in wayPoints)
+            {
+                RemovePoint(wayPoint);
+            }
+        }
+    }
+
     public async Task InsertPointsAsync(IEnumerable<WayPoint> wayPoints, WayPoint insertAfter)
     {
         using (await ChangeLock.EnterCalculationAsync())
@@ -286,24 +297,29 @@ public partial class RouteBuilder
     {
         using (await ChangeLock.EnterCalculationAsync())
         {
-            int index = Points.IndexOf(point);
-            Points.RemoveAt(index);
+            RemovePoint(point);
+        }
+    }
 
-            int removed = 0;
-            if (index < Points.Count)
-            {
-                RemoveSection(index, point);
-                removed++;
-            }
-            if (index > 0)
-            {
-                RemoveSection(index - 1);
-                removed++;
-            }
-            if (removed == 2)
-            {
-                CreateSection(index - 1);
-            }
+    private void RemovePoint(WayPoint point)
+    {
+        int index = Points.IndexOf(point);
+        Points.RemoveAt(index);
+
+        int removed = 0;
+        if (index < Points.Count)
+        {
+            RemoveSection(index, point);
+            removed++;
+        }
+        if (index > 0)
+        {
+            RemoveSection(index - 1);
+            removed++;
+        }
+        if (removed == 2)
+        {
+            CreateSection(index - 1);
         }
     }
 

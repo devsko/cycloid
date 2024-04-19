@@ -11,14 +11,14 @@
 
         <StackPanel Spacing="16">
             <TextBlock>
-                <Run Text="{x:Bind Mode=OneTime, Path=Request.StartLocation}" />
+                <Run Text="{x:Bind Mode=OneTime, Path=Selection.StartLocation}" />
                 <Run Text=" - " />
-                <Run Text="{x:Bind Mode=OneTime, Path=Request.EndLocation}" />
+                <Run Text="{x:Bind Mode=OneTime, Path=Selection.EndLocation}" />
                 <LineBreak />
                 <Run Text="Do you want to paste " />
-                <Run Text="{x:Bind Mode=OneTime, Path=Request.WayPointCount}" />
+                <Run Text="{x:Bind Mode=OneTime, Path=Selection.WayPointCount}" />
                 <Run Text="waypoints from " />
-                <Run Text="{x:Bind Mode=OneTime, Path=Request.SourceTrack}" />
+                <Run Text="{x:Bind Mode=OneTime, Path=Selection.SourceTrack}" />
                 <Run Text="?" />
             </TextBlock>
             <StackPanel>

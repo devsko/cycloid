@@ -74,6 +74,8 @@ public partial class ViewModel : ObservableObject,
                     OnPropertyChanged(nameof(PoisVisible));
 
                     RecalculateCommand.NotifyCanExecuteChanged();
+                    DeleteSelectionCommand.NotifyCanExecuteChanged();
+                    PasteWayPointsCommand.NotifyCanExecuteChanged();
 
                     if (isEditMode)
                     {
