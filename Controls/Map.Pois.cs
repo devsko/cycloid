@@ -122,10 +122,12 @@ partial class Map :
             ViewModel.HoverInfo = nearestInfo;
         }
 
-        ViewModel.HoverPoint = 
-            elements.Any(element => element.Tag is RouteSection) 
-            ? ViewModel.Track.Points.GetNearestPoint(value.Location, GetBoundingBox())
-            : TrackPoint.Invalid;
+        (MapPoint, MapPoint) boundingBox = GetBoundingBox();
+        ViewModel.HoverPoint = elements
+            .Where(element => element.Tag is RouteSection)
+            .Select(element => ViewModel.Track.Points.GetNearestPoint(value.Location, boundingBox, (RouteSection)element.Tag))
+            .MinBy(((TrackPoint Point, float Distance) nearest) => nearest.Distance, defaultValue: (TrackPoint.Invalid, default))
+            .Point;
 
         (MapPoint NorthWest, MapPoint SouthEast) GetBoundingBox()
         {

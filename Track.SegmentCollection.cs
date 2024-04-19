@@ -17,6 +17,8 @@ partial class Track
 
         public Segment this[int index] => _segments[index];
 
+        public int FindIndex(RouteSection section) => _segments.FindIndex(segment => segment.Section == section);
+
         public Segment Find(RouteSection section) => _segments.Find(segment => segment.Section == section);
         
         public Segment Find(WayPoint wayPoint) => _segments.Find(segment => segment.Section.Start == wayPoint);

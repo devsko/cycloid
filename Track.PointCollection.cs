@@ -149,12 +149,17 @@ partial class Track
             return (point, index);
         }
 
-        private struct GetNearestComparer : IComparer<(float Fraction, float Distance)>
+        private class GetNearestComparer : IComparer<(float Fraction, float Distance)>
         {
+            public static readonly GetNearestComparer Instance = new();
+
+            private GetNearestComparer()
+            { }
+
             public int Compare((float Fraction, float Distance) x, (float Fraction, float Distance) y) => x.Distance.CompareTo(y.Distance);
         }
 
-        public TrackPoint GetNearestPoint<T>(T point, (MapPoint NorthWest, MapPoint SouthEast) region) where T : IMapPoint
+        public (TrackPoint Point, float Distance) GetNearestPoint<T>(T point, (MapPoint NorthWest, MapPoint SouthEast) region, RouteSection section) where T : IMapPoint
         {
             (float Fraction, float Distance) GetDistance(((Segment Segment, TrackPoint TrackPoint, Index Index) Previous, (Segment Segment, TrackPoint TrackPoint, Index Index) Next) current)
             {
@@ -172,21 +177,25 @@ partial class Track
                 return (-1, float.PositiveInfinity);
             }
 
-            (
-                (
-                    (Segment Segment, TrackPoint TrackPoint, Index Index) Previous, 
-                    (Segment Segment, TrackPoint TrackPoint, Index Index) Next) nearest, 
-                (float Fraction, float Distance) result) 
-                = Enumerate()
+            IEnumerable<(Segment Segment, TrackPoint TrackPoint, Index Index)> points =
+                section is null
+                ? Enumerate()
+                : Enumerate(_segments.FindIndex(section));
+
+            var (nearest, result) = points
                 .InPairs()
-                .MinByWithKey(GetDistance, new GetNearestComparer());
+                .MinByWithKey(GetDistance, GetNearestComparer.Instance);
 
             if (float.IsInfinity(result.Distance))
             {
-                return TrackPoint.Invalid;
+                return (TrackPoint.Invalid, float.PositiveInfinity);
             }
-                
-            return TrackPoint.Lerp(GetPoint(nearest.Previous.Segment, nearest.Previous.TrackPoint), GetPoint(nearest.Next.Segment, nearest.Next.TrackPoint), result.Fraction);
+
+            return (TrackPoint.Lerp(
+                GetPoint(nearest.Previous.Segment, nearest.Previous.TrackPoint),
+                GetPoint(nearest.Current.Segment, nearest.Current.TrackPoint),
+                result.Fraction),
+                result.Distance);
         }
 
         public (TrackPoint Point, float Distance)[] GetNearPoints(MapPoint location, float maxDistance, int minDistanceDelta)
@@ -369,6 +378,16 @@ partial class Track
             : index.PointIndex == _segments[index.SegmentIndex].Points.Length - 2 // Skip last point in all but last segment
             ? new Index(index.SegmentIndex + 1, 0)
             : index with { PointIndex = index.PointIndex + 1 };
+
+        private IEnumerable<(Segment Segment, TrackPoint Point, Index Index)> Enumerate(int segmentIndex)
+        {
+            Segment segment = _segments[segmentIndex];
+            TrackPoint[] points = segment.Points;
+            for (int pointIndex = 0; pointIndex < points.Length; pointIndex++)
+            {
+                yield return (segment, points[pointIndex], new Index(segmentIndex, pointIndex));
+            }
+        }
 
         private IEnumerable<(Segment Segment, TrackPoint Point, Index Index)> Enumerate(Index from = default)
         {

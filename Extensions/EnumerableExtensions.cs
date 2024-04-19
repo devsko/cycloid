@@ -4,7 +4,7 @@ namespace System.Linq;
 
 public static class EnumerableExtensions
 {
-    public static TSource MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> selector, IComparer<TKey> comparer = null)
+    public static TSource MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> selector, TSource defaultValue = default, IComparer<TKey> comparer = null)
     {
         if (source == null) throw new ArgumentNullException("source");
         if (selector == null) throw new ArgumentNullException("selector");
@@ -13,7 +13,7 @@ public static class EnumerableExtensions
         using var sourceIterator = source.GetEnumerator();
         if (!sourceIterator.MoveNext())
         {
-            return default;
+            return defaultValue;
         }
         var min = sourceIterator.Current;
         var minKey = selector(min);
