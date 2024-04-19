@@ -27,6 +27,7 @@ public sealed partial class MainPage : Page,
     IRecipient<RequestPasteSelectionDetails>,
     IRecipient<RequestDeleteSelectionDetails>
 {
+    private bool _initialNewFile;
     private IStorageFile _initialFile;
     private bool _ignoreTextChange;
     private OnTrack _lastAddedOnTrack;
@@ -56,7 +57,11 @@ public sealed partial class MainPage : Page,
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is IStorageFile file)
+        if (e.Parameter is App.NewTrackSentinel)
+        {
+            _initialNewFile = true;
+        }
+        else if (e.Parameter is IStorageFile file)
         {
             _initialFile = file;
         }
@@ -79,7 +84,12 @@ public sealed partial class MainPage : Page,
 
         async Task OpenTrackAsync()
         {
-            if (_initialFile is not null)
+            if (_initialNewFile)
+            {
+                await ViewModel.NewTrackAsync();
+                _initialNewFile = false;
+            }
+            else if (_initialFile is not null)
             {
                 await ViewModel.OpenTrackFileAsync(_initialFile);
                 _initialFile = null;

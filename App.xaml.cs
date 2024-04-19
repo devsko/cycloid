@@ -8,6 +8,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.Services.Maps;
 using Windows.Storage;
 using Windows.UI.Core;
+using Windows.UI.StartScreen;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -15,6 +16,7 @@ namespace cycloid;
 
 sealed partial class App : Application
 {
+    public const string NewTrackSentinel = "{NewTrack}";
     public IConfigurationRoot Configuration { get; }
 
     private CoreDispatcher _dispatcher;
@@ -44,6 +46,8 @@ sealed partial class App : Application
     {
         _dispatcher = Window.Current.Dispatcher;
 
+        InitJumpListAsync().FireAndForget();
+
         if (Window.Current.Content is not Frame rootFrame)
         {
             rootFrame = new Frame();
@@ -59,6 +63,15 @@ sealed partial class App : Application
                 rootFrame.Navigate(typeof(MainPage), e.Arguments);
             }
             Window.Current.Activate();
+        }
+
+        async Task InitJumpListAsync()
+        {
+            JumpList list = await JumpList.LoadCurrentAsync();
+            list.SystemGroupKind = JumpListSystemGroupKind.Recent;
+            list.Items.Clear();
+            list.Items.Add(JumpListItem.CreateWithArguments(NewTrackSentinel, "New track"));
+            await list.SaveAsync();
         }
     }
 

@@ -65,17 +65,16 @@ partial class ViewModel
 
     public async Task OpenTrackFileAsync(IStorageFile file, bool dontShowDialog = false)
     {
-        if (!Program.RegisterForFile(file, out _))
-        {
-            if (!dontShowDialog)
-            {
-                await ShowFileAlreadyOpenAsync(file);
-            }
-        }
-        else
+        StorageApplicationPermissions.MostRecentlyUsedList.Add(file, "", RecentStorageItemVisibility.AppAndSystem);
+
+        if (Program.RegisterForFile(file, out _))
         {
             StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", file);
             await LoadTrackFileAsync(file);
+        }
+        else if (!dontShowDialog)
+        {
+            await ShowFileAlreadyOpenAsync(file);
         }
     }
 
@@ -94,6 +93,8 @@ partial class ViewModel
         {
             return;
         }
+
+        StorageApplicationPermissions.MostRecentlyUsedList.Add(file, "", RecentStorageItemVisibility.AppAndSystem);
 
         if (!Program.RegisterForFile(file, out _))
         {
@@ -126,11 +127,9 @@ partial class ViewModel
             return;
         }
 
-        if (!Program.RegisterForFile(file, out _))
-        {
-            await ShowFileAlreadyOpenAsync(file);
-        }
-        else
+        StorageApplicationPermissions.MostRecentlyUsedList.Add(file, "", RecentStorageItemVisibility.AppAndSystem);
+
+        if (Program.RegisterForFile(file, out _))
         {
             if (StorageApplicationPermissions.FutureAccessList.ContainsItem("LastTrack"))
             {
@@ -139,10 +138,31 @@ partial class ViewModel
 
             Track = new Track(file);
 
+            await SaveAsync();
+
             StrongReferenceMessenger.Default.Send(new FileChanged(file));
             StrongReferenceMessenger.Default.Send(new TrackComplete(true));
 
             Status = $"{Track.Name} created";
+
+            StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", Track.File);
+
+            async Task SaveAsync()
+            {
+                await TaskScheduler.Default;
+
+                StorageFile tempFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("current", CreationCollisionOption.ReplaceExisting);
+                using (Stream stream = await tempFile.OpenStreamForWriteAsync().ConfigureAwait(false))
+                {
+                    await Serializer.SerializeAsync(stream, Track, default).ConfigureAwait(false);
+                }
+
+                await tempFile.CopyAndReplaceAsync(Track.File);
+            }
+        }
+        else
+        {
+            await ShowFileAlreadyOpenAsync(file);
         }
     }
 
