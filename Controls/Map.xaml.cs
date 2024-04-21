@@ -24,8 +24,8 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     IRecipient<SetMapCenterMessage>,
     IRecipient<TrackComplete>
 {
-    private static PropertyChangedEventArgs _centerChangedEventArgs = new PropertyChangedEventArgs(nameof(Center));
-    private static PropertyChangedEventArgs _headingChangedEventArgs = new PropertyChangedEventArgs(nameof(Heading));
+    private static readonly PropertyChangedEventArgs _centerChangedEventArgs = new(nameof(Center));
+    private static readonly PropertyChangedEventArgs _headingChangedEventArgs = new(nameof(Heading));
 
     private readonly AsyncThrottle<object, Map> _loadInfosThrottle = new(
         static (_, @this, cancellationToken) => @this.LoadInfosAsync(cancellationToken),

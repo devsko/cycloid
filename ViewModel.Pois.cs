@@ -60,7 +60,6 @@ partial class ViewModel
         get => _currentPoi;
         set
         {
-            OnTrack oldValue = _currentPoi;
             if (SetProperty(ref _currentPoi, value))
             {
                 RemoveCurrentPoiCommand.NotifyCanExecuteChanged();

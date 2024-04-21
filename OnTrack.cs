@@ -8,7 +8,7 @@ namespace cycloid;
 public partial class OnTrack : ObservableObject
 {
     private readonly IList<OnTrack> _onTracks;
-    private TrackPoint _trackPoint;
+    private readonly TrackPoint _trackPoint;
     private TrackPoint.CommonValues _values;
 
     public PointOfInterest PointOfInterest { get; set; }

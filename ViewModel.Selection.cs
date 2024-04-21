@@ -253,18 +253,18 @@ partial class ViewModel
 
     private async Task<WayPoint[]> GetSelectedWayPointsAsync()
     {
-        (WayPoint[] WayPoints, TrackPoint.CommonValues[] Starts) segments = await Track.Points.GetSegmentStartsAsync(default);
-        IEnumerable<WayPoint> wayPoints = segments.WayPoints
-            .Zip(segments.Starts, (wayPoint, start) => (WayPoint: wayPoint, Start: start.Distance))
+        (WayPoint[] wayPoints, TrackPoint.CommonValues[] starts) = await Track.Points.GetSegmentStartsAsync(default);
+        IEnumerable<WayPoint> wp = wayPoints
+            .Zip(starts, (wayPoint, start) => (WayPoint: wayPoint, Start: start.Distance))
             .SkipWhile(tuple => tuple.Start < CurrentSelection.Start.Distance)
             .TakeWhile(tuple => tuple.Start <= CurrentSelection.End.Distance)
             .Select(tuple => tuple.WayPoint);
 
         if (CurrentSelection.End.Equals(Track.Points.Last()))
         {
-            wayPoints = wayPoints.Append(segments.WayPoints.Last());
+            wp = wp.Append(wayPoints.Last());
         }
 
-        return wayPoints.ToArray();
+        return wp.ToArray();
     }
 }

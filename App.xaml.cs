@@ -65,7 +65,7 @@ sealed partial class App : Application
             Window.Current.Activate();
         }
 
-        async Task InitJumpListAsync()
+        static async Task InitJumpListAsync()
         {
             JumpList list = await JumpList.LoadCurrentAsync();
             list.SystemGroupKind = JumpListSystemGroupKind.Recent;
