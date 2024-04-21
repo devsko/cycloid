@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Info;
 using cycloid.Routing;
 using Windows.Storage;
@@ -10,6 +11,8 @@ namespace cycloid;
 
 public partial class Track : ObservableObject
 {
+    private CompareSession _compareSession;
+
     public IStorageFile File { get; set; }
 
     public RouteBuilder RouteBuilder { get; }
@@ -34,6 +37,19 @@ public partial class Track : ObservableObject
     }
 
     public string Name => File is null ? "" : Path.GetFileNameWithoutExtension(File.Name);
+
+    public CompareSession CompareSession
+    {
+        get => _compareSession;
+        set
+        {
+            CompareSession oldValue = _compareSession;
+            if (SetProperty(ref _compareSession, value))
+            {
+                StrongReferenceMessenger.Default.Send(new CompareSessionChanged(this, oldValue, value));
+            }
+        }
+    }
 
     public string FilePosition(float distance)
     {

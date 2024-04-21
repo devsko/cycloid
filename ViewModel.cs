@@ -211,7 +211,7 @@ public partial class ViewModel : ObservableObject,
         set => SetProperty(ref _status, value);
     }
 
-    public bool CanEditProfile => Track is not null && (Track.Points.IsEmpty || Track.CurrentCompareSession is not null);
+    public bool CanEditProfile => Track is not null && (Track.Points.IsEmpty || Track.CompareSession is not null);
 
     [RelayCommand]
     public Task OpenLocationAsync(MapPoint location)

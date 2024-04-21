@@ -18,7 +18,7 @@ partial class ViewModel :
     private int _bikerPower;
     private bool _trackIsRecalculating;
 
-    public bool HasCompareSession => Track?.CurrentCompareSession is not null;
+    public bool HasCompareSession => Track?.CompareSession is not null;
 
     public int DownhillCost
     {
@@ -110,35 +110,35 @@ partial class ViewModel :
     }
 
     public string CompareSessionState =>
-        Track?.CurrentCompareSession is null
+        Track?.CompareSession is null
         ? ""
-        : (Track.CurrentCompareSession.Differences.Count) switch
+        : (Track.CompareSession.Differences.Count) switch
         {
             0 => "No differences",
             1 => "1 difference",
             int n => $"{n} differences",
         } +
-        (TrackIsRecalculating ? $" ({Track.CurrentCompareSession.OriginalSegmentsCount - Track.RouteBuilder.ChangeLock.RunningCalculationCounter} / {Track.CurrentCompareSession.OriginalSegmentsCount})" : "");
+        (TrackIsRecalculating ? $" ({Track.CompareSession.OriginalSegmentsCount - Track.RouteBuilder.ChangeLock.RunningCalculationCounter} / {Track.CompareSession.OriginalSegmentsCount})" : "");
 
-    public string CompareSessionCommandName => Track?.CurrentCompareSession is not null ? "Accept" : "Restore point";
+    public string CompareSessionCommandName => Track?.CompareSession is not null ? "Accept" : "Restore point";
 
     [RelayCommand(CanExecute = nameof(CanCompareSession))]
     public async Task CompareSessionAsync(CancellationToken cancellationToken)
     {
-        if (Track.CurrentCompareSession is null)
+        if (Track.CompareSession is null)
         {
             try
             {
-                Track.CurrentCompareSession = new Track.CompareSession(Track, (await Track.Points.GetSegmentsAsync(cancellationToken)));
+                Track.CompareSession = new CompareSession(Track, (await Track.Points.GetSegmentsAsync(cancellationToken)));
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             { }
         }
         else
         {
-            Track.CurrentCompareSession.Differences.Clear();
-            Track.CurrentCompareSession.Dispose();
-            Track.CurrentCompareSession = null;
+            Track.CompareSession.Differences.Clear();
+            Track.CompareSession.Dispose();
+            Track.CompareSession = null;
         }
     }
 
@@ -174,9 +174,9 @@ partial class ViewModel :
     {
         RecalculateCommand.Cancel();
         CompareSessionCommand.Cancel();
-        Track.CurrentCompareSession.Differences.Clear();
-        await Track.CurrentCompareSession.RollbackAsync();
-        Track.CurrentCompareSession = null;
+        Track.CompareSession.Differences.Clear();
+        await Track.CompareSession.RollbackAsync();
+        Track.CompareSession = null;
         (DownhillCost, DownhillCutoff, UphillCost, UphillCutoff, BikerPower) = (Track.RouteBuilder.Profile.DownhillCost, Track.RouteBuilder.Profile.DownhillCutoff, Track.RouteBuilder.Profile.UphillCost, Track.RouteBuilder.Profile.UphillCutoff, Track.RouteBuilder.Profile.BikerPower);
     }
 
