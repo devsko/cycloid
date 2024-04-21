@@ -277,29 +277,29 @@
                                     Grid.Row="0"
                                     Grid.Column="2"
                                     HorizontalAlignment="Right"
-                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.CompareSession.Diff.Distance)}"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.FlexDistance(ViewModel.CompareSession.Diff.Distance)}"
+                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.Track.CurrentCompareSession.Diff.Distance)}"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.FlexDistance(ViewModel.Track.CurrentCompareSession.Diff.Distance)}"
                                     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
                                 <TextBlock
                                     Grid.Row="1"
                                     Grid.Column="2"
                                     HorizontalAlignment="Right"
-                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.CompareSession.Diff.Time)}"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.CompareSession.Diff.Time)}"
+                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.Track.CurrentCompareSession.Diff.Time)}"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.Track.CurrentCompareSession.Diff.Time)}"
                                     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
                                 <TextBlock
                                     Grid.Row="2"
                                     Grid.Column="2"
                                     HorizontalAlignment="Right"
-                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.CompareSession.Diff.Ascent)}"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(ViewModel.CompareSession.Diff.Ascent)}"
+                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.Track.CurrentCompareSession.Diff.Ascent)}"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(ViewModel.Track.CurrentCompareSession.Diff.Ascent)}"
                                     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
                                 <TextBlock
                                     Grid.Row="3"
                                     Grid.Column="2"
                                     HorizontalAlignment="Right"
-                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.ReverseDifferenceBrush(ViewModel.CompareSession.Diff.Descent)}"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(ViewModel.CompareSession.Diff.Descent)}"
+                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.ReverseDifferenceBrush(ViewModel.Track.CurrentCompareSession.Diff.Descent)}"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(ViewModel.Track.CurrentCompareSession.Diff.Descent)}"
                                     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
                             </Grid>
                             <Grid Grid.Row="1" ColumnSpacing="5">
@@ -410,7 +410,7 @@
                                 Text="{x:Bind Mode=OneWay, Path=ViewModel.CompareSessionState}" />
                             <ListView
                                 Grid.Row="5"
-                                ItemsSource="{x:Bind Mode=OneWay, Path=ViewModel.CompareSession.Differences}"
+                                ItemsSource="{x:Bind Mode=OneWay, Path=ViewModel.Track.CurrentCompareSession.Differences}"
                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
                                 ScrollViewer.VerticalScrollMode="Auto"
                                 SelectionChanged="Differences_SelectionChanged">

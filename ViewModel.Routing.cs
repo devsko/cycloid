@@ -284,8 +284,6 @@ partial class ViewModel :
         OnPropertyChanged(nameof(TrackIsCalculating));
         OnPropertyChanged(nameof(CompareSessionState));
 
-        CompareSessionCommand.NotifyCanExecuteChanged();
-
         CurrentSelection = Selection.Invalid;
     }
 
@@ -293,8 +291,6 @@ partial class ViewModel :
     {
         OnPropertyChanged(nameof(TrackIsCalculating));
         OnPropertyChanged(nameof(CompareSessionState));
-
-        CompareSessionCommand.NotifyCanExecuteChanged();
 
         if (!message.Initialization && !IsCaptured)
         {

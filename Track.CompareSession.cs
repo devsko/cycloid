@@ -5,11 +5,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using cycloid.Routing;
 
 using IndexedPoint = (cycloid.TrackPoint Point, int SegmentIndex, int PointIndex);
 
 namespace cycloid;
+
+public class CompareSessionChanged(object sender, Track.CompareSession oldValue, Track.CompareSession newValue) : PropertyChangedMessage<Track.CompareSession>(sender, null, oldValue, newValue);
 
 public class TrackDifference
 {
@@ -21,6 +24,21 @@ public class TrackDifference
 
 partial class Track
 {
+    private CompareSession _compareSession;
+
+    public CompareSession CurrentCompareSession
+    {
+        get => _compareSession;
+        set
+        {
+            CompareSession oldValue = _compareSession;
+            if (SetProperty(ref _compareSession, value))
+            {
+                StrongReferenceMessenger.Default.Send(new CompareSessionChanged(this, oldValue, value));
+            }
+        }
+    }
+
     public class CompareSession : ObservableObject,
         IRecipient<SectionAdded>,
         IRecipient<SectionRemoved>,
