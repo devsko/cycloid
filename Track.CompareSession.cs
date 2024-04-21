@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Routing;
 
@@ -15,13 +16,12 @@ public class TrackDifference
     public IEnumerable<TrackPoint> OriginalPoints { get; init; }
     public int SectionIndex { get; init; }
     public float Length { get; init; }
-    public float DistanceDiff { get; init; }
-    public float AscentDiff { get; init; }
+    public TrackPoint.CommonValues Diff { get; init; }
 }
 
 partial class Track
 {
-    public class CompareSession :
+    public class CompareSession : ObservableObject,
         IRecipient<SectionAdded>,
         IRecipient<SectionRemoved>,
         IRecipient<CalculationStarting>,
@@ -40,6 +40,8 @@ partial class Track
         }
 
         private readonly Track _track;
+        private readonly Profile _originalProfile;
+        private readonly TrackPoint.CommonValues _originalValues;
         private readonly OriginalSegment[] _originalSegments;
         private readonly Dictionary<MapPoint, int> _originalSegmentIndices;
         private readonly WayPoint[] _originalWayPoints;
@@ -50,6 +52,8 @@ partial class Track
         public CompareSession(Track track, (WayPoint[] WayPoints, TrackPoint[][] TrackPoints) segments)
         {
             _track = track;
+            _originalProfile = track.RouteBuilder.Profile;
+            _originalValues = track.Points.Total;
             _originalSegments = segments.TrackPoints.Select(points => new OriginalSegment(points)).ToArray();
             _originalSegmentIndices = segments.WayPoints.SkipLast(1).Select((point, index) => (point, index)).ToDictionary(tuple => tuple.point.Location, tuple => tuple.index);
             _originalWayPoints = segments.WayPoints;
@@ -61,12 +65,15 @@ partial class Track
             StrongReferenceMessenger.Default.Register<CalculationFinished>(this);
         }
 
+        public TrackPoint.CommonValues Diff => _track.Points.Total - _originalValues;
+
         public int OriginalSegmentsCount => _originalSegments.Length;
 
         public async Task RollbackAsync()
         {
             Dispose();
 
+            _track.RouteBuilder.Profile = _originalProfile;
             await _track.RouteBuilder.InitializeAsync(
                 _originalWayPoints
                     .Zip(
@@ -206,12 +213,14 @@ partial class Track
                     void AddDifference()
                     {
                         (int originalStartSegmentIndex, int originalStartPointIndex) = PreviousIndex(original.SegmentIndex, original.PointIndex, originalStart);
-                        TrackPoint originalStartPoint = _originalSegments[originalStartSegmentIndex].Points[originalStartPointIndex];
+                        TrackPoint[] originalPoints = _originalSegments[originalStartSegmentIndex].Points;
+                        TrackPoint originalStartPoint = originalPoints[originalStartPointIndex == -1 ? originalPoints.Length - 2 : originalStartPointIndex];
                         IndexedPoint originalEndPoint = originalEnumerator.Current;
                         TrackPoint.CommonValues originalValues = GetOriginalValues(originalStartPoint, originalStartSegmentIndex, originalEndPoint.Point, originalEndPoint.SegmentIndex);
 
                         (int newStartSegmentIndex, int newStartPointIndex) = PreviousIndex(newDiffPoint.SegmentIndex, newDiffPoint.PointIndex, newStart);
-                        TrackPoint newStartPoint = _newSegments[newStartSegmentIndex].Points[newStartPointIndex];
+                        TrackPoint[] newPoints = _newSegments[newStartSegmentIndex].Points;
+                        TrackPoint newStartPoint = newPoints[newStartPointIndex == -1 ? newPoints.Length - 2 : newStartPointIndex];
                         IndexedPoint newEndPoint = newPoint;
                         TrackPoint.CommonValues newValues = GetNewValues(newStartPoint, newStartSegmentIndex, newEndPoint.Point, newEndPoint.SegmentIndex);
 
@@ -220,16 +229,23 @@ partial class Track
                             OriginalPoints = EnumerateOriginalPoints(originalStartSegmentIndex, originalStartPointIndex, originalEndPoint.SegmentIndex, originalEndPoint.PointIndex).Select(point => point.Point),
                             SectionIndex = originalStartSegmentIndex,
                             Length = originalValues.Distance,
-                            DistanceDiff = newValues.Distance - originalValues.Distance,
-                            AscentDiff = newValues.Ascent - originalValues.Ascent,
+                            Diff = newValues - originalValues,
                         });
 
                         (int SegmentIndex, int PointIndex) PreviousIndex(int segmentIndex, int pointIndex, int minSegmentIndex)
                         {
                             if (--pointIndex < 0)
                             {
-                                pointIndex = 0;
-                                segmentIndex = Math.Max(minSegmentIndex, segmentIndex - 1);
+                                if (--segmentIndex < minSegmentIndex)
+                                {
+                                    segmentIndex = minSegmentIndex;
+                                    pointIndex = 0;
+                                }
+                                else
+                                {
+                                    // Indicates "Last point in segment"
+                                    pointIndex = -1;
+                                }
                             }
                             return (segmentIndex, pointIndex);
                         }
@@ -248,6 +264,8 @@ partial class Track
                         Differences.Insert(i + j, differences[j]);
                     }
                 }
+
+                OnPropertyChanged(nameof(Diff));
             }
 
             IEnumerable<IndexedPoint> EnumerateNewPoints(int startSegment, int endSegment)
@@ -270,7 +288,7 @@ partial class Track
                 for (int segmentIndex = startSegment; segmentIndex <= endSegment; segmentIndex++)
                 {
                     TrackPoint[] points = _originalSegments[segmentIndex].Points;
-                    for (int pointIndex = startPointIndex; pointIndex <= (segmentIndex == endSegment ? (endPoint == -1 ? points.Length - 1 : endPoint) : points.Length - 2); pointIndex++)
+                    for (int pointIndex = (startPointIndex == -1 ? points.Length - 1 : startPointIndex); pointIndex <= (segmentIndex == endSegment ? (endPoint == -1 ? points.Length - 1 : endPoint) : points.Length - 2); pointIndex++)
                     {
                         yield return (points[pointIndex], segmentIndex, pointIndex);
                     }

@@ -88,20 +88,23 @@ public static class Convert
 
     public static Brush DifferenceBrush(float value)
     {
-        if (Math.Abs(value) < 1)
-        {
-            return null;
-        }
-        else if (value > 0)
-        {
-            return _differenceBrushes.Positive;
-        }
-        else if (value < 0)
-        {
-            return _differenceBrushes.Negative;
-        }
+        return value > 1e-5
+            ? _differenceBrushes.Positive
+            : _differenceBrushes.Negative;
+    }
 
-        return null;
+    public static Brush ReverseDifferenceBrush(float value)
+    {
+        return value > -1e-5
+            ? _differenceBrushes.Negative
+            : _differenceBrushes.Positive;
+    }
+
+    public static Brush DifferenceBrush(TimeSpan value)
+    {
+        return value.TotalHours > 1e-5
+            ? _differenceBrushes.Positive
+            : _differenceBrushes.Negative;
     }
 
     public static Geopoint ToGeopoint(TrackPoint point) => point.IsValid ? new Geopoint((BasicGeoposition)point) : _emptyGeopoint;
@@ -124,5 +127,7 @@ public static class Convert
 
     public static bool IsValid(Selection value) => value.IsValid;
 
-    public static bool IsNotNull(object value) => value is not null;
+    public static bool Not(bool value) => !value;
+
+    // IsNull / IsNotNull is not working!
 }

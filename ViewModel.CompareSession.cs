@@ -13,13 +13,11 @@ public class CompareSessionChanged(object sender, Track.CompareSession oldValue,
 partial class ViewModel
 {
     private Track.CompareSession _compareSession;
-    private bool _recalculationComplete;
     private int _downhillCost;
     private float _downhillCutoff;
     private int _uphillCost;
     private float _uphillCutoff;
     private int _bikerPower;
-    private Routing.Profile _originalProfile;
 
     public Track.CompareSession CompareSession
     {
@@ -39,31 +37,19 @@ partial class ViewModel
                 }
 
                 OnPropertyChanged(nameof(CanEditProfile));
-                OnPropertyChanged(nameof(RecalculateCommandName));
+                OnPropertyChanged(nameof(CompareSessionCommandName));
                 OnPropertyChanged(nameof(CompareSessionState));
+                OnPropertyChanged(nameof(HasCompareSession));
 
                 RecalculateCommand.NotifyCanExecuteChanged();
-                CancelCommand.NotifyCanExecuteChanged();
+                CancelCompareSessionCommand.NotifyCanExecuteChanged();
 
                 StrongReferenceMessenger.Default.Send(new CompareSessionChanged(this, oldValue, value));
             }
         }
     }
 
-    public bool RecalculationComplete
-    {
-        get => _recalculationComplete;
-        set
-        {
-            if (SetProperty(ref _recalculationComplete, value))
-            {
-                OnPropertyChanged(nameof(RecalculateCommandName));
-                OnPropertyChanged(nameof(CompareSessionState));
-
-                RecalculateCommand.NotifyCanExecuteChanged();
-            }
-        }
-    }
+    public bool HasCompareSession => CompareSession is not null;
 
     public int DownhillCost
     {
@@ -149,56 +135,64 @@ partial class ViewModel
             1 => "1 difference",
             int n => $"{n} differences",
         } +
-        (RecalculationComplete ? "" : $" ({CompareSession.OriginalSegmentsCount - Track.RouteBuilder.ChangeLock.RunningCalculationCounter} / {CompareSession.OriginalSegmentsCount})");
+        (TrackIsCalculating ? $" ({CompareSession.OriginalSegmentsCount - Track.RouteBuilder.ChangeLock.RunningCalculationCounter} / {CompareSession.OriginalSegmentsCount})" : "");
 
-    public string RecalculateCommandName => RecalculationComplete ? "Accept" : "Restore point";
+    public string CompareSessionCommandName => CompareSession is not null ? "Accept" : "Restore point";
+
+    [RelayCommand(CanExecute = nameof(CanCompareSession))]
+    public async Task CompareSessionAsync(CancellationToken cancellationToken)
+    {
+        if (CompareSession is null)
+        {
+            try
+            {
+                CompareSession = new Track.CompareSession(Track, (await Track.Points.GetSegmentsAsync(cancellationToken)));
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            { }
+        }
+        else
+        {
+            CompareSession.Differences.Clear();
+            CompareSession.Dispose();
+            CompareSession = null;
+        }
+    }
+
+    private bool CanCompareSession()
+    {
+        return IsEditMode && Track is not null && TrackIsInitialized && !TrackIsCalculating;
+    }
 
     [RelayCommand(CanExecute = nameof(CanRecalculate))]
     public async Task RecalculateAsync(CancellationToken cancellationToken)
     {
-        if (CanRecalculate())
+        try
         {
-            if (CompareSession is null)
-            {
-                _originalProfile = Track.RouteBuilder.Profile;
-                try
-                {
-                    Track.RouteBuilder.Profile = new Routing.Profile(DownhillCost, DownhillCutoff, UphillCost, UphillCutoff, BikerPower);
-                    CompareSession = new Track.CompareSession(Track, (await Track.Points.GetSegmentsAsync(cancellationToken)));
-                    await Track.RouteBuilder.RecalculateAllAsync(cancellationToken);
-                    RecalculationComplete = true;
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                { }
-            }
-            else
-            {
-                CompareSession.Differences.Clear();
-                CompareSession.Dispose();
-                CompareSession = null;
-                RecalculationComplete = false;
-            }
+            Track.RouteBuilder.Profile = new Routing.Profile(DownhillCost, DownhillCutoff, UphillCost, UphillCutoff, BikerPower);
+            await Track.RouteBuilder.RecalculateAllAsync(cancellationToken);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        { }
     }
 
     private bool CanRecalculate()
     {
-        return Mode is Modes.Edit && Track is not null && TrackIsInitialized && (CompareSession is null || RecalculationComplete);
+        return CompareSession is not null;
     }
 
-    [RelayCommand(CanExecute = nameof(CanCancel))]
-    public async Task CancelAsync()
+    [RelayCommand(CanExecute = nameof(CanCancelCompareSession))]
+    public async Task CancelCompareSessionAsync()
     {
         RecalculateCommand.Cancel();
+        CompareSessionCommand.Cancel();
         CompareSession.Differences.Clear();
         await CompareSession.RollbackAsync();
         CompareSession = null;
-        RecalculationComplete = false;
-        Track.RouteBuilder.Profile = _originalProfile;
-        (DownhillCost, DownhillCutoff, UphillCost, UphillCutoff, BikerPower) = (_originalProfile.DownhillCost, _originalProfile.DownhillCutoff, _originalProfile.UphillCost, _originalProfile.UphillCutoff, _originalProfile.BikerPower);
+        (DownhillCost, DownhillCutoff, UphillCost, UphillCutoff, BikerPower) = (Track.RouteBuilder.Profile.DownhillCost, Track.RouteBuilder.Profile.DownhillCutoff, Track.RouteBuilder.Profile.UphillCost, Track.RouteBuilder.Profile.UphillCutoff, Track.RouteBuilder.Profile.BikerPower);
     }
 
-    private bool CanCancel()
+    private bool CanCancelCompareSession()
     {
         return CompareSession is not null;
     }

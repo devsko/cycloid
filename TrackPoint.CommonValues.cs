@@ -33,8 +33,6 @@ partial struct TrackPoint
         public static CommonValues operator -(CommonValues left, CommonValues right)
             => new(left._distance - right._distance, left._time - right._time, left._ascent - right._ascent, left._descent - right._descent);
 
-#if DEBUG
         public string DebuggerDisplay => $"{Distance / 1000:N1} [{Time:d\\.hh\\:mm}]";
-#endif
     }
 }

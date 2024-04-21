@@ -70,22 +70,21 @@ public partial class ViewModel : ObservableObject,
                 {
                     OnPropertyChanged(nameof(IsEditMode));
                     OnPropertyChanged(nameof(MapHoverPointVisible));
+                    OnPropertyChanged(nameof(MapHoverPointValuesEnabled));
                     OnPropertyChanged(nameof(PoisEnabled));
                     OnPropertyChanged(nameof(PoisVisible));
 
-                    RecalculateCommand.NotifyCanExecuteChanged();
+                    CompareSessionCommand.NotifyCanExecuteChanged();
                     DeleteSelectionCommand.NotifyCanExecuteChanged();
                     PasteWayPointsCommand.NotifyCanExecuteChanged();
 
                     if (isEditMode)
                     {
                         RemoveAllOnTrackPoints();
-                        MapHoverPointValuesEnabled = false;
                     }
                     else
                     {
                         CreateAllOnTrackPoints();
-                        MapHoverPointValuesEnabled = true;
                     }
                 }
 
@@ -116,10 +115,11 @@ public partial class ViewModel : ObservableObject,
 
                 ConnectRouting(value);
 
+                OnPropertyChanged(nameof(HasTrack));
                 OnPropertyChanged(nameof(CanEditProfile));
 
                 SaveTrackAsCommand.NotifyCanExecuteChanged();
-                RecalculateCommand.NotifyCanExecuteChanged();
+                CompareSessionCommand.NotifyCanExecuteChanged();
                 AddPointOfInterestCommand.NotifyCanExecuteChanged();
                 RemoveCurrentSectionCommand.NotifyCanExecuteChanged();
 
@@ -127,6 +127,8 @@ public partial class ViewModel : ObservableObject,
             }
         }
     }
+
+    public bool HasTrack => Track is not null;
 
     public bool TrackIsInitialized
     {
@@ -144,7 +146,7 @@ public partial class ViewModel : ObservableObject,
                     BikerPower = Track.RouteBuilder.Profile.BikerPower;
                 }
 
-                RecalculateCommand.NotifyCanExecuteChanged();
+                CompareSessionCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -193,7 +195,13 @@ public partial class ViewModel : ObservableObject,
     public bool MapHoverPointValuesEnabled
     {
         get => !ProfileHoverPointValuesEnabled && !IsEditMode;
-        set => ProfileHoverPointValuesEnabled = !value;
+        set
+        {
+            if (!IsEditMode)
+            {
+                ProfileHoverPointValuesEnabled = !value;
+            }
+        }
     }
 
     public string Status

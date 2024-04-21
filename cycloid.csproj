@@ -302,6 +302,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
+    <Content Include="Assets\cycle.3mf" />
     <None Include="cycloid_TemporaryKey.pfx" />
     <None Include="secrets.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

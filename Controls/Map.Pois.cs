@@ -142,7 +142,7 @@ partial class Map :
         if (message.Value.IsValid)
         {
             string name = message.Value.Name;
-            if (name.Length > 14)
+            if (name.Length > 16)
             {
                 name = name[..14] + "... ";
             }

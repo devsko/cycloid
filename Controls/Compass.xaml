@@ -15,7 +15,7 @@
                 ui:VisualExtensions.CenterPoint="40,40,0"
                 ui:VisualExtensions.RotationAngleInDegrees="{x:Bind Mode=OneWay, Path=HeadingToRootAngle(Heading)}">
                 <animations:Implicit.Animations>
-                    <animations:RotationInDegreesAnimation Duration="0:0:0.5" />
+                    <animations:RotationInDegreesAnimation Duration="0:0:0.5" EasingType="Linear" />
                 </animations:Implicit.Animations>
                 <Grid.Resources>
                     <Style TargetType="Ellipse">

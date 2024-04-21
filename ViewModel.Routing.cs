@@ -282,6 +282,9 @@ partial class ViewModel :
     void IRecipient<RouteChanging>.Receive(RouteChanging _)
     {
         OnPropertyChanged(nameof(TrackIsCalculating));
+        OnPropertyChanged(nameof(CompareSessionState));
+
+        CompareSessionCommand.NotifyCanExecuteChanged();
 
         CurrentSelection = Selection.Invalid;
     }
@@ -289,6 +292,9 @@ partial class ViewModel :
     void IRecipient<RouteChanged>.Receive(RouteChanged message)
     {
         OnPropertyChanged(nameof(TrackIsCalculating));
+        OnPropertyChanged(nameof(CompareSessionState));
+
+        CompareSessionCommand.NotifyCanExecuteChanged();
 
         if (!message.Initialization && !IsCaptured)
         {

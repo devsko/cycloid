@@ -30,8 +30,6 @@ partial class Track
 
         public TrackPoint.CommonValues Values => Points is { Length: > 0 } ? Points[^1].Values : default;
 
-#if DEBUG
         public string DebuggerDisplay => $"{(Points is null ? "?" : Values.DebuggerDisplay)} {(Linked ? $"Start=({Start.DebuggerDisplay})" : "")}";
-#endif
     }
 }

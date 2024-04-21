@@ -149,7 +149,7 @@
                         <PathIcon HorizontalAlignment="Center" Data="M 6.426 0.7 L 0.63 11.9 L 4.046 11.9 L 6.426 7.433 L 8.792 11.9 L 12.18 11.9 L 6.426 0.7 Z M 12.18 11.9 L 10.5 15.252 L 8.792 11.9 L 6.202 11.9 L 10.5 20.3 L 14.77 11.9 L 12.18 11.9 Z" />
                     </Border>
                 </ToggleButton>
-                <ToggleButton IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}" IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.IsNotNull(ViewModel.Track)}">
+                <ToggleButton IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.HasTrack}">
                     <ToggleButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="T" Modifiers="Control" />
                     </ToggleButton.KeyboardAccelerators>
@@ -233,8 +233,9 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="5*" />
+                                    <ColumnDefinition Width="4*" />
+                                    <ColumnDefinition Width="3*" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock
                                     Grid.Row="0"
@@ -272,6 +273,34 @@
                                     Grid.Row="3"
                                     Grid.Column="1"
                                     Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Descent)}" />
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.CompareSession.Diff.Distance)}"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.FlexDistance(ViewModel.CompareSession.Diff.Distance)}"
+                                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.CompareSession.Diff.Time)}"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.CompareSession.Diff.Time)}"
+                                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.CompareSession.Diff.Ascent)}"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(ViewModel.CompareSession.Diff.Ascent)}"
+                                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
+                                <TextBlock
+                                    Grid.Row="3"
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.ReverseDifferenceBrush(ViewModel.CompareSession.Diff.Descent)}"
+                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(ViewModel.CompareSession.Diff.Descent)}"
+                                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
                             </Grid>
                             <Grid Grid.Row="1" ColumnSpacing="5">
                                 <Grid.ColumnDefinitions>
@@ -281,12 +310,12 @@
                                 <Button
                                     Grid.Column="0"
                                     HorizontalAlignment="Stretch"
-                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.RecalculateCommand}"
-                                    Content="{x:Bind Mode=OneWay, Path=ViewModel.RecalculateCommandName}" />
+                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.CompareSessionCommand}"
+                                    Content="{x:Bind Mode=OneWay, Path=ViewModel.CompareSessionCommandName}" />
                                 <Button
                                     Grid.Column="1"
                                     HorizontalAlignment="Stretch"
-                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.CancelCommand}"
+                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.CancelCompareSessionCommand}"
                                     Content="Rollback" />
                             </Grid>
                             <Grid
@@ -372,6 +401,7 @@
                                 <Button
                                     Grid.Column="1"
                                     HorizontalAlignment="Stretch"
+                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.RecalculateCommand}"
                                     Content="Recalculate" />
                             </Grid>
                             <TextBlock
@@ -387,17 +417,11 @@
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="cycloid:TrackDifference">
                                         <Grid>
-                                            <TextBlock Text="{x:Bind Mode=OneTime, Path=cycloid:Format.ShortDistance(Length)}" />
+                                            <TextBlock Text="{x:Bind Mode=OneTime, Path=cycloid:Format.FlexDistance(Length)}" />
                                             <TextBlock HorizontalAlignment="Right">
-                                                <Run
-                                                    FontWeight="Bold"
-                                                    Foreground="{x:Bind Mode=OneTime, Path=cycloid:Convert.DifferenceBrush(DistanceDiff)}"
-                                                    Text="{x:Bind Mode=OneTime, Path=cycloid:Format.ShortDistance(DistanceDiff)}" />
+                                                <Run Foreground="{x:Bind Mode=OneTime, Path=cycloid:Convert.DifferenceBrush(Diff.Distance)}" Text="{x:Bind Mode=OneTime, Path=cycloid:Format.FlexDistance(Diff.Distance)}" />
                                                 <Run>/</Run>
-                                                <Run
-                                                    FontWeight="Bold"
-                                                    Foreground="{x:Bind Mode=OneTime, Path=cycloid:Convert.DifferenceBrush(AscentDiff)}"
-                                                    Text="{x:Bind Mode=OneTime, Path=cycloid:Format.ShortDistance(AscentDiff)}" />
+                                                <Run Foreground="{x:Bind Mode=OneTime, Path=cycloid:Convert.DifferenceBrush(Diff.Ascent)}" Text="{x:Bind Mode=OneTime, Path=cycloid:Format.ShortDistance(Diff.Ascent)}" />
                                             </TextBlock>
                                         </Grid>
                                     </DataTemplate>
@@ -408,6 +432,7 @@
                     <mux:TabViewItem
                         Header="Sections"
                         IsClosable="false"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
                         Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Sections}">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="FullScreen" />
@@ -483,6 +508,7 @@
                     <mux:TabViewItem
                         Header="POIs"
                         IsClosable="false"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
                         Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.POIs}">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="MapPin" />
@@ -554,6 +580,7 @@
                     <mux:TabViewItem
                         Header="Train"
                         IsClosable="false"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
                         Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Train}">
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="Play" />

@@ -26,6 +26,8 @@ public static class Format
 
     public static string ShortDistance(float value) => $"{Math.Abs(value):N0} m";
 
+    public static string FlexDistance(float value) => Math.Abs(value) >= 10_000 ? Distance(Math.Abs(value)) : ShortDistance(value);
+
     public static string Duration(TimeSpan value) => value.Days == 0 ? $"{value:hh\\:mm}" : $"{value:d\\.hh\\:mm}";
 
     public static string Altitude(float value) => $"{value:N0} m";

@@ -37,8 +37,8 @@ public sealed partial class Compass : TrackPointControl
         {
             rotation += 360;
         }
-        var current = visual.RotationAngleInDegrees - rounds * 360;
-        if (rotation is >= 270 and <= 360 && current is > 0 and <= 90)
+        float current = visual.RotationAngleInDegrees - rounds * 360;
+        if (rotation is >= 270 and <= 360 && current is >= 0 and <= 90)
         {
             rounds--;
         }

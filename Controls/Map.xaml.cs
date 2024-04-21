@@ -73,15 +73,16 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
             GeoboundingBox bounds = GeoboundingBox.TryCompute(differenceLine.Path.Positions);
             if (bounds is not null)
             {
+                var zoomLevel = Math.Max(15, MapControl.ZoomLevel);
                 SetViewAsync().FireAndForget();
 
                 async Task SetViewAsync()
                 {
                     await MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.None);
                     await Task.Delay(10);
-                    if (MapControl.ZoomLevel > 15)
+                    if (MapControl.ZoomLevel > zoomLevel)
                     {
-                        MapControl.ZoomLevel = 15;
+                        MapControl.ZoomLevel = zoomLevel;
                     }
                 }
             }
@@ -217,6 +218,22 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
         _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
         MapControl.Layers.Add(_routingLayer);
+
+        //XAsync().FireAndForget();
+
+        //async Task XAsync()
+        //{
+        //    MapModel3D x = await MapModel3D.CreateFrom3MFAsync(RandomAccessStreamReference.CreateFromUri(new Uri("ms-appx:///Assets/cycle.3mf")));
+        //    MapElement3D y = new() { Model = x, Location = new Geopoint(new BasicGeoposition { Latitude = 47.76002, Longitude = 12.21696 }), Scale=new(.1f,.1f,.1f), Heading=90 };
+        //    _infoLayer.MapElements.Add(y);
+        //    await Task.Delay(TimeSpan.FromSeconds(10));
+        //    while (true)
+        //    {
+        //        y.Heading += 0.1;
+        //        y.Location = new Geopoint(new BasicGeoposition { Latitude = y.Location.Position.Latitude + .00001, Longitude = y.Location.Position.Longitude });
+        //        await Task.Delay(TimeSpan.FromMilliseconds(20));
+        //    }
+        //} 
     }
 
     private void MapControl_ActualCameraChanged(MapControl _1, MapActualCameraChangedEventArgs _2)
