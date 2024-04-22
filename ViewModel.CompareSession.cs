@@ -130,6 +130,7 @@ partial class ViewModel :
             try
             {
                 Track.CompareSession = new CompareSession(Track, (await Track.Points.GetSegmentsAsync(cancellationToken)));
+                await SaveTrackAsync();
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             { }
@@ -139,6 +140,7 @@ partial class ViewModel :
             Track.CompareSession.Differences.Clear();
             Track.CompareSession.Dispose();
             Track.CompareSession = null;
+            await SaveTrackAsync();
         }
     }
 
@@ -174,9 +176,13 @@ partial class ViewModel :
     {
         RecalculateCommand.Cancel();
         CompareSessionCommand.Cancel();
-        Track.CompareSession.Differences.Clear();
-        await Track.CompareSession.RollbackAsync();
-        Track.CompareSession = null;
+        if (Track.CompareSession is not null)
+        {
+            Track.CompareSession.Differences.Clear();
+            await Track.CompareSession.RollbackAsync();
+            Track.CompareSession = null;
+            await SaveTrackAsync();
+        }
         (DownhillCost, DownhillCutoff, UphillCost, UphillCutoff, BikerPower) = (Track.RouteBuilder.Profile.DownhillCost, Track.RouteBuilder.Profile.DownhillCutoff, Track.RouteBuilder.Profile.UphillCost, Track.RouteBuilder.Profile.UphillCutoff, Track.RouteBuilder.Profile.BikerPower);
     }
 
