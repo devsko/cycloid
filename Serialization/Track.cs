@@ -9,6 +9,7 @@ public class Track
     public WayPoint[] WayPoints { get; set; }
     public byte[][] TrackPoints { get; set; }
     public PointOfInterest[] PointsOfInterest { get; set; }
+    public CompareSession? CompareSession { get; set; }
 }
 
 public class Selection
@@ -50,4 +51,15 @@ public struct PointOfInterest
     public int Count { get; set; }
     public InfoType Type { get; set; }
     public string Name { get; set; }
+}
+
+public struct CompareSession
+{
+    public Profile Profile { get; set; }
+    public WayPoint[] WayPoints { get; set; }
+    public byte[][] TrackPoints { get; set; }
+    public float Distance { get; set; }
+    public TimeSpan Time { get; set; }
+    public float Ascent { get; set; }
+    public float Descent { get; set; }
 }

@@ -353,7 +353,15 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
     void IRecipient<TrackChanged>.Receive(TrackChanged message)
     {
-        _routingLayer.MapElements.Clear();
+        if (message.OldValue is not null)
+        {
+            _routingLayer.MapElements.Clear();
+            if (message.OldValue.CompareSession is not null)
+            {
+                message.OldValue.CompareSession.Differences.CollectionChanged -= Differences_CollectionChanged;
+                _differenceLayer.MapElements.Clear();
+            }
+        }
 
         DisconnectRouting(message.OldValue);
         ConnectRouting(message.NewValue);

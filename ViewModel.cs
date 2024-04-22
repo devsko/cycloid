@@ -107,8 +107,11 @@ public partial class ViewModel : ObservableObject,
             Track oldValue = _track;
             if (SetProperty(ref _track, value))
             {
+                oldValue?.CompareSession?.Dispose();
                 DisconnectRouting(oldValue);
+                oldValue?.ClearViewState();
 
+                Mode = Modes.Edit;
                 TrackIsInitialized = false;
                 CurrentPoint = TrackPoint.Invalid;
                 HoverPoint = TrackPoint.Invalid;

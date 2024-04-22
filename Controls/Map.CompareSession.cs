@@ -60,11 +60,10 @@ partial class Map :
 
     void IRecipient<CompareSessionChanged>.Receive(CompareSessionChanged message)
     {
-        _differenceLayer.MapElements.Clear();
-
         if (message.OldValue is not null)
         {
             message.OldValue.Differences.CollectionChanged -= Differences_CollectionChanged;
+            _differenceLayer.MapElements.Clear();
         }
         if (message.NewValue is not null)
         {

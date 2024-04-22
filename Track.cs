@@ -11,8 +11,6 @@ namespace cycloid;
 
 public partial class Track : ObservableObject
 {
-    private CompareSession _compareSession;
-
     public IStorageFile File { get; set; }
 
     public RouteBuilder RouteBuilder { get; }
@@ -21,33 +19,34 @@ public partial class Track : ObservableObject
 
     public List<PointOfInterest> PointsOfInterest { get; }
 
-    public Track(IStorageFile file)
+    public Track(IStorageFile file, bool isNew)
     {
         File = file;
         RouteBuilder = new RouteBuilder();
         Points = new PointCollection(this);
-        PointOfInterest goal = new()
+        PointsOfInterest = [];
+        if (isNew)
         {
-            Name = "Goal",
-            Type = InfoType.Goal,
-            Category = InfoCategory.Section,
-        };
-        goal.InitOnTrackCount(1);
-        PointsOfInterest = [goal];
+            PointOfInterest goal = new()
+            {
+                Name = "Goal",
+                Type = InfoType.Goal,
+                Category = InfoCategory.Section,
+            };
+            goal.InitOnTrackCount(1);
+            PointsOfInterest.Add(goal);
+        }
     }
 
     public string Name => File is null ? "" : Path.GetFileNameWithoutExtension(File.Name);
 
-    public CompareSession CompareSession
+    public void ClearViewState()
     {
-        get => _compareSession;
-        set
+        if (CompareSession is not null)
         {
-            CompareSession oldValue = _compareSession;
-            if (SetProperty(ref _compareSession, value))
-            {
-                StrongReferenceMessenger.Default.Send(new CompareSessionChanged(this, oldValue, value));
-            }
+            CompareSession.Differences.Clear();
+            OnPropertyChanged(nameof(CompareSession));
+            StrongReferenceMessenger.Default.Send(new CompareSessionChanged(this, CompareSession, null));
         }
     }
 

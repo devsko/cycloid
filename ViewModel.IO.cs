@@ -136,7 +136,7 @@ partial class ViewModel
                 StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
             }
 
-            Track = new Track(file);
+            Track = new Track(file, true);
 
             await SaveAsync();
 
@@ -210,7 +210,7 @@ partial class ViewModel
 
     private async Task LoadTrackFileAsync(IStorageFile file)
     {
-        Track = new Track(file);
+        Track = new Track(file, false);
 
         StrongReferenceMessenger.Default.Send(new FileChanged(file));
 

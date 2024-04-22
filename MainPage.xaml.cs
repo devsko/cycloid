@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
@@ -189,7 +190,7 @@ public sealed partial class MainPage : Page,
         ListView list = (ListView)sender;
         if (list.SelectedItem is OnTrack onTrack)
         {
-            SendMapCenterMessage(onTrack);
+            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.Location));
         }
     }
 
@@ -201,13 +202,8 @@ public sealed partial class MainPage : Page,
             item.FindAscendant<ListView>() == list &&
             item.Content is OnTrack onTrack)
         {
-            SendMapCenterMessage(onTrack);
+            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.Location));
         }
-    }
-
-    private void SendMapCenterMessage(OnTrack onTrack)
-    {
-        StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.Location));
     }
 
     private void TextBox_CharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs args)
@@ -221,12 +217,11 @@ public sealed partial class MainPage : Page,
 
     void IRecipient<FileChanged>.Receive(FileChanged message)
     {
-        ApplicationView.GetForCurrentView().Title = message.Value is null ? string.Empty : message.Value.Name;
+        ApplicationView.GetForCurrentView().Title = message.Value is null ? "" : Path.GetFileNameWithoutExtension(message.Value.Name);
     }
 
     void IRecipient<OnTrackAdded>.Receive(OnTrackAdded message)
     {
-        Debug.WriteLine($"OnTrackAdded {message.Value}");
         _lastAddedOnTrack = message.Value;
     }
 

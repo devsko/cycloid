@@ -21,6 +21,29 @@ public class TrackDifference
     public TrackPoint.CommonValues Diff { get; init; }
 }
 
+partial class Track
+{
+    private CompareSession _compareSession;
+
+    public CompareSession CompareSession
+    {
+        get => _compareSession;
+        set
+        {
+            CompareSession oldValue = _compareSession;
+            if (SetProperty(ref _compareSession, value))
+            {
+                StrongReferenceMessenger.Default.Send(new CompareSessionChanged(this, oldValue, value));
+            }
+        }
+    }
+
+    public async Task InitializeCompareSessionAsync()
+    {
+        _compareSession?.Initialize(await Points.GetSegmentsAsync(default));
+    }
+}
+
 public class CompareSession : ObservableObject,
     IRecipient<SectionAdded>,
     IRecipient<SectionRemoved>,
@@ -65,9 +88,43 @@ public class CompareSession : ObservableObject,
         StrongReferenceMessenger.Default.Register<CalculationFinished>(this);
     }
 
+    public CompareSession(Track track, Profile profile, TrackPoint.CommonValues values, WayPoint[] wayPoints, TrackPoint[][] trackPoints)
+    {
+        _track = track;
+        _originalProfile = profile;
+        _originalValues = values;
+        _originalSegments = trackPoints.Select(segmentPoints => new OriginalSegment(segmentPoints)).ToArray();
+        _originalSegmentIndices = wayPoints.SkipLast(1).Select((point, index) => (Point: point, Index: index)).ToDictionary(tuple => tuple.Point.Location, tuple => tuple.Index);
+        _originalWayPoints = wayPoints;
+        _newSegments = [];
+    }
+
+    public void Initialize((WayPoint[] WayPoints, TrackPoint[][] TrackPoints) segments)
+    {
+        _newSegments.AddRange(segments.WayPoints.SkipLast(1).Zip(segments.TrackPoints, (wayPoint, points) => new NewSegment { Start = wayPoint.Location, Points = points }));
+
+        for (int newIndex = 0; newIndex < _newSegments.Count; newIndex++)
+        {
+            CreateDifferences(newIndex);
+        }
+
+        StrongReferenceMessenger.Default.Register<SectionAdded>(this);
+        StrongReferenceMessenger.Default.Register<SectionRemoved>(this);
+        StrongReferenceMessenger.Default.Register<CalculationStarting>(this);
+        StrongReferenceMessenger.Default.Register<CalculationFinished>(this);
+    }
+
     public TrackPoint.CommonValues Diff => _track.Points.Total - _originalValues;
 
     public int OriginalSegmentsCount => _originalSegments.Length;
+
+    public Profile OriginalProfile => _originalProfile;
+
+    public IEnumerable<TrackPoint[]> OriginalTrackPoints => _originalSegments.Select(segment => segment.Points);
+
+    public WayPoint[] OriginalWayPoints => _originalWayPoints;
+
+    public TrackPoint.CommonValues OriginalValues => _originalValues;
 
     public async Task RollbackAsync()
     {
@@ -91,181 +148,173 @@ public class CompareSession : ObservableObject,
         StrongReferenceMessenger.Default.Unregister<CalculationFinished>(this);
     }
 
-    private void CalculationFinished(RouteSection section, RouteResult result)
+    private void CreateDifferences(int newIndex)
     {
-        if (!section.IsCanceled && result.IsValid)
+        int newStart = newIndex, originalStart = 0;
+        while (true)
         {
-            int newIndex = _track.RouteBuilder.GetSectionIndex(section);
-            _newSegments[newIndex].Points = result.Points;
-
-            int newStart = newIndex, originalStart = 0;
-            while (true)
+            NewSegment newSegment = _newSegments[newStart];
+            if (newSegment.Points is null)
             {
-                NewSegment newSegment = _newSegments[newStart];
-                if (newSegment.Points is null)
-                {
-                    return;
-                }
-                if (_originalSegmentIndices.TryGetValue(newSegment.Start, out originalStart) || newStart == 0)
-                {
-                    break;
-                }
-                newStart--;
+                return;
             }
-
-            int newEnd = newIndex, originalEnd = 0;
-            while (true)
+            if (_originalSegmentIndices.TryGetValue(newSegment.Start, out originalStart) || newStart == 0)
             {
-                if (_newSegments[newEnd].Points is null)
-                {
-                    return;
-                }
-                if (newEnd == _newSegments.Count - 1)
-                {
-                    // We do not test if the new / original end points are equal because it does not matter
-                    originalEnd = _originalSegments.Length;
-                    break;
-                }
-                if (_originalSegmentIndices.TryGetValue(_newSegments[newEnd + 1].Start, out originalEnd))
-                {
-                    break;
-                }
-                newEnd++;
+                break;
             }
-            originalEnd--;
+            newStart--;
+        }
 
-            int[] delete = Differences
-                .Select((diff, index) => (diff, index))
-                .Where(tuple => tuple.diff.SectionIndex >= originalStart && tuple.diff.SectionIndex <= originalEnd)
-                .Select(tuple => tuple.index)
-                .ToArray();
-
-            for (int i = delete.Length - 1; i >= 0; i--)
+        int newEnd = newIndex, originalEnd = 0;
+        while (true)
+        {
+            if (_newSegments[newEnd].Points is null)
             {
-                Differences.RemoveAt(delete[i]);
+                return;
             }
-
-            IEnumerator<IndexedPoint> originalEnumerator = EnumerateOriginalPoints(originalStart, 0, originalEnd, -1).GetEnumerator();
-            bool hasMore = originalEnumerator.MoveNext();
-            IndexedPoint original = originalEnumerator.Current;
-
-            bool isDiff = false;
-            List<TrackDifference> differences = [];
-
-            IEnumerator<IndexedPoint> newEnumerator = EnumerateNewPoints(newStart, newEnd).GetEnumerator();
-            IndexedPoint newPoint = default;
-            IndexedPoint newDiffPoint = default;
-            while (true)
+            if (newEnd == _newSegments.Count - 1)
             {
-                if (!newEnumerator.MoveNext())
-                {
-                    if (isDiff)
-                    {
-                        while (originalEnumerator.MoveNext()) ;
-                        AddDifference();
-                    }
-                    break;
-                }
+                // We do not test if the new / original end points are equal because it does not matter
+                originalEnd = _originalSegments.Length;
+                break;
+            }
+            if (_originalSegmentIndices.TryGetValue(_newSegments[newEnd + 1].Start, out originalEnd))
+            {
+                break;
+            }
+            newEnd++;
+        }
+        originalEnd--;
 
-                newPoint = newEnumerator.Current;
+        int[] delete = Differences
+            .Select((diff, index) => (diff, index))
+            .Where(tuple => tuple.diff.SectionIndex >= originalStart && tuple.diff.SectionIndex <= originalEnd)
+            .Select(tuple => tuple.index)
+            .ToArray();
 
-                if (!hasMore)
-                {
-                    break;
-                }
+        for (int i = delete.Length - 1; i >= 0; i--)
+        {
+            Differences.RemoveAt(delete[i]);
+        }
 
-                if (!isDiff)
-                {
-                    if (!original.Point.Equals(newPoint.Point))
-                    {
-                        newDiffPoint = newPoint;
-                        isDiff = true;
-                    }
-                }
+        IEnumerator<IndexedPoint> originalEnumerator = EnumerateOriginalPoints(originalStart, 0, originalEnd, -1).GetEnumerator();
+        bool hasMore = originalEnumerator.MoveNext();
+        IndexedPoint original = originalEnumerator.Current;
 
-                if (isDiff && TryGetOriginalPoint())
+        bool isDiff = false;
+        List<TrackDifference> differences = [];
+
+        IEnumerator<IndexedPoint> newEnumerator = EnumerateNewPoints(newStart, newEnd).GetEnumerator();
+        IndexedPoint newPoint = default;
+        IndexedPoint newDiffPoint = default;
+        while (true)
+        {
+            if (!newEnumerator.MoveNext())
+            {
+                if (isDiff)
                 {
+                    while (originalEnumerator.MoveNext()) ;
                     AddDifference();
-                    newDiffPoint = default;
-                    isDiff = false;
                 }
-
-                if (!isDiff)
-                {
-                    hasMore = originalEnumerator.MoveNext();
-                    original = originalEnumerator.Current;
-                }
-
-                bool TryGetOriginalPoint()
-                {
-                    for (int segmentIndex = original.SegmentIndex; segmentIndex <= originalEnd; segmentIndex++)
-                    {
-                        if (_originalSegments[segmentIndex].Indices.TryGetValue(newPoint.Point, out int pointIndex) && (segmentIndex > original.SegmentIndex || pointIndex > original.PointIndex))
-                        {
-                            originalEnumerator = EnumerateOriginalPoints(segmentIndex, pointIndex, originalEnd, -1).GetEnumerator();
-                            originalEnumerator.MoveNext();
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-
-                void AddDifference()
-                {
-                    (int originalStartSegmentIndex, int originalStartPointIndex) = PreviousIndex(original.SegmentIndex, original.PointIndex, originalStart);
-                    TrackPoint[] originalPoints = _originalSegments[originalStartSegmentIndex].Points;
-                    TrackPoint originalStartPoint = originalPoints[originalStartPointIndex == -1 ? originalPoints.Length - 2 : originalStartPointIndex];
-                    IndexedPoint originalEndPoint = originalEnumerator.Current;
-                    TrackPoint.CommonValues originalValues = GetOriginalValues(originalStartPoint, originalStartSegmentIndex, originalEndPoint.Point, originalEndPoint.SegmentIndex);
-
-                    (int newStartSegmentIndex, int newStartPointIndex) = PreviousIndex(newDiffPoint.SegmentIndex, newDiffPoint.PointIndex, newStart);
-                    TrackPoint[] newPoints = _newSegments[newStartSegmentIndex].Points;
-                    TrackPoint newStartPoint = newPoints[newStartPointIndex == -1 ? newPoints.Length - 2 : newStartPointIndex];
-                    IndexedPoint newEndPoint = newPoint;
-                    TrackPoint.CommonValues newValues = GetNewValues(newStartPoint, newStartSegmentIndex, newEndPoint.Point, newEndPoint.SegmentIndex);
-
-                    differences.Add(new TrackDifference
-                    {
-                        OriginalPoints = EnumerateOriginalPoints(originalStartSegmentIndex, originalStartPointIndex, originalEndPoint.SegmentIndex, originalEndPoint.PointIndex).Select(point => point.Point),
-                        SectionIndex = originalStartSegmentIndex,
-                        Length = originalValues.Distance,
-                        Diff = newValues - originalValues,
-                    });
-
-                    (int SegmentIndex, int PointIndex) PreviousIndex(int segmentIndex, int pointIndex, int minSegmentIndex)
-                    {
-                        if (--pointIndex < 0)
-                        {
-                            if (--segmentIndex < minSegmentIndex)
-                            {
-                                segmentIndex = minSegmentIndex;
-                                pointIndex = 0;
-                            }
-                            else
-                            {
-                                // Indicates "Last point in segment"
-                                pointIndex = -1;
-                            }
-                        }
-                        return (segmentIndex, pointIndex);
-                    }
-                }
+                break;
             }
 
-            if (differences.Count > 0)
+            newPoint = newEnumerator.Current;
+
+            if (!hasMore)
             {
-                int i = 0;
-                while (i < Differences.Count && Differences[i].SectionIndex < originalStart)
+                break;
+            }
+
+            if (!isDiff)
+            {
+                if (!original.Point.Equals(newPoint.Point))
                 {
-                    i++;
-                }
-                for (int j = 0; j < differences.Count; j++)
-                {
-                    Differences.Insert(i + j, differences[j]);
+                    newDiffPoint = newPoint;
+                    isDiff = true;
                 }
             }
 
-            OnPropertyChanged(nameof(Diff));
+            if (isDiff && TryGetOriginalPoint())
+            {
+                AddDifference();
+                newDiffPoint = default;
+                isDiff = false;
+            }
+
+            if (!isDiff)
+            {
+                hasMore = originalEnumerator.MoveNext();
+                original = originalEnumerator.Current;
+            }
+
+            bool TryGetOriginalPoint()
+            {
+                for (int segmentIndex = original.SegmentIndex; segmentIndex <= originalEnd; segmentIndex++)
+                {
+                    if (_originalSegments[segmentIndex].Indices.TryGetValue(newPoint.Point, out int pointIndex) && (segmentIndex > original.SegmentIndex || pointIndex > original.PointIndex))
+                    {
+                        originalEnumerator = EnumerateOriginalPoints(segmentIndex, pointIndex, originalEnd, -1).GetEnumerator();
+                        originalEnumerator.MoveNext();
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            void AddDifference()
+            {
+                (int originalStartSegmentIndex, int originalStartPointIndex) = PreviousIndex(original.SegmentIndex, original.PointIndex, originalStart);
+                TrackPoint[] originalPoints = _originalSegments[originalStartSegmentIndex].Points;
+                TrackPoint originalStartPoint = originalPoints[originalStartPointIndex == -1 ? originalPoints.Length - 2 : originalStartPointIndex];
+                IndexedPoint originalEndPoint = originalEnumerator.Current;
+                TrackPoint.CommonValues originalValues = GetOriginalValues(originalStartPoint, originalStartSegmentIndex, originalEndPoint.Point, originalEndPoint.SegmentIndex);
+
+                (int newStartSegmentIndex, int newStartPointIndex) = PreviousIndex(newDiffPoint.SegmentIndex, newDiffPoint.PointIndex, newStart);
+                TrackPoint[] newPoints = _newSegments[newStartSegmentIndex].Points;
+                TrackPoint newStartPoint = newPoints[newStartPointIndex == -1 ? newPoints.Length - 2 : newStartPointIndex];
+                IndexedPoint newEndPoint = newPoint;
+                TrackPoint.CommonValues newValues = GetNewValues(newStartPoint, newStartSegmentIndex, newEndPoint.Point, newEndPoint.SegmentIndex);
+
+                differences.Add(new TrackDifference
+                {
+                    OriginalPoints = EnumerateOriginalPoints(originalStartSegmentIndex, originalStartPointIndex, originalEndPoint.SegmentIndex, originalEndPoint.PointIndex).Select(point => point.Point),
+                    SectionIndex = originalStartSegmentIndex,
+                    Length = originalValues.Distance,
+                    Diff = newValues - originalValues,
+                });
+
+                (int SegmentIndex, int PointIndex) PreviousIndex(int segmentIndex, int pointIndex, int minSegmentIndex)
+                {
+                    if (--pointIndex < 0)
+                    {
+                        if (--segmentIndex < minSegmentIndex)
+                        {
+                            segmentIndex = minSegmentIndex;
+                            pointIndex = 0;
+                        }
+                        else
+                        {
+                            // Indicates "Last point in segment"
+                            pointIndex = -1;
+                        }
+                    }
+                    return (segmentIndex, pointIndex);
+                }
+            }
+        }
+
+        if (differences.Count > 0)
+        {
+            int i = 0;
+            while (i < Differences.Count && Differences[i].SectionIndex < originalStart)
+            {
+                i++;
+            }
+            for (int j = 0; j < differences.Count; j++)
+            {
+                Differences.Insert(i + j, differences[j]);
+            }
         }
 
         IEnumerable<IndexedPoint> EnumerateNewPoints(int startSegment, int endSegment)
@@ -331,6 +380,14 @@ public class CompareSession : ObservableObject,
 
     void IRecipient<CalculationFinished>.Receive(CalculationFinished message)
     {
-        CalculationFinished(message.Section, message.Result);
+        if (!message.Section.IsCanceled && message.Result.IsValid)
+        {
+            int newIndex = _track.RouteBuilder.GetSectionIndex(message.Section);
+            _newSegments[newIndex].Points = message.Result.Points;
+
+            CreateDifferences(newIndex);
+
+            OnPropertyChanged(nameof(Diff));
+        }
     }
 }
