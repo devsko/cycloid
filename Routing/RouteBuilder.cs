@@ -44,10 +44,18 @@ public class FileSplitChanged(WayPoint wayPoint)
     public WayPoint WayPoint => wayPoint;
 }
 
+public enum CalculationDelayMode
+{
+    None,
+    LongSections,
+    Always,
+}
+
 public partial class RouteBuilder
 {
     private readonly Dictionary<WayPoint, RouteSection> _sections;
-    private TaskCompletionSource<bool> _delayCalculationTaskSource;
+    private TaskCompletionSource<bool> _delayTaskSource;
+    private CalculationDelayMode _delayMode;
 
     public ChangeLocker ChangeLock { get; }
     public ObservableCollection<WayPoint> Points { get; }
@@ -58,31 +66,34 @@ public partial class RouteBuilder
     public RouteBuilder()
     {
         _sections = [];
-        _delayCalculationTaskSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _delayTaskSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         Points = [];
         NoGoAreas = [];
         Client = new BrouterClient();
         Profile = new Profile();
         ChangeLock = new ChangeLocker();
-        DelayCalculation = false;
+        DelayCalculation = CalculationDelayMode.None;
     }
 
     public IEnumerable<RouteSection> Sections 
         => Points.SkipLast(1).Select(point => _sections[point]);
 
-    public bool DelayCalculation
+    public CalculationDelayMode DelayCalculation
     {
-        get => !_delayCalculationTaskSource.Task.IsCompleted;
+        get => _delayMode;
         set
         {
-            if (value != DelayCalculation)
+            bool shouldDelay = value != CalculationDelayMode.None;
+            bool isDelayed = !_delayTaskSource.Task.IsCompleted;
+            if (shouldDelay != isDelayed)
             {
-                _delayCalculationTaskSource.TrySetResult(true);
-                if (value)
+                _delayTaskSource.TrySetResult(true);
+                if (shouldDelay)
                 {
-                    _delayCalculationTaskSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    _delayTaskSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 }
             }
+            _delayMode = value;
         }
     }
 
@@ -118,7 +129,7 @@ public partial class RouteBuilder
 
     public async Task RecalculateAllAsync(CancellationToken cancellationToken)
     {
-        DelayCalculation = false;
+        DelayCalculation = CalculationDelayMode.None;
         using (cancellationToken.Register(state => CancelAll((RouteBuilder)state), this, false))
         {
             await Task.WhenAll(_sections.Values.Select(CalculateAsync));
@@ -150,11 +161,11 @@ public partial class RouteBuilder
 
             try
             {
-                if (section.DirectDistance > 25_000)
+                if (_delayMode == CalculationDelayMode.Always || section.DirectDistance > 25_000)
                 {
                     StrongReferenceMessenger.Default.Send(new CalculationDelayed(section));
 
-                    await _delayCalculationTaskSource.Task.WithCancellation(cancellationToken);
+                    await _delayTaskSource.Task.WithCancellation(cancellationToken);
                 }
 
                 StrongReferenceMessenger.Default.Send(new CalculationStarting(section));
@@ -235,9 +246,17 @@ public partial class RouteBuilder
     {
         using (await ChangeLock.EnterCalculationAsync())
         {
-            foreach (WayPoint wayPoint in wayPoints)
+            try
             {
-                RemovePoint(wayPoint);
+                DelayCalculation = CalculationDelayMode.Always;
+                foreach (WayPoint wayPoint in wayPoints)
+                {
+                    RemovePoint(wayPoint);
+                }
+            }
+            finally
+            {
+                DelayCalculation = CalculationDelayMode.None;
             }
         }
     }
@@ -246,10 +265,18 @@ public partial class RouteBuilder
     {
         using (await ChangeLock.EnterCalculationAsync())
         {
-            int index = insertAfter is null ? 0 : Points.IndexOf(insertAfter) + 1;
-            foreach (WayPoint wayPoint in wayPoints)
+            try
             {
-                AddPoint(wayPoint, index++);
+                DelayCalculation = CalculationDelayMode.Always;
+                int index = insertAfter is null ? 0 : Points.IndexOf(insertAfter) + 1;
+                foreach (WayPoint wayPoint in wayPoints)
+                {
+                    AddPoint(wayPoint, index++);
+                }
+            }
+            finally
+            {
+                DelayCalculation = CalculationDelayMode.None;
             }
         }
     }

@@ -139,7 +139,7 @@ partial class ViewModel :
     {
         if (IsEditMode && Track is not null && !IsCaptured && HoveredWayPoint is not null)
         {
-            Track.RouteBuilder.DelayCalculation = true;
+            Track.RouteBuilder.DelayCalculation = CalculationDelayMode.LongSections;
 
             StrongReferenceMessenger.Default.Send(new DragWayPointStarting(HoveredWayPoint));
 
@@ -155,7 +155,7 @@ partial class ViewModel :
     {
         if (IsEditMode && Track is not null && !IsCaptured && HoveredSection is not null)
         {
-            Track.RouteBuilder.DelayCalculation = true;
+            Track.RouteBuilder.DelayCalculation = CalculationDelayMode.LongSections;
 
             StrongReferenceMessenger.Default.Send(new DragNewWayPointStarting(HoveredSection));
 
@@ -181,7 +181,7 @@ partial class ViewModel :
             StrongReferenceMessenger.Default.Send(new DragWayPointEnded());
 
             _capturedWayPoint = null;
-            Track.RouteBuilder.DelayCalculation = false;
+            Track.RouteBuilder.DelayCalculation = CalculationDelayMode.None;
 
             SaveTrackAsync().FireAndForget();
         }
@@ -203,7 +203,7 @@ partial class ViewModel :
             }
 
             _capturedWayPoint = null;
-            Track.RouteBuilder.DelayCalculation = false;
+            Track.RouteBuilder.DelayCalculation = CalculationDelayMode.None;
         }
     }
 
