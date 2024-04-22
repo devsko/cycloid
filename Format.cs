@@ -37,11 +37,11 @@ public static class Format
     public static string Speed(float value) => $"{value:N1} km/h";
 
 
-    public static string Distance(float? value) => value is null ? "" : $"{value.Value / 1000:N1}";
+    public static string Distance(float? value) => value is null ? "" : $"{value.Value / 1000:N1} km";
 
     public static string Duration(TimeSpan? value) => value is null ? "" : value.Value.Days == 0 ? $"{value.Value:hh\\:mm}" : $"{value.Value:d\\.hh\\:mm}";
 
     public static string Altitude(float? value) => value is null ? "" : $"{value:N0}";
 
-    public static string Speed(float? value) => value is null ? "" : $"{value.Value:N1}";
+    public static string Speed(float? value) => value is null ? "" : $"{value.Value:N1} km/h";
 }

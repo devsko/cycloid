@@ -81,6 +81,8 @@ public partial class OnTrack : ObservableObject
 
     public float? Ascent => IsOffTrack ? null : Values.Ascent;
 
+    public float? Descent => IsOffTrack ? null : Values.Descent;
+
     public TimeSpan? Time => IsOffTrack ? null : Values.Time;
 
     public float? Speed => IsOffTrack ? null : Values.Distance / 1000 / (float)Values.Time.TotalHours;

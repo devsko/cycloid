@@ -104,6 +104,6 @@ public sealed partial class InfoToggleButton : UserControl
     {
         // Workaround: Center the chevron
         Button secondaryButton = (Button)Content.FindDescendant("SecondaryButton");
-        secondaryButton.Padding = new Thickness(0, 0, 7.5, 0);
+        secondaryButton.Padding = new Thickness(0, 0, 3.5, 0);
     }
 }

@@ -17,7 +17,20 @@
                     <cycloid:ViewModel x:Name="ViewModel" />
 
                     <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}" TargetType="AppBarButton">
-                        <Setter Property="Width" Value="60" />
+                        <Setter Property="Width" Value="56" />
+                    </Style>
+
+                    <Style x:Key="SectionsListViewStyle" TargetType="ListView">
+                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+                        <Setter Property="ItemContainerStyle">
+                            <Setter.Value>
+                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                    <Setter Property="MinHeight" Value="71" />
+                                    <Setter Property="Padding" Value="10,0,10,0" />
+                                </Style>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
 
                     <Style x:Key="OnTracksListViewStyle" TargetType="ListView">
@@ -82,7 +95,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="241" />
+            <ColumnDefinition Width="225" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
@@ -233,7 +246,7 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="5*" />
+                                    <ColumnDefinition Width="4*" />
                                     <ColumnDefinition Width="4*" />
                                     <ColumnDefinition Width="3*" />
                                 </Grid.ColumnDefinitions>
@@ -451,44 +464,53 @@
                                 PreviewKeyDown="OnTracks_PreviewKeyDown"
                                 SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentSection}"
                                 SelectionChanged="OnTracks_SelectionChanged"
-                                Style="{StaticResource OnTracksListViewStyle}">
+                                Style="{StaticResource SectionsListViewStyle}">
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="cycloid:OnTrack">
                                         <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition />
                                                 <RowDefinition />
+                                                <RowDefinition />
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="6*" />
-                                                <ColumnDefinition Width="5*" />
-                                                <ColumnDefinition Width="5*" />
-                                                <ColumnDefinition Width="4*" />
-                                                <ColumnDefinition Width="5*" />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
                                             <TextBlock
                                                 Grid.Column="1"
                                                 HorizontalTextAlignment="Right"
-                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}"
-                                                ToolTipService.ToolTip="Distance [km]" />
+                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}" />
                                             <TextBlock
                                                 Grid.Column="2"
                                                 HorizontalTextAlignment="Right"
-                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Ascent)}"
-                                                ToolTipService.ToolTip="Ascent [m]" />
-                                            <TextBlock
-                                                Grid.Column="3"
-                                                HorizontalTextAlignment="Right"
-                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Speed(Speed)}"
-                                                ToolTipService.ToolTip="Speed [km/h]" />
-                                            <TextBlock
-                                                Grid.Column="4"
-                                                HorizontalTextAlignment="Right"
                                                 Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(Time)}" />
-                                            <TextBox
+                                            <StackPanel
                                                 Grid.Row="1"
-                                                Grid.ColumnSpan="5"
+                                                Grid.Column="0"
+                                                Spacing="1"
+                                                Orientation="Horizontal">
+                                                <FontIcon FontSize="9" Glyph="&#xF0AD;" />
+                                                <TextBlock Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Ascent)}" />
+                                            </StackPanel>
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                HorizontalTextAlignment="Right"
+                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Speed(Speed)}" />
+                                            <StackPanel
+                                                Grid.Row="1"
+                                                Grid.Column="2"
+                                                Spacing="1"
+                                                Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <FontIcon FontSize="9" Glyph="&#xF0AE;" />
+                                                <TextBlock Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Descent)}" />
+                                            </StackPanel>
+                                            <TextBox
+                                                Grid.Row="2"
+                                                Grid.ColumnSpan="3"
                                                 CharacterReceived="TextBox_CharacterReceived"
                                                 IsSpellCheckEnabled="False"
                                                 Text="{x:Bind Mode=TwoWay, Path=Name}" />
