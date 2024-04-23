@@ -6,136 +6,151 @@ using CliWrap.Buffered;
 using cycloid.Wahoo;
 using Microsoft.Data.Sqlite;
 
-
-if (args is not [string trackFilePath, ..] || !File.Exists(trackFilePath) || Path.GetExtension(trackFilePath) != ".track")
-{
-    throw new ArgumentException("Usage: cycloid.Wahoo <track file>");
-}
-
-PointOfInterest[] pointsOfInterest;
-using (Stream json = File.OpenRead(trackFilePath))
-{
-    Track track = await JsonSerializer.DeserializeAsync(json, TrackContext.Default.Track) ?? throw new InvalidOperationException($"Error deserializing {trackFilePath}");
-    pointsOfInterest = track.PointsOfInterest;
-}
-
-string trackName = Path.GetFileName(trackFilePath);
-
-string localDirectory = Path.GetTempPath();
-string localFilePath = Path.Combine(localDirectory, "BoltApp.sqlite");
-
-string devices = await AdbAsync($"devices");
-
-if (!devices.Contains("\tdevice"))
-{
-    throw new InvalidOperationException($"Device not {(devices.Contains("\tunauthorized") ? "authorized" : "connected")}");
-}
-
-await DownloadAsync(localFilePath);
-await DownloadAsync(localFilePath + "-shm");
-await DownloadAsync(localFilePath + "-wal");
-
-Console.WriteLine(localFilePath);
-
 try
 {
-    using (SqliteConnection connection = new($"data source={localFilePath}"))
+    if (args is not [.., string trackFilePath] || !File.Exists(trackFilePath) || Path.GetExtension(trackFilePath) != ".track")
     {
-        await connection.OpenAsync();
+        throw new ArgumentException("Usage: cycloid.Wahoo <track file>");
+    }
 
-        string? customBinary = await ExecuteScalarAsync<string>("SELECT quote(custom) FROM CloudPoiDao WHERE custom IS NOT NULL LIMIT 1");
+    Command adb = Cli.Wrap(Path.Combine(Path.GetDirectoryName(Environment.ProcessPath)!, "adb/adb.exe"));
 
-        await ExecuteAsync($"DELETE FROM CloudPoiDao WHERE address='[cycloid] {trackName}'");
-        await ExecuteAsync("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM CloudPoiDao) WHERE name='CloudPoiDao'");
+    PointOfInterest[] pointsOfInterest;
+    using (Stream json = File.OpenRead(trackFilePath))
+    {
+        Track track = await JsonSerializer.DeserializeAsync(json, TrackContext.Default.Track) ?? throw new InvalidOperationException($"Error deserializing {trackFilePath}");
+        pointsOfInterest = track.PointsOfInterest;
+    }
 
-        foreach (PointOfInterest pointOfInterest in pointsOfInterest)
+    string trackName = Path.GetFileName(trackFilePath);
+
+    string localDirectory = Path.GetTempPath();
+    string localFilePath = Path.Combine(localDirectory, "BoltApp.sqlite");
+
+    string devices = await AdbAsync($"devices");
+
+    if (!devices.Contains("\tdevice"))
+    {
+        throw new InvalidOperationException($"Device not {(devices.Contains("\tunauthorized") ? "authorized" : "connected")}");
+    }
+
+    await DownloadAsync(localFilePath);
+    await DownloadAsync(localFilePath + "-shm");
+    await DownloadAsync(localFilePath + "-wal");
+
+    try
+    {
+        using (SqliteConnection connection = new($"data source={localFilePath}"))
         {
-            if (pointOfInterest.Type is not "Split" and not null)
+            await connection.OpenAsync();
+
+            string? customBinary = await ExecuteScalarAsync<string>("SELECT quote(custom) FROM CloudPoiDao WHERE custom IS NOT NULL LIMIT 1");
+
+            int deleted = await ExecuteAsync($"DELETE FROM CloudPoiDao WHERE address='[cycloid] {trackName}'");
+
+            Console.WriteLine($"{deleted} POI deleted");
+
+            await ExecuteAsync("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM CloudPoiDao) WHERE name='CloudPoiDao'");
+
+            int added = 0;
+            foreach (PointOfInterest pointOfInterest in pointsOfInterest)
             {
-                string hash = GeoHasher.Encode(pointOfInterest.Location.Lat, pointOfInterest.Location.Lon);
-                await ExecuteAsync(FormattableString.Invariant($"""
+                if (pointOfInterest.Type is not "Split" and not null)
+                {
+                    string hash = GeoHasher.Encode(pointOfInterest.Location.Lat, pointOfInterest.Location.Lon);
+                    await ExecuteAsync(FormattableString.Invariant($"""
                     INSERT INTO CloudPoiDao (address, custom, geoHash, isDeleted, latDeg, lonDeg, name, poiToken, poiType, objectCloudId, updateTimeMs, userCloudId) 
                     VALUES ('[cycloid] {trackName}', {customBinary}, '{hash}', 0, {pointOfInterest.Location.Lat:f13}, {pointOfInterest.Location.Lon:f13}, '{Escape(pointOfInterest.Name)} ({pointOfInterest.Type})', '{Guid.NewGuid()}', 0, 0, 1677695093935, 0)
                     """));
+                    added++;
+                }
+            }
+
+            Console.WriteLine($"{added} POI added");
+
+            string Escape(string value) => value.Replace("'", "''");
+
+            async Task<int> ExecuteAsync(string sql)
+            {
+                using SqliteCommand cmd = connection.CreateCommand();
+                cmd.CommandText = sql;
+
+                return await cmd.ExecuteNonQueryAsync();
+            }
+
+            async Task<T?> ExecuteScalarAsync<T>(string sql)
+            {
+                using SqliteCommand cmd = connection.CreateCommand();
+                cmd.CommandText = sql;
+
+                return (T?)await cmd.ExecuteScalarAsync();
             }
         }
 
-        string Escape(string value) => value.Replace("'", "''");
+        SqliteConnection.ClearAllPools();
 
-        async Task<int> ExecuteAsync(string sql)
-        {
-            using SqliteCommand cmd = connection.CreateCommand();
-            cmd.CommandText = sql;
+        await UploadAsync(localFilePath);
+        await UploadAsync(localFilePath + "-shm");
+        await UploadAsync(localFilePath + "-wal");
 
-            return await cmd.ExecuteNonQueryAsync();
-        }
-
-        async Task<T?> ExecuteScalarAsync<T>(string sql)
-        {
-            using SqliteCommand cmd = connection.CreateCommand();
-            cmd.CommandText = sql;
-
-            return (T?)await cmd.ExecuteScalarAsync();
-        }
+        await AdbAsync("reboot");
     }
-
-    SqliteConnection.ClearAllPools();
-
-    await UploadAsync(localFilePath);
-    await UploadAsync(localFilePath + "-shm");
-    await UploadAsync(localFilePath + "-wal");
-
-    await AdbAsync("reboot");
-}
-finally
-{
-    SqliteConnection.ClearAllPools();
-
-    foreach (string dbFile in Directory.GetFiles(localDirectory, Path.GetFileName(localFilePath) + '*'))
+    finally
     {
-        try
+        SqliteConnection.ClearAllPools();
+
+        foreach (string dbFile in Directory.GetFiles(localDirectory, Path.GetFileName(localFilePath) + '*'))
         {
-            File.Delete(dbFile);
+            try
+            {
+                File.Delete(dbFile);
+            }
+            catch { }
         }
-        catch { }
     }
-}
 
-static async Task DownloadAsync(string localFilePath)
-{
-    File.Delete(localFilePath);
-    await AdbAsync($"pull /data/data/com.wahoofitness.bolt/databases/{Path.GetFileName(localFilePath)} {localFilePath}");
-}
-
-static async Task UploadAsync(string localFilePath)
-{
-    if (File.Exists(localFilePath))
+    async Task DownloadAsync(string localFilePath)
     {
-        await AdbAsync($"push {localFilePath} /data/data/com.wahoofitness.bolt/databases/");
+        File.Delete(localFilePath);
+        await AdbAsync($"pull /data/data/com.wahoofitness.bolt/databases/{Path.GetFileName(localFilePath)} {localFilePath}");
     }
-    else
+
+    async Task UploadAsync(string localFilePath)
     {
-        await AdbAsync($"shell rm data/data/com.wahoofitness.bolt/databases/{Path.GetFileName(localFilePath)}");
+        if (File.Exists(localFilePath))
+        {
+            await AdbAsync($"push {localFilePath} /data/data/com.wahoofitness.bolt/databases/");
+        }
+        else
+        {
+            await AdbAsync($"shell rm data/data/com.wahoofitness.bolt/databases/{Path.GetFileName(localFilePath)}");
+        }
     }
-}
 
-static async Task<string> AdbAsync(string parameter)
-{
-    string adbPath = Path.Combine(Environment.CurrentDirectory, "adb/adb.exe");
+    async Task<string> AdbAsync(string parameter)
+    {
+        Console.WriteLine(parameter);
 
-    BufferedCommandResult result = await Cli
-        .Wrap(adbPath)
-        .WithArguments(parameter)
-        .ExecuteBufferedAsync();
+        BufferedCommandResult result = await adb
+            .WithArguments(parameter)
+            .ExecuteBufferedAsync();
 
-    string output = result.StandardOutput;
+        string output = result.StandardOutput;
     
-    if (!result.IsSuccess)
-    {
-        throw new InvalidOperationException(output + Environment.NewLine + result.StandardError);
+        if (!result.IsSuccess)
+        {
+            throw new InvalidOperationException(output + Environment.NewLine + result.StandardError);
+        }
+
+        Console.Write(output);
+
+        return output;
     }
-
-    Console.WriteLine(output);
-
-    return output;
 }
+catch (Exception ex)
+{
+    Console.WriteLine(ex);
+}
+
+Console.Write("Press enter");
+Console.ReadLine();

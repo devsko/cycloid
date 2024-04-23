@@ -138,7 +138,10 @@
                         <KeyboardAccelerator Key="S" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
-                <AppBarButton Icon="CellPhone" Label="Export" />
+                <AppBarButton
+                    Command="{x:Bind Mode=OneTime, Path=ViewModel.ExportWahooCommand}"
+                    Icon="CellPhone"
+                    Label="Export" />
             </StackPanel>
 
             <AutoSuggestBox
@@ -490,8 +493,8 @@
                                             <StackPanel
                                                 Grid.Row="1"
                                                 Grid.Column="0"
-                                                Spacing="1"
-                                                Orientation="Horizontal">
+                                                Orientation="Horizontal"
+                                                Spacing="1">
                                                 <FontIcon FontSize="9" Glyph="&#xF0AD;" />
                                                 <TextBlock Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Ascent)}" />
                                             </StackPanel>
@@ -503,8 +506,9 @@
                                             <StackPanel
                                                 Grid.Row="1"
                                                 Grid.Column="2"
-                                                Spacing="1"
-                                                Orientation="Horizontal" HorizontalAlignment="Right">
+                                                HorizontalAlignment="Right"
+                                                Orientation="Horizontal"
+                                                Spacing="1">
                                                 <FontIcon FontSize="9" Glyph="&#xF0AE;" />
                                                 <TextBlock Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Descent)}" />
                                             </StackPanel>
