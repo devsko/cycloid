@@ -44,6 +44,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Optimized|x64'">
     <OutputPath>bin\x64\Optimized\</OutputPath>
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP;DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION;DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <Optimize>true</Optimize>    
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
@@ -295,7 +296,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include=".editorconfig" />
     <Content Include="Assets\cycle.3mf" />
     <None Include="cycloid_TemporaryKey.pfx" />
     <None Include="secrets.json">
