@@ -57,13 +57,13 @@ public class TrackPointValuesControl : PointValuesControl<TrackPoint>
 {
     protected string FilePosition(TrackPoint point) => Track?.FilePosition(point.Distance);
 
-    protected string DistanceFromStart(TrackPoint point) => Track?.DistanceFromStart(point.Distance);
+    protected string DistanceFromStart(TrackPoint point) => Format.Distance(point.Distance);
 
-    protected string TimeFromStart(TrackPoint point) => Track?.TimeFromStart(point.Time);
+    protected string TimeFromStart(TrackPoint point) => Format.Duration(point.Time);
 
-    protected string DistanceToEnd(TrackPoint point) => Track?.DistanceToEnd(point.Distance);
+    protected string DistanceToEnd(TrackPoint point) => Format.Distance(Track?.DistanceToEnd(point.Distance));
 
-    protected string TimeToEnd(TrackPoint point) => Track?.TimeToEnd(point.Time);
+    protected string TimeToEnd(TrackPoint point) => Format.Duration(Track?.TimeToEnd(point.Time));
 }
 
 public class SelectionValuesControl : PointValuesControl<Selection>

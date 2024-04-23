@@ -31,11 +31,20 @@ public partial class InfoCache : ObservableObject
     private readonly Dictionary<BucketPoint, InfoBucket> _buckets = [];
     private readonly List<InfoBucket> _activated = new(9);
 
-    [ObservableProperty]
     private int _cachedCount;
-
-    [ObservableProperty]
     private int _activatedCount;
+
+    public int CachedCount
+    {
+        get => _cachedCount;
+        set => SetProperty(ref _cachedCount, value);
+}
+
+    public int ActivatedCount
+    {
+        get => _activatedCount;
+        set => SetProperty(ref _activatedCount, value);
+    }
 
     public async Task LoadAsync(MapPoint point, CancellationToken cancellationToken)
     {

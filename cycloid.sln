@@ -41,25 +41,3 @@ Global
 		SolutionGuid = {4FF7AE10-FCFB-49FB-AC2F-F40D2DF3F0A8}
 	EndGlobalSection
 EndGlobal
-oy.0 = Debug|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Optimized|Any CPU.ActiveCfg = Optimized|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Optimized|Any CPU.Build.0 = Optimized|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Optimized|Any CPU.Deploy.0 = Optimized|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Optimized|x64.ActiveCfg = Optimized|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Optimized|x64.Build.0 = Optimized|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Optimized|x64.Deploy.0 = Optimized|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Release|Any CPU.Build.0 = Release|Any CPU
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Release|x64.ActiveCfg = Release|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Release|x64.Build.0 = Release|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Release|x64.Deploy.0 = Release|x64
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {4FF7AE10-FCFB-49FB-AC2F-F40D2DF3F0A8}
-	EndGlobalSection
-EndGlobal
-Global

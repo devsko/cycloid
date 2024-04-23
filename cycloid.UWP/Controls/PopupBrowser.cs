@@ -168,7 +168,7 @@ public class PopupBrowser : Control, IDisposable
         _lastNavigation = default;
     }
 
-    private void WebView_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+    private void WebView_NavigationStarting(WebView2 _, CoreWebView2NavigationStartingEventArgs args)
     {
         _lastNavigation = (args.NavigationId, new Uri(args.Uri), args.IsRedirected);
         _textBlock.Text = args.Uri;

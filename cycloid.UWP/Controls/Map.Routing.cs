@@ -319,7 +319,7 @@ partial class Map :
         }
     }
 
-    void IRecipient<DragWayPointEnded>.Receive(DragWayPointEnded message)
+    void IRecipient<DragWayPointEnded>.Receive(DragWayPointEnded _)
     {
         PointerPanel.IsEnabled = false;
         EndDrag();

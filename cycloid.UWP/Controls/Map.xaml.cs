@@ -241,7 +241,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         }
     }
 
-    private void MapControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    private void MapControl_PreviewKeyDown(object _, KeyRoutedEventArgs e)
     {
         if (ViewModel.Mode == Modes.Edit)
         {

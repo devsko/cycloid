@@ -469,7 +469,7 @@ public sealed partial class Profile : ViewModelControl,
         UpdateMarker(message.Value, HoverPointLine1, HoverPointLine2, HoverPointCircle);
     }
 
-    void IRecipient<SelectionChanged>.Receive(SelectionChanged message)
+    void IRecipient<SelectionChanged>.Receive(SelectionChanged _)
     {
         ResetSelection();
         EnsureSelection();

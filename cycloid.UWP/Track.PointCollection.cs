@@ -374,12 +374,12 @@ partial class Track
             ? new Index(index.SegmentIndex - 1, _segments[index.SegmentIndex - 1].Points.Length - 2) // Skip last point in all but last segment
             : index with { PointIndex = index.PointIndex - 1 };
 
-        private Index Increment(Index index) => 
-            index == LastIndex()
-            ? Index.Invalid
-            : index.PointIndex == _segments[index.SegmentIndex].Points.Length - 2 // Skip last point in all but last segment
-            ? new Index(index.SegmentIndex + 1, 0)
-            : index with { PointIndex = index.PointIndex + 1 };
+        //private Index Increment(Index index) => 
+        //    index == LastIndex()
+        //    ? Index.Invalid
+        //    : index.PointIndex == _segments[index.SegmentIndex].Points.Length - 2 // Skip last point in all but last segment
+        //    ? new Index(index.SegmentIndex + 1, 0)
+        //    : index with { PointIndex = index.PointIndex + 1 };
 
         private IEnumerable<(Segment Segment, TrackPoint Point, Index Index)> Enumerate(int segmentIndex)
         {

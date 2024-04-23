@@ -62,13 +62,7 @@ public partial class Track : ObservableObject
         return $"{fileId} / {fileDistance / 1_000:N1}";
     }
 
-    // TODO Track.DistanceFromStart/TimeFromStart/DistanceToEnd/TimeToEnd
+    public float DistanceToEnd(float distance) => Points.Total.Distance - distance;
 
-    public string DistanceFromStart(float distance) => "100 km";
-
-    public string TimeFromStart(TimeSpan time) => "12:34";
-
-    public string DistanceToEnd(float distance) => "100 km";
-
-    public string TimeToEnd(TimeSpan time) => "12:34";
+    public TimeSpan TimeToEnd(TimeSpan time) => Points.Total.Time - time;
 }

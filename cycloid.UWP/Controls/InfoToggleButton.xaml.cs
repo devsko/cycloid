@@ -90,12 +90,12 @@ public sealed partial class InfoToggleButton : UserControl
         _isRecursion = false;
     }
 
-    private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+    private void CheckBox_Unchecked(object sender, RoutedEventArgs _)
     {
         CheckedChanged((CheckBox)sender, false);
     }
 
-    private void CheckBox_Checked(object sender, RoutedEventArgs e)
+    private void CheckBox_Checked(object sender, RoutedEventArgs _)
     {
         CheckedChanged((CheckBox)sender, true);
     }
