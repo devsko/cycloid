@@ -45,7 +45,6 @@ try
 
         string? customBinary = await ExecuteScalarAsync<string>("SELECT quote(custom) FROM CloudPoiDao WHERE custom IS NOT NULL LIMIT 1");
 
-        await ExecuteAsync($"DELETE FROM CloudPoiDao WHERE address LIKE '[map]%'");
         await ExecuteAsync($"DELETE FROM CloudPoiDao WHERE address='[cycloid] {trackName}'");
         await ExecuteAsync("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM CloudPoiDao) WHERE name='CloudPoiDao'");
 
