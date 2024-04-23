@@ -273,7 +273,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         }
     }
 
-    private void MapControl_MapContextRequested(MapControl sender, MapContextRequestedEventArgs args)
+    private void MapControl_MapContextRequested(MapControl _, MapContextRequestedEventArgs args)
     {
         ShowMapMenu(args.Position, (MapPoint)args.Location.Position);
     }
@@ -313,7 +313,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         e.Handled = true;
     }
 
-    private void PointerPanel_ContextRequested(UIElement sender, ContextRequestedEventArgs args)
+    private void PointerPanel_ContextRequested(UIElement _, ContextRequestedEventArgs args)
     {
         if (args.TryGetPosition(MapControl, out Point position) && 
             MapControl.TryGetLocationFromOffset(position, out Geopoint location))

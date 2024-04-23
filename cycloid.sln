@@ -2,14 +2,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34407.89
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cycloid.UWP", "cycloid.UWP\cycloid.UWP.csproj", "{684352C4-FF3E-4727-892E-EE2A36665370}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{01DA0B27-68C0-4911-B3E2-BA8977B1FA50}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cycloid.UWP", "cycloid.UWP\cycloid.UWP.csproj", "{684352C4-FF3E-4727-892E-EE2A36665370}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cycloid.Wahoo", "cycloid.Wahoo\cycloid.Wahoo.csproj", "{095A45AC-EEE8-4251-9BE7-578223A6DC1A}"
+EndProject
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "cycloid.Package", "cycloid.Package\cycloid.Package.wapproj", "{439902FD-2D44-43B5-A0B5-E6669EB38835}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,20 +21,20 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Optimized|Any CPU.ActiveCfg = Release|Any CPU
-		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Optimized|Any CPU.Build.0 = Release|Any CPU
 		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Debug|Any CPU.Build.0 = Debug|x64
+		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Debug|Any CPU.Deploy.0 = Debug|x64
+		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Optimized|Any CPU.ActiveCfg = Release|x64
+		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Optimized|Any CPU.Build.0 = Release|x64
+		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Optimized|Any CPU.Deploy.0 = Release|x64
+		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Release|Any CPU.ActiveCfg = Release|x64
+		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Release|Any CPU.Build.0 = Release|x64
+		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Release|Any CPU.Deploy.0 = Release|x64
+		{684352C4-FF3E-4727-892E-EE2A36665370}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{684352C4-FF3E-4727-892E-EE2A36665370}.Optimized|Any CPU.ActiveCfg = Optimized|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Optimized|Any CPU.Build.0 = Optimized|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Optimized|Any CPU.Deploy.0 = Optimized|x64
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Release|Any CPU.Build.0 = Release|Any CPU
-		{684352C4-FF3E-4727-892E-EE2A36665370}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{684352C4-FF3E-4727-892E-EE2A36665370}.Release|Any CPU.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

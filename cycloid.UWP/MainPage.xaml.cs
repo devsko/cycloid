@@ -155,7 +155,7 @@ public sealed partial class MainPage : Page,
         ViewModel.SetInfoCategoryVisible(false, category, value);
     }
 
-    private void Differences_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void Differences_SelectionChanged(object _, SelectionChangedEventArgs e)
     {
         if (e.AddedItems is [TrackDifference diff, ..])
         {
@@ -185,7 +185,7 @@ public sealed partial class MainPage : Page,
         }
     }
 
-    private void OnTracks_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    private void OnTracks_DoubleTapped(object sender, DoubleTappedRoutedEventArgs _)
     {
         ListView list = (ListView)sender;
         if (list.SelectedItem is OnTrack onTrack)
