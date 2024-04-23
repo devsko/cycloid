@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Info;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
+using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -37,8 +38,8 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     private MapElementsLayer _differenceLayer;
     private MapElementsLayer _poisLayer;
     private MapElementsLayer _infoLayer;
+    private MapElementsLayer _trainLayer;
     private MapPolyline _selectionLine;
-    private MapIcon _dummyIcon;
 
     private PropertyChangedEventHandler _propertyChanged;
 
@@ -143,15 +144,8 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     // WORKAROUND Change the view slightly to update moved child controls.
     private void Nudge()
     {
-        if (_dummyIcon is null)
-        {
-            MapControl.MapElements.Add(_dummyIcon = new MapIcon { MapStyleSheetEntry = "Dummy.Point", Location = MapControl.Center });
-        }
-        else
-        {
-            MapControl.MapElements.Clear();
-            _dummyIcon = null;
-        }
+        MapControl.MapElements.Clear();
+        MapControl.MapElements.Add(new MapIcon { MapStyleSheetEntry = "Dummy.Point", Location = MapControl.Center });
     }
 
     private async Task LoadInfosAsync(CancellationToken cancellationToken)
@@ -219,21 +213,24 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         _routingLayer = (MapElementsLayer)MapControl.Resources["RoutingLayer"];
         MapControl.Layers.Add(_routingLayer);
 
+        _trainLayer = (MapElementsLayer)MapControl.Resources["TrainLayer"];
+        MapControl.Layers.Add(_trainLayer);
+
         //XAsync().FireAndForget();
 
         //async Task XAsync()
         //{
         //    MapModel3D x = await MapModel3D.CreateFrom3MFAsync(RandomAccessStreamReference.CreateFromUri(new Uri("ms-appx:///Assets/cycle.3mf")));
-        //    MapElement3D y = new() { Model = x, Location = new Geopoint(new BasicGeoposition { Latitude = 47.76002, Longitude = 12.21696 }), Scale=new(.1f,.1f,.1f), Heading=90 };
-        //    _infoLayer.MapElements.Add(y);
-        //    await Task.Delay(TimeSpan.FromSeconds(10));
+        //    MapElement3D y = new() { Model = x, Location = new Geopoint(new BasicGeoposition { Latitude = 47.76002, Longitude = 12.21696 }), Scale = new(.1f, .1f, .1f), Heading = 45 };
+        //    _trainLayer.MapElements.Add(y);
+        //    await Task.Delay(TimeSpan.FromSeconds(20));
         //    while (true)
         //    {
         //        y.Heading += 0.1;
         //        y.Location = new Geopoint(new BasicGeoposition { Latitude = y.Location.Position.Latitude + .00001, Longitude = y.Location.Position.Longitude });
         //        await Task.Delay(TimeSpan.FromMilliseconds(20));
         //    }
-        //} 
+        //}
     }
 
     private void MapControl_ActualCameraChanged(MapControl _1, MapActualCameraChangedEventArgs _2)
@@ -327,15 +324,8 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
     event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
     {
-        add
-        {
-            _propertyChanged += value;
-        }
-
-        remove
-        {
-            _propertyChanged -= value;
-        }
+        add => _propertyChanged += value;
+        remove => _propertyChanged -= value;
     }
 
     void IRecipient<ModeChanged>.Receive(ModeChanged message)
