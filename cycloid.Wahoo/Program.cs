@@ -15,6 +15,20 @@ try
 
     Command adb = Cli.Wrap(Path.Combine(Path.GetDirectoryName(Environment.ProcessPath)!, "adb/adb.exe"));
 
+    while (true)
+    {
+        string devices = await AdbAsync($"devices", true);
+
+        if (devices.Contains("\tdevice"))
+        {
+            break;
+        }
+        Console.WriteLine($"Device not {(devices.Contains("\tunauthorized") ? "authorized" : "connected")}...");
+        await Task.Delay(TimeSpan.FromSeconds(1));
+    }
+
+    await AdbAsync($"devices -l");
+
     PointOfInterest[] pointsOfInterest;
     using (Stream json = File.OpenRead(trackFilePath))
     {
@@ -26,13 +40,6 @@ try
 
     string localDirectory = Path.GetTempPath();
     string localFilePath = Path.Combine(localDirectory, "BoltApp.sqlite");
-
-    string devices = await AdbAsync($"devices");
-
-    if (!devices.Contains("\tdevice"))
-    {
-        throw new InvalidOperationException($"Device not {(devices.Contains("\tunauthorized") ? "authorized" : "connected")}");
-    }
 
     await DownloadAsync(localFilePath);
     await DownloadAsync(localFilePath + "-shm");
@@ -97,6 +104,8 @@ try
     }
     finally
     {
+        await AdbAsync("kill-server");
+
         SqliteConnection.ClearAllPools();
 
         foreach (string dbFile in Directory.GetFiles(localDirectory, Path.GetFileName(localFilePath) + '*'))
@@ -127,9 +136,12 @@ try
         }
     }
 
-    async Task<string> AdbAsync(string parameter)
+    async Task<string> AdbAsync(string parameter, bool supressOutput = false)
     {
-        Console.WriteLine(parameter);
+        if (!supressOutput)
+        {
+            Console.WriteLine(parameter);
+        }
 
         BufferedCommandResult result = await adb
             .WithArguments(parameter)
@@ -142,7 +154,10 @@ try
             throw new InvalidOperationException(output + Environment.NewLine + result.StandardError);
         }
 
-        Console.Write(output);
+        if (!supressOutput)
+        {
+            Console.Write(output);
+        }
 
         return output;
     }
@@ -150,7 +165,12 @@ try
 catch (Exception ex)
 {
     Console.WriteLine(ex);
+    Console.WriteLine();
+    Console.Write("Press any key...");
+    Console.ReadKey(true);
+
+    return;
 }
 
-Console.Write("Press enter");
-Console.ReadLine();
+Console.WriteLine();
+Console.WriteLine("Successfully updated...");

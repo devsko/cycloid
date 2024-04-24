@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "cycloid.Wahoo": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\stefa\\OneDrive\\Dokumente\\TPBR24\\Route\\TPBR24.track\""
+    }
+  }
+}
