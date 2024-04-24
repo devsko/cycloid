@@ -165,7 +165,7 @@ public static class Serializer
             return null;
         }
 
-        byte[] binary = new byte[points.Length * 16];
+        byte[] binary = new byte[points.Length * 17];
         BinaryWriter writer = new(new MemoryStream(binary));
         foreach (TrackPoint point in points)
         {
@@ -173,6 +173,7 @@ public static class Serializer
             writer.Write(point.Longitude);
             writer.Write((int)(point.Altitude * 10));
             writer.Write((int)point.Time.TotalMilliseconds);
+            writer.Write((byte)point.Surface);
         }
 
         return binary;
@@ -185,7 +186,7 @@ public static class Serializer
             return null;
         }
 
-        Routing.RoutePoint[] points = new Routing.RoutePoint[binary.Length / 16];
+        Routing.RoutePoint[] points = new Routing.RoutePoint[binary.Length / 17];
         BinaryReader reader = new(new MemoryStream(binary));
         for (int i = 0; i < points.Length; i++)
         {
@@ -193,7 +194,8 @@ public static class Serializer
                 reader.ReadSingle(),
                 reader.ReadSingle(),
                 (float)reader.ReadInt32() / 10,
-                TimeSpan.FromMilliseconds(reader.ReadInt32()));
+                TimeSpan.FromMilliseconds(reader.ReadInt32()),
+                (Surface)reader.ReadByte());
         }
 
         return points;
@@ -233,7 +235,7 @@ public static class Serializer
             new TrackPoint.CommonValues(compareSession.Value.Distance, compareSession.Value.Time, compareSession.Value.Ascent, compareSession.Value.Descent),
             Convert(compareSession.Value.WayPoints, Convert),
             Convert(compareSession.Value.TrackPoints, Convert)
-                .Select(segmentRoutePoints => TrackPointConverter.Convert(segmentRoutePoints, segmentRoutePoints.Length).Points)
+                .Select(segmentRoutePoints => TrackPointConverter.Convert(segmentRoutePoints, segmentRoutePoints.Length, null).Points)
                 .ToArray());
     }
 

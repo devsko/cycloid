@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,6 +18,28 @@ namespace cycloid.Routing;
 
 public partial class BrouterClient
 {
+    private static readonly Dictionary<string, Surface> s_surfaces = CreateKnownValues<Surface>();
+    private static readonly Dictionary<string, Highway> s_highways = CreateKnownValues<Highway>();
+
+    private static Dictionary<string, T> CreateKnownValues<T>()
+    {
+        Dictionary<string, T> knownValues = [];
+
+        string[] names = Enum.GetNames(typeof(T));
+        Array values = Enum.GetValues(typeof(T));
+
+        for (int i = 0; i < names.Length; i++)
+        {
+            string name = names[i];
+            if (char.IsLower(name[0]))
+            {
+                knownValues.Add(name, (T)values.GetValue(i));
+            }
+        }
+
+        return knownValues;
+    }
+
     private readonly HttpClient _http = new() 
     { 
         BaseAddress = new Uri("https://bikerouter.de/brouter-engine/brouter/"), 
@@ -24,7 +47,7 @@ public partial class BrouterClient
     };
     private readonly ConcurrentDictionary<Profile, Task<string>> _profiles = new();
 
-    public async Task<Feature> GetRouteAsync(MapPoint from, MapPoint to, IEnumerable<NoGoArea> noGoAreas, Profile profile, Action retryCallback, CancellationToken cancellationToken)
+    public async Task<(IEnumerable<RoutePoint>, int, IEnumerable<SurfacePart>)> GetRouteAsync(MapPoint from, MapPoint to, IEnumerable<NoGoArea> noGoAreas, Profile profile, Action retryCallback, CancellationToken cancellationToken)
     {
         string profileId = await GetProfileIdAsync(profile).ConfigureAwait(false);
 
@@ -39,20 +62,100 @@ public partial class BrouterClient
                 using Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 FeatureCollection result = await JsonSerializer.DeserializeAsync<FeatureCollection>(contentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                return result?.Features.FirstOrDefault();
+                Feature feature = result?.Features.FirstOrDefault();
+                if (feature is null)
+                {
+                    return default;
+                }
+
+                //long GetProperty(string name) => long.Parse(((JsonElement)feature.Properties[name]).GetString()!);
+
+                //long length = GetProperty("track-length");
+                //long duration = GetProperty("total-time");
+                //long ascend = GetProperty("filtered ascend");
+
+                ReadOnlyCollection<IPosition> positions = ((LineString)feature.Geometry).Coordinates;
+                IEnumerable<float> times = ((JsonElement)feature.Properties["times"]).EnumerateArray().Select(e => e.GetSingle());
+                IEnumerable<SurfacePart> surfaces = ((JsonElement)feature.Properties["messages"]).EnumerateArray().Skip(1).Select(CreateSurfacePart);
+
+                IEnumerable<RoutePoint> points = positions.Zip(times,
+                    (position, time) => new RoutePoint(
+                        (float)position.Latitude,
+                        (float)position.Longitude,
+                        (float)(position.Altitude ?? 0),
+                        TimeSpan.FromSeconds(time),
+                        Surface.Unknown));
+
+                return (points, positions.Count, surfaces);
             }
             else if (++retryCount > 3 || !await CanRetryAsync(response).ConfigureAwait(false))
             {
-                return null;
+                return default;
             }
 
             retryCallback?.Invoke();
 
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
         }
+
+        static SurfacePart CreateSurfacePart(JsonElement element)
+        {
+            IEnumerator<JsonElement> enumerator = element.EnumerateArray().GetEnumerator();
+            enumerator.MoveNext();
+            // Longitude
+            enumerator.MoveNext();
+            // Latitude
+            enumerator.MoveNext();
+            // Elevation
+            enumerator.MoveNext();
+            // Distance
+            int distance = int.Parse(enumerator.Current.GetString());
+            enumerator.MoveNext();
+            // CostPerKm
+            enumerator.MoveNext();
+            // ElevCost
+            enumerator.MoveNext();
+            // TurnCost
+            enumerator.MoveNext();
+            // NodeCost
+            enumerator.MoveNext();
+            // InitialCost
+            enumerator.MoveNext();
+            // WayTags
+            string tags = enumerator.Current.GetString();
+
+            if (!s_surfaces.TryGetValue(GetValue(tags, "surface"), out Surface surface))
+            {
+                surface = !s_highways.TryGetValue(GetValue(tags, "highway"), out Highway highway)
+                    ? Surface.Unknown
+                    : highway <= Highway.service
+                        ? Surface.UnknownLikelyPaved
+                        : Surface.UnknownLikelyUnpaved;
+            }
+
+            // NodeTags
+            // Time
+            // Energy
+
+            return new SurfacePart(distance, surface);
+
+            static string GetValue(string tags, string tag)
+            {
+                int index = tags.IndexOf($"{tag}=");
+                if (index == -1)
+                {
+                    return "";
+                }
+
+                index += tag.Length + 1;
+                int endIndex = tags.IndexOf(' ', index);
+
+                return endIndex == -1 ? tags[index..] : tags[index..endIndex];
+            }
+        }
     }
 
-    public async Task<IPosition> GetPositionAsync(MapPoint point, Profile profile, Action retryCallback, CancellationToken cancellationToken)
+    public async Task<RoutePoint?> GetPositionAsync(MapPoint point, Profile profile, Action retryCallback, CancellationToken cancellationToken)
     {
         string profileId = await GetProfileIdAsync(profile).ConfigureAwait(false);
 
@@ -67,7 +170,17 @@ public partial class BrouterClient
                 using Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 FeatureCollection result = await JsonSerializer.DeserializeAsync<FeatureCollection>(contentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                return (result?.Features.FirstOrDefault()?.Geometry as LineString)?.Coordinates[0];
+                Feature feature = result?.Features.FirstOrDefault();
+                if (feature is not null)
+                {
+                    IPosition position = (feature.Geometry as LineString)?.Coordinates[0];
+                    if (position is not null)
+                    {
+                        return RoutePoint.FromPosition(position, TimeSpan.Zero, Surface.Unknown);
+                    }
+                }
+
+                return null;
             }
             else if (++retryCount > 3 || !await CanRetryAsync(response).ConfigureAwait(false))
             {

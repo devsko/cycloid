@@ -5,7 +5,7 @@ using Windows.Devices.Geolocation;
 
 namespace cycloid;
 
-public readonly partial struct TrackPoint(float latitude, float longitude, float altitude = 0f, TimeSpan time = default, float distance = 0f, float heading = 0f, float gradient = 0f, float speed = 0f, float ascent = 0f, float descent = 0f) : IRoutePoint, IEquatable<TrackPoint>, ICanBeInvalid<TrackPoint>
+public readonly partial struct TrackPoint(float latitude, float longitude, float altitude = 0f, TimeSpan time = default, float distance = 0f, float heading = 0f, float gradient = 0f, float speed = 0f, float ascent = 0f, float descent = 0f, Surface surface = Surface.Unknown) : IRoutePoint, IEquatable<TrackPoint>, ICanBeInvalid<TrackPoint>
 {
     public class DistanceComparer : IComparer<TrackPoint>
     {
@@ -48,7 +48,8 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
             previous.Gradient,
             previous.Speed,
             previous.Values.Ascent + fraction * (next.Values.Ascent - previous.Values.Ascent),
-            previous.Values.Descent + fraction * (next.Values.Descent - previous.Values.Descent));
+            previous.Values.Descent + fraction * (next.Values.Descent - previous.Values.Descent),
+            previous.Surface);
     }
 
     private readonly float _latitude = latitude;
@@ -58,6 +59,7 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
     private readonly short _heading = (short)(heading * 10); // 0.1 °
     private readonly short _gradient = (short)(gradient * 10); // 0.1 %
     private readonly short _speed = (short)(speed * 10); // 0.1 km/h
+    private readonly Surface _surface = surface;
 
     public float Latitude => _latitude;
 
@@ -74,6 +76,8 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
     public float Gradient => (float)_gradient / 10;
 
     public float Speed => (float)_speed / 10;
+
+    public Surface Surface => _surface;
 
     public CommonValues Values
     {

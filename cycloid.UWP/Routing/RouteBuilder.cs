@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
@@ -174,41 +173,23 @@ public partial class RouteBuilder
 
                 if (section.IsDirectRoute)
                 {
-                    GeoJSON.Text.Geometry.IPosition startPosition = await Client.GetPositionAsync(section.Start.Location, Profile, RetryCallback, cancellationToken);
-                    GeoJSON.Text.Geometry.IPosition endPosition = await Client.GetPositionAsync(section.End.Location, Profile, RetryCallback, cancellationToken);
+                    RoutePoint? start = await Client.GetPositionAsync(section.Start.Location, Profile, RetryCallback, cancellationToken);
+                    RoutePoint? end = await Client.GetPositionAsync(section.End.Location, Profile, RetryCallback, cancellationToken);
 
-                    if (startPosition is not null && endPosition is not null)
+                    if (start is not null && end is not null)
                     {
-                        return TrackPointConverter.Convert(
-                            RoutePoint.FromPosition(startPosition, TimeSpan.Zero), 
-                            RoutePoint.FromPosition(endPosition, TimeSpan.FromHours(section.DirectDistance / 1_000 / 20)));
+                        return TrackPointConverter.Convert(start.Value, end.Value with { Time = TimeSpan.FromHours(section.DirectDistance / 1_000 / 20) });
                     }
                 }
                 else
                 {
-                    GeoJSON.Text.Feature.Feature feature = await Client.GetRouteAsync(section.Start.Location, section.End.Location, NoGoAreas, Profile, RetryCallback, cancellationToken).ConfigureAwait(false);
+                    (IEnumerable<RoutePoint> points, int pointCount, IEnumerable<SurfacePart> surfaces) = await Client.GetRouteAsync(section.Start.Location, section.End.Location, NoGoAreas, Profile, RetryCallback, cancellationToken).ConfigureAwait(false);
 
-                    if (feature is not null)
-                    {
-                        IEnumerable<float> times = ((JsonElement)feature.Properties["times"]).EnumerateArray().Select(e => e.GetSingle());
-                        ReadOnlyCollection<GeoJSON.Text.Geometry.IPosition> positions = ((GeoJSON.Text.Geometry.LineString)feature.Geometry).Coordinates;
-
-                        IEnumerable<RoutePoint> points = positions.Zip(times,
-                            (position, time) => new RoutePoint(
-                                (float)position.Latitude,
-                                (float)position.Longitude,
-                                (float)(position.Altitude ?? 0),
-                                TimeSpan.FromSeconds(time)));
-
-                        long GetProperty(string name) => long.Parse(((JsonElement)feature.Properties[name]).GetString()!);
-
-                        long length = GetProperty("track-length");
-                        long duration = GetProperty("total-time");
-                        //long ascend = GetProperty("filtered ascend");
-
+                    if (points is not null)
+                    { 
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        return TrackPointConverter.Convert(points, positions.Count);
+                        return TrackPointConverter.Convert(points, pointCount, surfaces);
                     }
                 }
             }
@@ -216,6 +197,7 @@ public partial class RouteBuilder
             { }
 
             return default;
+
 
             void RetryCallback()
             {
@@ -427,9 +409,9 @@ public partial class RouteBuilder
 
                     RouteResult result = routePoints is null
                         ? TrackPointConverter.Convert(
-                            RoutePoint.FromMapPoint(point.Location, 0, TimeSpan.Zero),
-                            RoutePoint.FromMapPoint(wayPoint.Location, 0, TimeSpan.Zero))
-                        : TrackPointConverter.Convert(routePoints, routePoints.Length);
+                            RoutePoint.FromMapPoint(point.Location, 0, TimeSpan.Zero, Surface.Unknown),
+                            RoutePoint.FromMapPoint(wayPoint.Location, 0, TimeSpan.Zero, Surface.Unknown))
+                        : TrackPointConverter.Convert(routePoints, routePoints.Length, null);
 
                     StrongReferenceMessenger.Default.Send(new CalculationStarting(section));
                     StrongReferenceMessenger.Default.Send(new CalculationFinished(section, result));

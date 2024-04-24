@@ -4,14 +4,82 @@ using cycloid.Routing;
 
 namespace cycloid;
 
+public enum Surface : byte
+{
+    Unknown,
+
+    UnknownLikelyPaved, // highway=motorway/motorway_link/trunk/trunk_link/primary/primary_link/secondary/secondary_link/tertiary/tertiary_link/unclassified/residential/living_street/service
+    paved,
+    asphalt,
+    chipseal,
+    concrete,
+    paving_stones,
+    sett,
+    unhewn_cobblestone,
+    cobblestone,
+    bricks,
+    metal,
+    wood,
+    stepping_stones,
+    rubber,
+
+    UnknownLikelyUnpaved, // highway=track/bridleway/footway/path
+    unpaved,
+    compacted,
+    fine_gravel,
+    gravel,
+    shells,
+    rock,
+    pebblestone,
+    ground,
+    dirt,
+    earth,
+    grass,
+    grass_paver,
+    metal_grid,
+    mud,
+    sand,
+    woodchips,
+    snow,
+    ice,
+    salt,
+}
+
+public enum Highway : byte
+{
+    Unknown,
+
+    motorway,
+    motorway_link,
+    trunk,
+    trunk_link,
+    primary,
+    primary_link,
+    secondary,
+    secondary_link,
+    tertiary,
+    tertiary_link,
+    unclassified,
+    residential,
+    living_street,
+    service,
+
+    track,
+    bridleway,
+    footway,
+    path,
+}
+
+public readonly record struct SurfacePart(float Distance, Surface Surface);
+
 public static class TrackPointConverter
 {
     public static RouteResult Convert(RoutePoint start, RoutePoint end)
     {
-        return Convert([start, end], 2);
+        return Convert([start, end], 2, null);
     }
 
-    public static RouteResult Convert(IEnumerable<RoutePoint> points, int count)
+    public static RouteResult Convert(IEnumerable<RoutePoint> points, int count, IEnumerable<SurfacePart> surfaces)
     {
         if (count < 2)
         {
@@ -22,15 +90,20 @@ public static class TrackPointConverter
         float minAltitude = float.MaxValue;
         float maxAltitude = float.MinValue;
         int i = 0;
-        foreach (TrackPoint trackPoint in Convert(points))
+        foreach (TrackPoint trackPoint in Convert(points, surfaces))
         {
             trackPoints[i++] = trackPoint;
         }
 
         return new RouteResult(trackPoints, minAltitude, maxAltitude);
 
-        IEnumerable<TrackPoint> Convert(IEnumerable<RoutePoint> points)
+        IEnumerable<TrackPoint> Convert(IEnumerable<RoutePoint> points, IEnumerable<SurfacePart> surfaces)
         {
+            IEnumerator<SurfacePart> surfaceEnumerator = surfaces?.GetEnumerator();
+            surfaceEnumerator?.MoveNext();
+            SurfacePart currentSurface = surfaces is null ? default : surfaceEnumerator.Current;
+            float surfaceDistance = surfaces is null ? float.PositiveInfinity : currentSurface.Distance;
+
             IEnumerator<RoutePoint> enumerator = points.GetEnumerator();
             enumerator.MoveNext();
 
@@ -50,6 +123,18 @@ public static class TrackPointConverter
                 double heading;
                 double gradient;
                 double speed;
+
+                // TODO calculated runningDistance doesn't match exactly the rounded distances from Brouter
+                // use the last part for now
+                while (Math.Floor(runningDistance) >= surfaceDistance )
+                {
+                    if (!surfaceEnumerator.MoveNext())
+                    {
+                        break;
+                    }
+                    currentSurface = surfaceEnumerator.Current;
+                    surfaceDistance += currentSurface.Distance;
+                }
 
                 if (more = enumerator.MoveNext())
                 {
@@ -112,7 +197,8 @@ public static class TrackPointConverter
                     (float)gradient,
                     (float)speed,
                     ascent,
-                    descent);
+                    descent,
+                    surfaceEnumerator?.Current.Surface ?? previous.Surface);
 
                 previous = current;
                 runningDistance += distance;

@@ -449,8 +449,8 @@ partial class Track
                 if (!result.IsValid)
                 {
                     result = TrackPointConverter.Convert(
-                        RoutePoint.FromMapPoint(message.Section.Start.Location, 0, TimeSpan.Zero),
-                        RoutePoint.FromMapPoint(message.Section.End.Location, 0, TimeSpan.FromHours(message.Section.DirectDistance / 1_000 / 20)));
+                        RoutePoint.FromMapPoint(message.Section.Start.Location, 0, TimeSpan.Zero, Surface.Unknown),
+                        RoutePoint.FromMapPoint(message.Section.End.Location, 0, TimeSpan.FromHours(message.Section.DirectDistance / 1_000 / 20), Surface.Unknown));
                 }
 
                 (segment.Points, segment.MinAltitude, segment.MaxAltitude) = (result.Points, result.MinAltitude, result.MaxAltitude);
