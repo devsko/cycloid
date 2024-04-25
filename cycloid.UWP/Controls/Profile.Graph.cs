@@ -23,24 +23,21 @@ partial class Profile
     {
         Graph.Points.Clear();
 
-        _trackStartDistance = float.PositiveInfinity;
-        _trackEndDistance = -1;
+        _trackStartDistance = _trackEndDistance = -1;
     }
 
     private void ResetSelection()
     {
         SelectionGraph.Points.Clear();
 
-        _selectionStartDistance = float.PositiveInfinity;
-        _selectionEndDistance = -1;
+        _selectionStartDistance = _selectionEndDistance = -1;
     }
 
     private void ResetSection()
     {
         SectionGraph.Points.Clear();
 
-        _sectionStartDistance = float.PositiveInfinity;
-        _sectionEndDistance = -1;
+        _sectionStartDistance = _sectionEndDistance = -1;
     }
 
     private void EnsureTrack()
@@ -48,11 +45,9 @@ partial class Profile
         float startDistance = (float)(_scrollerOffset / _horizontalScale);
         float endDistance = (float)((ActualWidth + _scrollerOffset) / _horizontalScale);
 
-        EnsureGraph(startDistance, endDistance, Graph, _trackStartDistance, _trackEndDistance);
+        EnsureGraph(startDistance, endDistance, Graph, ref _trackStartDistance, ref _trackEndDistance);
 
         GraphFigure.StartPoint = Graph.Points[0];
-        _trackStartDistance = Math.Min(_trackStartDistance, startDistance);
-        _trackEndDistance = Math.Max(_trackEndDistance, endDistance);
     }
 
     private void EnsureSelection()
@@ -64,11 +59,9 @@ partial class Profile
 
             if (startDistance <= endDistance)
             {
-                EnsureGraph(startDistance, endDistance, SelectionGraph, _selectionStartDistance, _selectionEndDistance);
+                EnsureGraph(startDistance, endDistance, SelectionGraph, ref _selectionStartDistance, ref _selectionEndDistance);
 
                 SelectionGraphFigure.StartPoint = SelectionGraph.Points[0];
-                _selectionStartDistance = Math.Min(_selectionStartDistance, startDistance);
-                _selectionEndDistance = Math.Max(_selectionEndDistance, endDistance);
             }
         }
     }
@@ -82,47 +75,68 @@ partial class Profile
 
             if (startDistance <= endDistance)
             {
-                EnsureGraph(startDistance, endDistance, SectionGraph, _sectionStartDistance, _sectionEndDistance);
+                EnsureGraph(startDistance, endDistance, SectionGraph, ref _sectionStartDistance, ref _sectionEndDistance);
 
                 SectionGraphFigure.StartPoint = SectionGraph.Points[0];
-                _sectionStartDistance = Math.Min(_sectionStartDistance, startDistance);
-                _sectionEndDistance = Math.Max(_sectionEndDistance, endDistance);
             }
         }
     }
 
-    private void EnsureGraph(float startDistance, float endDistance, PolyLineSegment graph, float currentStartDistance, float currentEndDistance)
+    private void EnsureGraph(float startDistance, float endDistance, PolyLineSegment graph, ref float currentStartDistance, ref float currentEndDistance)
     {
         float minElevation = ViewModel.Track.Points.MinAltitude;
         PointCollection points = graph.Points;
 
-        if (currentStartDistance > currentEndDistance)
+        if (currentStartDistance >= 0)
         {
-            IterateTrack(startDistance, endDistance, false, false, p => points.Add(new Point(p.Distance, p.Elevation - minElevation)));
-            points.Insert(0, new Point(points[0].X, 0));
-            points.Add(new Point(points[points.Count - 1].X, 0));
-        }
-        else
-        {
+            float step = (float)(1 / (.5 * _horizontalScale));
             if (startDistance < currentStartDistance)
             {
-                points.RemoveAt(0);
-                int i = 0;
-                IterateTrack(startDistance, currentStartDistance, false, true, p => points.Insert(i++, new Point(p.Distance, p.Elevation - minElevation)));
-                points.Insert(0, new Point(graph.Points[0].X, 0));
+                if ((currentEndDistance - startDistance) / step > 2_500)
+                {
+                    points.Clear();
+                    currentStartDistance = currentEndDistance = -1;
+                }
+                else
+                {
+                    points.RemoveAt(0);
+                    int i = 0;
+                    IterateTrack(startDistance, currentStartDistance, false, true, p => points.Insert(i++, new Point(p.Distance, p.Altitude - minElevation)));
+                    points.Insert(0, new Point(graph.Points[0].X, 0));
+                    currentStartDistance = startDistance;
+                }
             }
-            if (endDistance > currentEndDistance)
+            else if (endDistance > currentEndDistance)
             {
-                points.RemoveAt(points.Count - 1);
-                IterateTrack(currentEndDistance, endDistance, true, false, p => points.Add(new Point(p.Distance, p.Elevation - minElevation)));
-                points.Add(new Point(graph.Points[points.Count - 1].X, 0));
+                if ((endDistance - currentStartDistance) / step > 2_500)
+                {
+                    points.Clear();
+                    currentStartDistance = currentEndDistance = -1;
+                }
+                else
+                {
+                    points.RemoveAt(points.Count - 1);
+                    IterateTrack(currentEndDistance, endDistance, true, false, p => points.Add(new Point(p.Distance, p.Altitude - minElevation)));
+                    points.Add(new Point(graph.Points[points.Count - 1].X, 0));
+                    currentEndDistance = endDistance;
+                }
             }
+        }
+
+
+        if (currentStartDistance < 0)
+        {
+            IterateTrack(startDistance, endDistance, false, false, p => points.Add(new Point(p.Distance, p.Altitude - minElevation)));
+            points.Insert(0, new Point(points[0].X, 0));
+            points.Add(new Point(points[points.Count - 1].X, 0));
+            currentStartDistance = startDistance;
+            currentEndDistance = endDistance;
         }
     }
 
-    private void IterateTrack(float startDistance, float endDistance, bool skipFirst, bool skipLast, Action<(MapPoint Location, float Distance, float Elevation)> action)
+    private void IterateTrack(float startDistance, float endDistance, bool skipFirst, bool skipLast, Action<(float Distance, float Altitude)> action)
     {
-        IEnumerable<(MapPoint Location, float Distance, float Elevation)> points = ViewModel.Track.Points.Enumerate(startDistance, endDistance, _trackIndexStep);
+        IEnumerable<(float Distance, float Altitude)> points = ViewModel.Track.Points.EnumerateByDistance(startDistance, endDistance, (float)(1 / (.5 * _horizontalScale)));
 
         if (skipFirst)
         {

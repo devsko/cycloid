@@ -121,6 +121,7 @@ public partial class OnTrack : ObservableObject
             {
                 OnPropertyChanged(nameof(Distance));
                 OnPropertyChanged(nameof(Ascent));
+                OnPropertyChanged(nameof(Descent));
                 OnPropertyChanged(nameof(Time));
                 OnPropertyChanged(nameof(Speed));
             }

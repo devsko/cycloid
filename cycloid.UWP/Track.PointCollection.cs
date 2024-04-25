@@ -291,28 +291,72 @@ partial class Track
             }
         }
 
-        public IEnumerable<(MapPoint Location, float Distance, float Altitude)> Enumerate(float fromDistance, float toDistance, int step = 1)
+        public IEnumerable<(MapPoint Location, float Altitude)> Enumerate(float fromDistance, float toDistance)
         {
-            IEnumerator<(Segment Segment, TrackPoint Point, Index index)> enumerator = Enumerate(GetIndex(fromDistance, out _, step)).GetEnumerator();
+            IEnumerator<(Segment Segment, TrackPoint Point, Index index)> enumerator = Enumerate(GetIndex(fromDistance, out _)).GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                (Segment segment, TrackPoint point, _) = enumerator.Current;
+                if (segment.Start.Distance + point.Distance > toDistance)
+                {
+                    break;
+                }
+
+                yield return (point, point.Altitude);
+            }
+        }
+
+        public IEnumerable<(float Distance, float Altitude)> EnumerateByDistance(float from, float to, float step)
+        {
+            Index index = GetIndex(from, out bool exactMatch);
+
+            IEnumerator<(Segment Segment, TrackPoint Point, Index Index)> enumerator = Enumerate(exactMatch ? index : Decrement(index)).GetEnumerator();
+
             if (enumerator.MoveNext())
             {
+                (Segment Segment, TrackPoint Point, Index Index) current = enumerator.Current;
+                (Segment Segment, TrackPoint Point, Index Index) previous = default;
+
+                if (!exactMatch)
+                {
+                    enumerator.MoveNext();
+                    previous = current;
+                    current = enumerator.Current;
+                }
+
+                int i = 0;
+                float distance = from;
+                float currentDistance = exactMatch ? distance : current.Segment.Start.Distance + current.Point.Distance;
                 while (true)
                 {
-                    (Segment segment, TrackPoint point, _) = enumerator.Current;
-                    float distance = segment.Start.Distance + point.Distance;
-                    if (distance > toDistance)
+                    if (exactMatch)
                     {
-                        break;
+                        yield return (distance, current.Point.Altitude);
+                    }
+                    else
+                    {
+                        float previousDistance = previous.Segment.Start.Distance + previous.Point.Distance;
+                        float fraction = (distance - previousDistance) / (currentDistance - previousDistance);
+                        float altitude = previous.Point.Altitude + fraction * (current.Point.Altitude - previous.Point.Altitude);
+                        yield return (distance, altitude);
                     }
 
-                    yield return (point, distance, point.Altitude);
+                    if ((distance = from + ++i * step) > to)
+                    {
+                        yield break;
+                    }
 
-                    for (int i = 0; i < step; i++)
+                    while (!((exactMatch = currentDistance == distance) || currentDistance > distance))
                     {
                         if (!enumerator.MoveNext())
                         {
                             yield break;
                         }
+
+                        previous = current;
+                        current = enumerator.Current;
+
+                        currentDistance = current.Segment.Start.Distance + current.Point.Distance;
                     }
                 }
             }
@@ -321,7 +365,7 @@ partial class Track
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         // TODO return (Segment, TrackPoint, Index)
-        private Index GetIndex(float distance, out bool exactMatch, int step = 1)
+        private Index GetIndex(float distance, out bool exactMatch)
         {
             if (_segments.Count == 0)
             {
@@ -352,16 +396,6 @@ partial class Track
             {
                 exactMatch = false;
                 pointIndex = ~pointIndex;
-            }
-
-            if (step != 1)
-            {
-                pointIndex = (pointIndex + segment.StartIndex) / step * step - segment.StartIndex;
-                if (pointIndex < 0)
-                {
-                    // TODO wann passiert das? Besser den richtigen Punkt im Segment davor?
-                    pointIndex += step;
-                }
             }
 
             return new Index(segmentIndex, pointIndex);

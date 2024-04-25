@@ -66,8 +66,6 @@ public sealed partial class Profile : ViewModelControl,
     private double _horizontalSize;
     private double _horizontalScale;
 
-    private int _trackIndexStep;
-
     private int _horizontalRulerStartTick;
     private int _horizontalRulerEndTick;
 
@@ -144,7 +142,6 @@ public sealed partial class Profile : ViewModelControl,
 
                     _trackTotalDistance = ViewModel.Track.Points.Total.Distance;
                     _horizontalScale = _horizontalSize / _trackTotalDistance;
-                    _trackIndexStep = Math.Max(1, (int)((ViewModel.Track.Points.Count - 1) / _horizontalSize));
 
                     if (!double.IsInfinity(_horizontalScale))
                     {
@@ -283,11 +280,6 @@ public sealed partial class Profile : ViewModelControl,
     {
         _scrollerOffset = Scroller.HorizontalOffset;
 
-        if (Graph.Points.Count > 2000)
-        {
-            ResetTrack();
-        }
-
         ProcessChangeAsync(Change.Scroll).FireAndForget();
 
         Point pointer = new(
@@ -336,11 +328,11 @@ public sealed partial class Profile : ViewModelControl,
             double x = e.GetCurrentPoint(Root).Position.X;
             if (_isCaptured)
             {
-                if (x > _scrollerOffset + ActualWidth - 2)
+                if (x >= _scrollerOffset + ActualWidth - 3)
                 {
                     _periodicScroll.Start(this, 10);
                 }
-                else if (x < _scrollerOffset + 2)
+                else if (x <= _scrollerOffset + 3)
                 {
                     _periodicScroll.Start(this, -10);
                 }
@@ -438,12 +430,12 @@ public sealed partial class Profile : ViewModelControl,
 
     private void ZoomOut_Click(object _1, RoutedEventArgs _2)
     {
-        HorizontalZoom = Math.Max(1, HorizontalZoom / 1.25);
+        HorizontalZoom = Math.Max(1, HorizontalZoom / 1.5);
     }
 
     private void ZoomIn_Click(object _1, RoutedEventArgs _2)
     {
-        HorizontalZoom *= 1.25f;
+        HorizontalZoom *= 1.5f;
     }
 
     void IRecipient<TrackChanged>.Receive(TrackChanged message)
