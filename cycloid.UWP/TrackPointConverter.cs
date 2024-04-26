@@ -6,14 +6,12 @@ namespace cycloid;
 
 public enum Surface : byte
 {
-    Unknown,
-
-    UnknownLikelyPaved, // highway=motorway/motorway_link/trunk/trunk_link/primary/primary_link/secondary/secondary_link/tertiary/tertiary_link/unclassified/residential/living_street/service
     paved,
     asphalt,
     chipseal,
     concrete,
     paving_stones,
+
     sett,
     unhewn_cobblestone,
     cobblestone,
@@ -22,8 +20,8 @@ public enum Surface : byte
     wood,
     stepping_stones,
     rubber,
+    UnknownLikelyPaved, // highway=motorway/motorway_link/trunk/trunk_link/primary/primary_link/secondary/secondary_link/tertiary/tertiary_link/unclassified/residential/living_street/service
 
-    UnknownLikelyUnpaved, // highway=track/bridleway/footway/path
     unpaved,
     compacted,
     fine_gravel,
@@ -43,12 +41,13 @@ public enum Surface : byte
     snow,
     ice,
     salt,
+    UnknownLikelyUnpaved, // highway=track/bridleway/footway/path
+    
+    Unknown,
 }
 
 public enum Highway : byte
 {
-    Unknown,
-
     motorway,
     motorway_link,
     trunk,
@@ -68,6 +67,8 @@ public enum Highway : byte
     bridleway,
     footway,
     path,
+    
+    Unknown,
 }
 
 public readonly record struct SurfacePart(float Distance, Surface Surface);

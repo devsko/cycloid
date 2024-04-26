@@ -267,6 +267,11 @@ public sealed partial class Profile : ViewModelControl,
         }
     }
 
+    private void ViewModelControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        _graphTransform = (Transform)Root.Resources["GraphTransform"];
+    }
+
     private void ViewModelControl_SizeChanged(object _1, SizeChangedEventArgs _2)
     {
         // TODO

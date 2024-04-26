@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 
 namespace cycloid.Controls;
 
@@ -45,7 +46,7 @@ partial class Profile
         float startDistance = (float)(_scrollerOffset / _horizontalScale);
         float endDistance = (float)((ActualWidth + _scrollerOffset) / _horizontalScale);
 
-        EnsureGraph(startDistance, endDistance, Graph, ref _trackStartDistance, ref _trackEndDistance);
+        EnsureGraph(Graph, startDistance, endDistance, ref _trackStartDistance, ref _trackEndDistance, true);
 
         GraphFigure.StartPoint = Graph.Points[0];
     }
@@ -59,7 +60,7 @@ partial class Profile
 
             if (startDistance <= endDistance)
             {
-                EnsureGraph(startDistance, endDistance, SelectionGraph, ref _selectionStartDistance, ref _selectionEndDistance);
+                EnsureGraph(SelectionGraph, startDistance, endDistance, ref _selectionStartDistance, ref _selectionEndDistance);
 
                 SelectionGraphFigure.StartPoint = SelectionGraph.Points[0];
             }
@@ -75,17 +76,26 @@ partial class Profile
 
             if (startDistance <= endDistance)
             {
-                EnsureGraph(startDistance, endDistance, SectionGraph, ref _sectionStartDistance, ref _sectionEndDistance);
+                EnsureGraph(SectionGraph, startDistance, endDistance, ref _sectionStartDistance, ref _sectionEndDistance);
 
                 SectionGraphFigure.StartPoint = SectionGraph.Points[0];
             }
         }
     }
 
-    private void EnsureGraph(float startDistance, float endDistance, PolyLineSegment graph, ref float currentStartDistance, ref float currentEndDistance)
+    private static readonly Brush _trackGraphOutlineBrush = (Brush)App.Current.Resources["TrackGraphOutline"];
+    private readonly Dictionary<Brush, Path> _surfacePaths = [];
+    private Transform _graphTransform;
+    private Path _currentSurfacePath;
+    private PolyLineSegment _currentSurfaceLine;
+
+    private void EnsureGraph(PolyLineSegment graph, float startDistance, float endDistance, ref float currentStartDistance, ref float currentEndDistance, bool surfacePaths = false)
     {
         float minElevation = ViewModel.Track.Points.MinAltitude;
         PointCollection points = graph.Points;
+
+        // TODO Really reset every time?
+        Reset(points, ref currentStartDistance, ref currentEndDistance, surfacePaths);
 
         if (currentStartDistance >= 0)
         {
@@ -94,14 +104,16 @@ partial class Profile
             {
                 if ((currentEndDistance - startDistance) / step > 2_500)
                 {
-                    points.Clear();
-                    currentStartDistance = currentEndDistance = -1;
+                    Reset(points, ref currentStartDistance, ref currentEndDistance, surfacePaths);
                 }
                 else
                 {
                     points.RemoveAt(0);
                     int i = 0;
-                    IterateTrack(startDistance, currentStartDistance, false, true, p => points.Insert(i++, new Point(p.Distance, p.Altitude - minElevation)));
+                    IterateTrack(startDistance, currentStartDistance, false, true, p =>
+                    {
+                        points.Insert(i++, new Point(p.Distance, p.Altitude - minElevation));
+                    });
                     points.Insert(0, new Point(graph.Points[0].X, 0));
                     currentStartDistance = startDistance;
                 }
@@ -110,8 +122,7 @@ partial class Profile
             {
                 if ((endDistance - currentStartDistance) / step > 2_500)
                 {
-                    points.Clear();
-                    currentStartDistance = currentEndDistance = -1;
+                    Reset(points, ref currentStartDistance, ref currentEndDistance, surfacePaths);
                 }
                 else
                 {
@@ -126,17 +137,77 @@ partial class Profile
 
         if (currentStartDistance < 0)
         {
-            IterateTrack(startDistance, endDistance, false, false, p => points.Add(new Point(p.Distance, p.Altitude - minElevation)));
+            IterateTrack(startDistance, endDistance, false, false, p =>
+            {
+                points.Add(new Point(p.Distance, p.Altitude - minElevation));
+                if (surfacePaths)
+                {
+                    AddSurfacePathPoint(p.Surface, p.Distance, p.Altitude - minElevation);
+                }
+            });
             points.Insert(0, new Point(points[0].X, 0));
             points.Add(new Point(points[points.Count - 1].X, 0));
             currentStartDistance = startDistance;
             currentEndDistance = endDistance;
         }
+
+        void Reset(PointCollection points, ref float currentStartDistance, ref float currentEndDistance, bool surfacePaths)
+        {
+            points.Clear();
+            currentStartDistance = currentEndDistance = -1;
+            if (surfacePaths)
+            {
+                foreach (Path path in _surfacePaths.Values)
+                {
+                    Root.Children.Remove(path);
+                }
+                _surfacePaths.Clear();
+            }
+        }
+
+
+        void AddSurfacePathPoint(Surface surface, float distance, float altitude)
+        {
+            Point point = new(distance, altitude);
+            Brush surfaceBrush = Convert.SurfaceBrush(surface);
+
+            if (!_surfacePaths.TryGetValue(surfaceBrush, out Path path))
+            {
+                path = new()
+                {
+                    Stroke = surfaceBrush,
+                    StrokeThickness = surfaceBrush == _trackGraphOutlineBrush || surface == Surface.UnknownLikelyPaved
+                        ? .5 
+                        :  2,
+                    Data = new PathGeometry { Transform = _graphTransform }
+                };
+                Root.Children.Add(path);
+                _surfacePaths.Add(surfaceBrush, path);
+            }
+            if (path == _currentSurfacePath)
+            {
+                _currentSurfaceLine.Points.Add(point);
+            }
+            else
+            {
+                if (_currentSurfacePath is not null)
+                {
+                    _currentSurfaceLine.Points.Add(point);
+                }
+                _currentSurfacePath = path;
+                _currentSurfaceLine = new PolyLineSegment { Points = { point } };
+                ((PathGeometry)path.Data).Figures.Add(new PathFigure 
+                { 
+                    Segments = { _currentSurfaceLine }, 
+                    StartPoint = point 
+                });
+            }
+        }
     }
 
-    private void IterateTrack(float startDistance, float endDistance, bool skipFirst, bool skipLast, Action<(float Distance, float Altitude)> action)
+    private void IterateTrack(float startDistance, float endDistance, bool skipFirst, bool skipLast, Action<(float Distance, float Altitude, Surface Surface)> action)
     {
-        IEnumerable<(float Distance, float Altitude)> points = ViewModel.Track.Points.EnumerateByDistance(startDistance, endDistance, (float)(1 / (.5 * _horizontalScale)));
+        IEnumerable<(float Distance, float Altitude, Surface Surface)> points = ViewModel.Track.Points.EnumerateByDistance(startDistance, endDistance, (float)(1 / (/*.5 * */_horizontalScale)));
 
         if (skipFirst)
         {

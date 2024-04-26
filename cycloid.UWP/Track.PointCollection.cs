@@ -306,7 +306,7 @@ partial class Track
             }
         }
 
-        public IEnumerable<(float Distance, float Altitude)> EnumerateByDistance(float from, float to, float step)
+        public IEnumerable<(float Distance, float Altitude, Surface Surface)> EnumerateByDistance(float from, float to, float step)
         {
             Index index = GetIndex(from, out bool exactMatch);
 
@@ -331,14 +331,14 @@ partial class Track
                 {
                     if (exactMatch)
                     {
-                        yield return (distance, current.Point.Altitude);
+                        yield return (distance, current.Point.Altitude, current.Point.Surface);
                     }
                     else
                     {
                         float previousDistance = previous.Segment.Start.Distance + previous.Point.Distance;
                         float fraction = (distance - previousDistance) / (currentDistance - previousDistance);
                         float altitude = previous.Point.Altitude + fraction * (current.Point.Altitude - previous.Point.Altitude);
-                        yield return (distance, altitude);
+                        yield return (distance, altitude, previous.Point.Surface);
                     }
 
                     if ((distance = from + ++i * step) > to)

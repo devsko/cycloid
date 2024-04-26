@@ -5,6 +5,7 @@
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    Loaded="ViewModelControl_Loaded"
     SizeChanged="ViewModelControl_SizeChanged">
 
     <Grid>
@@ -32,11 +33,7 @@
                     <CompositeTransform x:Name="GraphTransform" />
                     <CompositeTransform x:Name="GraphBottomTransform" />
                 </Canvas.Resources>
-                <Path
-                    x:Name="Path"
-                    Fill="{ThemeResource TrackGraphFill}"
-                    Stroke="{ThemeResource TrackGraphOutline}"
-                    StrokeThickness=".5">
+                <Path x:Name="Path" Fill="{ThemeResource TrackGraphFill}">
                     <Path.Data>
                         <PathGeometry Transform="{StaticResource GraphTransform}">
                             <PathFigure x:Name="GraphFigure">

@@ -23,6 +23,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
+                <RowDefinition />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -51,6 +52,12 @@
                 Grid.Column="2"
                 HorizontalAlignment="Right"
                 Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Gradient(Point.Gradient)}" />
+            <TextBlock
+                Grid.Row="2"
+                Grid.ColumnSpan="3"
+                HorizontalAlignment="Center"
+                Text="{x:Bind Mode=OneWay, Path=cycloid:Convert.Surface(Point.Surface)}"
+                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.SurfaceToVisibilityy(Point.Surface)}" />
 
         </Grid>
 

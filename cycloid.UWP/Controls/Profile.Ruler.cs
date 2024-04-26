@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Shapes;
@@ -54,8 +53,8 @@ partial class Profile
                     X2 = left,
                     Y1 = 14,
                     Y2 = 24,
-                    Stroke = Path.Stroke,
-                    StrokeThickness = Path.StrokeThickness,
+                    Stroke = _trackGraphOutlineBrush,
+                    StrokeThickness = .5,
                 });
                 TextBlock text = new()
                 {
@@ -86,8 +85,8 @@ partial class Profile
                 X2 = ActualWidth,
                 Y1 = top,
                 Y2 = top,
-                Stroke = Path.Stroke,
-                StrokeThickness = Path.StrokeThickness,
+                Stroke = _trackGraphOutlineBrush,
+                StrokeThickness = .5,
             });
             TextBlock text = new()
             {
