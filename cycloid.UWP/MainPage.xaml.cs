@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -142,7 +141,7 @@ public sealed partial class MainPage : Page,
             return;
         }
 
-        StrongReferenceMessenger.Default.Send(new SetMapCenterMessage((MapPoint)point.Position));
+        StrongReferenceMessenger.Default.Send(new BringLocationIntoViewMessage((MapPoint)point.Position));
     }
 
     private void PoisButton_CategoryChanged(InfoCategory category, bool value)
@@ -165,10 +164,8 @@ public sealed partial class MainPage : Page,
 
     private void OnTracks_ContainerContentChanging(ListViewBase _, ContainerContentChangingEventArgs args)
     {
-        Debug.WriteLine($"ContainerContentChanging '{(args.Item is null ? "null" : ((OnTrack)args.Item).Name)}'");
         if (args.Item is not null && args.Item == _lastAddedOnTrack)
         {
-            Debug.WriteLine("Focus Text");
             TextBox textBox = args.ItemContainer.FindDescendant<TextBox>();
             textBox.Focus(FocusState.Programmatic);
             textBox.Text = _lastAddedOnTrack.Name;
@@ -190,7 +187,7 @@ public sealed partial class MainPage : Page,
         ListView list = (ListView)sender;
         if (list.SelectedItem is OnTrack onTrack)
         {
-            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.Location));
+            BringOnTrackIntoView(onTrack);
         }
     }
 
@@ -202,7 +199,23 @@ public sealed partial class MainPage : Page,
             item.FindAscendant<ListView>() == list &&
             item.Content is OnTrack onTrack)
         {
-            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(onTrack.Location));
+            BringOnTrackIntoView(onTrack);
+        }
+    }
+
+    private void BringOnTrackIntoView(OnTrack onTrack)
+    {
+        if (onTrack.IsOffTrack)
+        {
+            StrongReferenceMessenger.Default.Send(new BringLocationIntoViewMessage(onTrack.Location));
+        }
+        else if (onTrack.PointOfInterest.IsSection)
+        {
+            StrongReferenceMessenger.Default.Send(new BringTrackIntoViewMessage(onTrack.TrackPoint, onTrack.GetPrevious()?.TrackPoint ?? ViewModel.Track.Points.First()));
+        }
+        else
+        {
+            StrongReferenceMessenger.Default.Send(new BringTrackIntoViewMessage(onTrack.TrackPoint));
         }
     }
 

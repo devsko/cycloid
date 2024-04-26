@@ -19,7 +19,9 @@ public enum Modes
     Train,
 }
 
-public class SetMapCenterMessage(MapPoint location) : ValueChangedMessage<MapPoint>(location);
+public class BringTrackIntoViewMessage(TrackPoint trackPoint1, TrackPoint? trackPoint2 = null) : ValueChangedMessage<(TrackPoint, TrackPoint)>((trackPoint1, trackPoint2 ?? TrackPoint.Invalid));
+
+public class BringLocationIntoViewMessage(MapPoint location) : ValueChangedMessage<MapPoint>(location);
 
 public class ModeChanged(object sender, Modes oldValue, Modes newValue) : PropertyChangedMessage<Modes>(sender, null, oldValue, newValue);
 

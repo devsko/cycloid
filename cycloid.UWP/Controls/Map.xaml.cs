@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -7,7 +8,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Info;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
-using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -22,7 +22,8 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     IRecipient<TrackChanged>,
     IRecipient<HoverPointChanged>,
     IRecipient<InfoVisibleChanged>,
-    IRecipient<SetMapCenterMessage>,
+    IRecipient<BringLocationIntoViewMessage>,
+    IRecipient<BringTrackIntoViewMessage>,
     IRecipient<TrackComplete>
 {
     private static readonly PropertyChangedEventArgs _centerChangedEventArgs = new(nameof(Center));
@@ -54,7 +55,8 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         StrongReferenceMessenger.Default.Register<TrackChanged>(this);
         StrongReferenceMessenger.Default.Register<HoverPointChanged>(this);
         StrongReferenceMessenger.Default.Register<InfoVisibleChanged>(this);
-        StrongReferenceMessenger.Default.Register<SetMapCenterMessage>(this);
+        StrongReferenceMessenger.Default.Register<BringLocationIntoViewMessage>(this);
+        StrongReferenceMessenger.Default.Register<BringTrackIntoViewMessage>(this);
         StrongReferenceMessenger.Default.Register<TrackComplete>(this);
 
         RegisterRoutingMessages();
@@ -104,6 +106,15 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         zoom = MathF.Max(zoom, (float)MapControl.ZoomLevel);
 
         await MapControl.TrySetViewAsync(point, zoom, null, null, MapAnimationKind.Linear);
+    }
+
+    private async Task SetCenterAsync(IEnumerable<MapPoint> points)
+    {
+        GeoboundingBox bounds = GeoboundingBox.TryCompute(points.Select(trackPoint => (BasicGeoposition)trackPoint));
+        if (bounds is not null)
+        {
+            await MapControl.TrySetViewBoundsAsync(bounds, new Thickness(ActualWidth * .05), MapAnimationKind.Bow);
+        }
     }
 
     private void ShowMapMenu(Point position, MapPoint location)
@@ -370,20 +381,30 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         }
     }
 
-    void IRecipient<SetMapCenterMessage>.Receive(SetMapCenterMessage message)
+    void IRecipient<BringLocationIntoViewMessage>.Receive(BringLocationIntoViewMessage message)
     {
         SetCenterAsync(new Geopoint(message.Value)).FireAndForget();
+    }
+
+    void IRecipient<BringTrackIntoViewMessage>.Receive(BringTrackIntoViewMessage message)
+    {
+        if (!message.Value.Item2.IsValid)
+        {
+            SetCenterAsync(new Geopoint((MapPoint)message.Value.Item1)).FireAndForget();
+        }
+        else
+        {
+            float distance1 = message.Value.Item1.Distance;
+            float distance2 = message.Value.Item2.Distance;
+            SetCenterAsync(ViewModel.Track.Points.Enumerate(Math.Min(distance1, distance2), Math.Max(distance1, distance2)).Select(p => p.Location)).FireAndForget();
+        }
     }
 
     void IRecipient<TrackComplete>.Receive(TrackComplete message)
     {
         if (!message.IsNew)
         {
-            GeoboundingBox bounds = GeoboundingBox.TryCompute(ViewModel.Track.Points.Select(trackPoint => (BasicGeoposition)trackPoint));
-            if (bounds is not null)
-            {
-                MapControl.TrySetViewBoundsAsync(bounds, new Thickness(25), MapAnimationKind.Bow).AsTask().FireAndForget();
-            }
+            SetCenterAsync(ViewModel.Track.Points.Select(p => (MapPoint)p)).FireAndForget();
         }
     }
 }

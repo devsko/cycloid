@@ -176,9 +176,11 @@ partial class Profile
                 path = new()
                 {
                     Stroke = surfaceBrush,
-                    StrokeThickness = surfaceBrush == _trackGraphOutlineBrush || surface == Surface.UnknownLikelyPaved
+                    StrokeThickness = surfaceBrush == _trackGraphOutlineBrush
                         ? .5 
-                        :  2,
+                        : surface == Surface.UnknownLikelyPaved
+                            ? .75
+                            : 3,
                     Data = new PathGeometry { Transform = _graphTransform }
                 };
                 Root.Children.Add(path);

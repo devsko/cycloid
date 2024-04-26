@@ -18,7 +18,8 @@ public sealed partial class Profile : ViewModelControl,
     IRecipient<HoverPointChanged>,
     IRecipient<SelectionChanged>,
     IRecipient<CurrentSectionChanged>,
-    IRecipient<RouteChanged>
+    IRecipient<RouteChanged>,
+    IRecipient<BringTrackIntoViewMessage>
 {
     [Flags]
     private enum Change
@@ -81,6 +82,7 @@ public sealed partial class Profile : ViewModelControl,
         StrongReferenceMessenger.Default.Register<HoverPointChanged>(this);
         StrongReferenceMessenger.Default.Register<SelectionChanged>(this);
         StrongReferenceMessenger.Default.Register<CurrentSectionChanged>(this);
+        StrongReferenceMessenger.Default.Register<BringTrackIntoViewMessage>(this);
     }
 
     //public ObservableCollection<TrackPoi> TrackPois
@@ -429,7 +431,7 @@ public sealed partial class Profile : ViewModelControl,
     {
         if (ViewModel.Track is not null && ViewModel.HoverPoint.IsValid)
         {
-            StrongReferenceMessenger.Default.Send(new SetMapCenterMessage(ViewModel.HoverPoint));
+            StrongReferenceMessenger.Default.Send(new BringTrackIntoViewMessage(ViewModel.HoverPoint));
         }
     }
 
@@ -481,5 +483,28 @@ public sealed partial class Profile : ViewModelControl,
     void IRecipient<RouteChanged>.Receive(RouteChanged message)
     {
         ProcessChangeAsync(Change.Track).FireAndForget();
+    }
+
+    private bool IsInView(float distance)
+    {
+        return distance >= Scroller.HorizontalOffset / _horizontalScale && distance <= (Scroller.HorizontalOffset + ActualWidth) / _horizontalScale;
+    }
+
+    void IRecipient<BringTrackIntoViewMessage>.Receive(BringTrackIntoViewMessage message)
+    {
+        float distance1 = message.Value.Item1.Distance;
+        if (message.Value.Item2.IsValid)
+        {
+            float distance2 = message.Value.Item2.Distance;
+            HorizontalZoom = Math.Min(15, _trackTotalDistance * .9 / Math.Abs(distance1 - distance2));
+            Scroller.ChangeView(((distance1 + distance2) * _horizontalScale - ActualWidth) / 2, null, null);
+        }
+        else
+        {
+            if (!IsInView(distance1))
+            {
+                Scroller.ChangeView(distance1 * _horizontalScale - ActualWidth / 2, null, null);
+            }
+        }
     }
 }

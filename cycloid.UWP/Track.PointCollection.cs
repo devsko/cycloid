@@ -104,6 +104,12 @@ partial class Track
             return GetPoint(segment, segment.Points[^1]);
         }
 
+        public TrackPoint First()
+        {
+            Segment segment = _segments[0];
+            return GetPoint(segment, segment.Points[0]);
+        }
+
         public (int FileId, float distance) FilePosition(float distance)
         {
             (_, Index index) = Search(distance);

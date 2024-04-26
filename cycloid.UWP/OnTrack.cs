@@ -108,6 +108,13 @@ public partial class OnTrack : ObservableObject
         }
     }
 
+    public OnTrack GetPrevious()
+    {
+        int index = _onTracks.IndexOf(this);
+
+        return index == 0 ? null : _onTracks[index - 1];
+    }
+
     public TrackPoint.CommonValues Start => IsOffTrack ? default : _trackPoint.Values - Values;
 
     public TrackPoint.CommonValues End => IsOffTrack ? default : _trackPoint.Values;
