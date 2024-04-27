@@ -157,6 +157,8 @@ partial class Profile
             currentStartDistance = currentEndDistance = -1;
             if (surfacePaths)
             {
+                _currentSurfaceLine = null;
+                _currentSurfacePath = null;
                 foreach (Path path in _surfacePaths.Values)
                 {
                     Root.Children.Remove(path);
@@ -209,7 +211,7 @@ partial class Profile
 
     private void IterateTrack(float startDistance, float endDistance, bool skipFirst, bool skipLast, Action<(float Distance, float Altitude, Surface Surface)> action)
     {
-        IEnumerable<(float Distance, float Altitude, Surface Surface)> points = ViewModel.Track.Points.EnumerateByDistance(startDistance, endDistance, ViewModel.Track.Points.Total.Distance / ActualWidth);
+        IEnumerable<(float Distance, float Altitude, Surface Surface)> points = ViewModel.Track.Points.EnumerateByDistance(startDistance, endDistance, 1 / _horizontalScale);
 
         if (skipFirst)
         {

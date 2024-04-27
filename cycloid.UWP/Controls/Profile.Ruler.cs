@@ -17,6 +17,10 @@ partial class Profile
 
     private void EnsureHorizontalRuler()
     {
+        // TODO wirklich immer?
+        // Perormance beim zoomen sonst unterirdisch (200m)
+        ResetHorizontalRuler();
+
         int gap = CalculateTickGap(ViewModel.Track.Points.Total.Distance, _horizontalSize, HorizontalRulerTickMinimumGap);
         int startTick = Math.Max(1, (int)(_scrollerOffset / _horizontalScale / gap));
         int endTick = (int)((ActualWidth + _scrollerOffset) / _horizontalScale / gap);
