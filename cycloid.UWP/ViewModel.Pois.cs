@@ -188,8 +188,8 @@ partial class ViewModel
                     0);
                 OnPropertyChanged(nameof(OnTrackCount));
 
+                // iterate over a copy to prevent CollectionChangedException
                 foreach (PointOfInterest pointOfInterest in Track.PointsOfInterest.Where(poi => poi.Type != InfoType.Goal).ToArray()) 
-                    // iterate over a copy to prevent CollectionChangedException
                 {
                     await TaskScheduler.Default;
                     await AddOnTrackPointsAsync(pointOfInterest, ui).ConfigureAwait(false);

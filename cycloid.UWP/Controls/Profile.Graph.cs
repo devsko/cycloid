@@ -209,7 +209,7 @@ partial class Profile
 
     private void IterateTrack(float startDistance, float endDistance, bool skipFirst, bool skipLast, Action<(float Distance, float Altitude, Surface Surface)> action)
     {
-        IEnumerable<(float Distance, float Altitude, Surface Surface)> points = ViewModel.Track.Points.EnumerateByDistance(startDistance, endDistance, (float)(1 / (/*.5 * */_horizontalScale)));
+        IEnumerable<(float Distance, float Altitude, Surface Surface)> points = ViewModel.Track.Points.EnumerateByDistance(startDistance, endDistance, ViewModel.Track.Points.Total.Distance / ActualWidth);
 
         if (skipFirst)
         {

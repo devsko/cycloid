@@ -312,7 +312,7 @@ partial class Track
             }
         }
 
-        public IEnumerable<(float Distance, float Altitude, Surface Surface)> EnumerateByDistance(float from, float to, float step)
+        public IEnumerable<(float Distance, float Altitude, Surface Surface)> EnumerateByDistance(float from, float to, double step)
         {
             Index index = GetIndex(from, out bool exactMatch);
 
@@ -347,9 +347,13 @@ partial class Track
                         yield return (distance, altitude, previous.Point.Surface);
                     }
 
-                    if ((distance = from + ++i * step) > to)
+                    if ((distance = from + (float)(++i * step)) > to)
                     {
-                        yield break;
+                        if (distance - to - step > -1e-5)
+                        {
+                            yield break;
+                        }
+                        distance = to;
                     }
 
                     while (!((exactMatch = currentDistance == distance) || currentDistance > distance))
@@ -433,12 +437,14 @@ partial class Track
 
         private IEnumerable<(Segment Segment, TrackPoint Point, Index Index)> Enumerate(Index from = default)
         {
+            int endSegmentIndex = _segments.Count - 1;
             int startPointIndex = from.PointIndex;
-            for (int segmentIndex = from.SegmentIndex; segmentIndex < _segments.Count; segmentIndex++)
+            for (int segmentIndex = from.SegmentIndex; segmentIndex <= endSegmentIndex; segmentIndex++)
             {
                 Segment segment = _segments[segmentIndex];
                 TrackPoint[] points = segment.Points;
-                for (int pointIndex = startPointIndex; pointIndex < points.Length - 1; pointIndex++)
+                int endPointIndex = points.Length - (segmentIndex == endSegmentIndex ? 1 : 2);
+                for (int pointIndex = startPointIndex; pointIndex <= endPointIndex; pointIndex++)
                 {
                     yield return (segment, points[pointIndex], new Index(segmentIndex, pointIndex));
                 }

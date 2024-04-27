@@ -279,6 +279,7 @@ public sealed partial class Profile : ViewModelControl,
         // TODO
         // Weird behavior if HorizontalZoom equals 1 and a restored app window is maximized!
 
+        Scroller.MaxWidth = ActualWidth;
         Root.Width = ActualWidth * HorizontalZoom;
         _isOuterSizeChange = true;
     }
@@ -333,6 +334,13 @@ public sealed partial class Profile : ViewModelControl,
                 : new CoreCursor(CoreCursorType.SizeWestEast, 10);
 
             double x = e.GetCurrentPoint(Root).Position.X;
+
+            double subPixel = ActualWidth - e.GetCurrentPoint(this).Position.X;
+            if (subPixel > 0 && subPixel < 1)
+            {
+                x += subPixel;
+            }
+
             if (_isCaptured)
             {
                 if (x >= _scrollerOffset + ActualWidth - 3)
