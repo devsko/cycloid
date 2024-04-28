@@ -206,9 +206,9 @@ partial class Track
                 result.Distance);
         }
 
-        public (TrackPoint Point, float Distance)[] GetNearPoints(MapPoint location, float maxDistance, int minDistanceDelta)
+        public (TrackPoint Point, float Distance)[] GetNearPoints(MapPoint location, Index from, Index to, float maxDistance, int minDistanceDelta)
         {
-            IEnumerator<(Segment Segment, TrackPoint Point, Index _)> enumerator = Enumerate().GetEnumerator();
+            IEnumerator<(Segment Segment, TrackPoint Point, Index _)> enumerator = Enumerate(from, to).GetEnumerator();
             if (!enumerator.MoveNext())
             {
                 return [];
@@ -309,6 +309,14 @@ partial class Track
                 }
 
                 yield return (point, point.Altitude);
+            }
+        }
+
+        public IEnumerable<(MapPoint Location, Index Index)> EnumerateWithIndex(Index from = default, Index? to = null)
+        {
+            foreach ((Segment Segment, TrackPoint Point, Index Index) point in Enumerate(from, to))
+            {
+                yield return (point.Point, point.Index);
             }
         }
 
@@ -435,15 +443,19 @@ partial class Track
             }
         }
 
-        private IEnumerable<(Segment Segment, TrackPoint Point, Index Index)> Enumerate(Index from = default)
+        private IEnumerable<(Segment Segment, TrackPoint Point, Index Index)> Enumerate(Index from = default, Index? to = null)
         {
-            int endSegmentIndex = _segments.Count - 1;
+            int endSegmentIndex = to is null ? _segments.Count - 1 : to.Value.SegmentIndex;
             int startPointIndex = from.PointIndex;
             for (int segmentIndex = from.SegmentIndex; segmentIndex <= endSegmentIndex; segmentIndex++)
             {
                 Segment segment = _segments[segmentIndex];
                 TrackPoint[] points = segment.Points;
-                int endPointIndex = points.Length - (segmentIndex == endSegmentIndex ? 1 : 2);
+                int endPointIndex = segmentIndex == endSegmentIndex 
+                    ? to is null
+                        ? points.Length - 1
+                        : to.Value.PointIndex
+                    : points.Length - 2;
                 for (int pointIndex = startPointIndex; pointIndex <= endPointIndex; pointIndex++)
                 {
                     yield return (segment, points[pointIndex], new Index(segmentIndex, pointIndex));

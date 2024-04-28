@@ -190,13 +190,13 @@ partial class ViewModel
                 {
                     await TaskScheduler.Default;
 
-                    StorageFile tempFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("current", CreationCollisionOption.ReplaceExisting);
+                    StorageFile tempFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync(Guid.NewGuid().ToString(), CreationCollisionOption.ReplaceExisting);
                     using (Stream stream = await tempFile.OpenStreamForWriteAsync().ConfigureAwait(false))
                     {
                         await Serializer.SerializeAsync(stream, Track, cancellationToken).ConfigureAwait(false);
                     }
-
-                    await tempFile.CopyAndReplaceAsync(Track.File);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await tempFile.MoveAndReplaceAsync(Track.File);
                 }
             }
             catch (OperationCanceledException)

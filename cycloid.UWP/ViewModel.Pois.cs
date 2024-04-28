@@ -36,6 +36,7 @@ partial class ViewModel
     private OnTrack _currentSection;
     private OnTrack _currentPoi;
     private InfoPoint _hoverInfo = InfoPoint.Invalid;
+    private (Track.Index Start, Track.Index End, MapPoint NorthWest, MapPoint SouthEast)[] _boundingBoxes;
 
     public ObservableCollection<OnTrack> Sections { get; } = [];
 
@@ -171,6 +172,7 @@ partial class ViewModel
             return;
         }
 
+        CalculateBoundingBoxes();
         CreateAllOnTrackPointsAsync().FireAndForget();
 
         async Task CreateAllOnTrackPointsAsync()
@@ -202,16 +204,59 @@ partial class ViewModel
     {
         Sections.Clear();
         Points.Clear();
+        ClearBoundingBoxes();
 
         OnPropertyChanged(nameof(OnTrackCount));
     }
 
+
+    private IEnumerable<TrackPoint> GetTrackPoints(PointOfInterest pointOfInterest)
+    {
+        float maxDistance = pointOfInterest.IsSection ? 50 : 2_000;
+        Track.Index? startIndex = null;
+        for (int i = 0; i < _boundingBoxes.Length; i++)
+        {
+            (Track.Index start, Track.Index end, MapPoint northWest, MapPoint southEast) = _boundingBoxes[i];
+            bool isRelevant = IsRelevant(northWest, southEast);
+            if (isRelevant)
+            {
+                startIndex ??= start;
+            }
+            if (startIndex is not null && (!isRelevant || i == _boundingBoxes.Length - 1))
+            {
+                foreach ((TrackPoint Point, float Distance) point in Track.Points.GetNearPoints(pointOfInterest.Location, startIndex.Value, end, maxDistance, minDistanceDelta: 1_000))
+                {
+                    yield return point.Point;
+                }
+                startIndex = null;
+            }
+        }
+
+        bool IsRelevant(MapPoint northWest, MapPoint southEast)
+        {
+            const double latitudeDistance = GeoCalculation.EarthRadius * 2 * Math.PI / 4 / 90;
+
+            double latitudeDegree = maxDistance / latitudeDistance;
+            MapPoint location = pointOfInterest.Location;
+            if (location.Latitude > northWest.Latitude + latitudeDegree ||
+                location.Latitude < southEast.Latitude - latitudeDegree)
+            {
+                return false;
+            }
+            if (location.Longitude >= northWest.Longitude && location.Longitude <= southEast.Longitude ||
+                location.Longitude > southEast.Longitude && GeoCalculation.Distance(location.Latitude, location.Longitude, location.Latitude, southEast.Longitude) <= maxDistance ||
+                location.Longitude < northWest.Longitude && GeoCalculation.Distance(location.Latitude, location.Longitude, location.Latitude, northWest.Longitude) <= maxDistance)
+            {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
     private async Task<OnTrack> AddOnTrackPointsAsync(PointOfInterest pointOfInterest, SynchronizationContext ui)
     {
-        bool isSection = pointOfInterest.IsSection;
-        IList<OnTrack> onTracks = isSection ? Sections : Points;
-
-        (TrackPoint TrackPoint, float Distance)[] trackPoints = Track.Points.GetNearPoints(pointOfInterest.Location, maxDistance: isSection ? 50 : 2000, minDistanceDelta: 1000);
+        TrackPoint[] trackPoints = GetTrackPoints(pointOfInterest).ToArray();
 
         if (ui is not null)
         {
@@ -220,9 +265,10 @@ partial class ViewModel
 
         bool initialize = pointOfInterest.OnTrackCount is null || pointOfInterest.OnTrackCount.Value != trackPoints.Length;
 
+        IList<OnTrack> onTracks = pointOfInterest.IsSection ? Sections : Points;
         OnTrack firstOnTrack = null;
         int i = 0;
-        foreach ((TrackPoint trackPoint, float distance) in trackPoints)
+        foreach (TrackPoint trackPoint in trackPoints)
         {
             if (initialize || pointOfInterest.IsTrackMaskBitSet(i))
             {
@@ -260,5 +306,46 @@ partial class ViewModel
     private void PointOfInterest_PropertyChanged(object _1, PropertyChangedEventArgs _2)
     {
         SaveTrackAsync().FireAndForget();
+    }
+
+    private void ClearBoundingBoxes()
+    {
+        _boundingBoxes = null;
+    }
+
+    private void CalculateBoundingBoxes()
+    {
+        const int bucketSize = 500;
+
+        if (Track is null)
+        {
+            return;
+        }
+
+        // TODO 0-Meridian / Equator
+
+        _boundingBoxes = new (Track.Index, Track.Index, MapPoint, MapPoint)[(Track.Points.Count - 1) / bucketSize + 1];
+        int i = 0;
+        Track.Index startIndex = default;
+        Track.Index endIndex = default;
+        float north = 0, west = 180, south = 90, east = 0;
+        foreach ((MapPoint Location, Track.Index Index) point in Track.Points.EnumerateWithIndex())
+        {
+            if (++i % bucketSize == 0)
+            {
+                _boundingBoxes[i / bucketSize - 1] = (startIndex, endIndex, new MapPoint(north, west), new MapPoint(south, east));
+                startIndex = point.Index;
+                (north, west, south, east) = (point.Location.Latitude, point.Location.Longitude, point.Location.Latitude, point.Location.Longitude);
+            }
+            else
+            {
+                north = Math.Max(north, point.Location.Latitude);
+                south = Math.Min(south, point.Location.Latitude);
+                east = Math.Max(east, point.Location.Longitude);
+                west = Math.Min(west, point.Location.Longitude);
+            }
+            endIndex = point.Index;
+        }
+        _boundingBoxes[^1] = (startIndex, endIndex, new MapPoint(north, west), new MapPoint(south, east));
     }
 }
