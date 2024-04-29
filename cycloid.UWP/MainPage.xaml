@@ -577,8 +577,7 @@
                                             <TextBlock
                                                 Grid.Column="2"
                                                 HorizontalTextAlignment="Right"
-                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}"
-                                                ToolTipService.ToolTip="Distance [km]" />
+                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}" />
                                             <TextBlock
                                                 Grid.Column="3"
                                                 HorizontalTextAlignment="Right"
