@@ -59,9 +59,9 @@ public class InfoCategory
     public static readonly InfoCategory Water = new() { Name = "Water", Types = [InfoType.Water, InfoType.Toilet] };
     public static readonly InfoCategory Food = new() { Name = "Food", Types = [InfoType.FastFood, InfoType.Bar, InfoType.Restaurant] };
     public static readonly InfoCategory Shop = new() { Name = "Shop", Types = [InfoType.Supermarket, InfoType.Bakery, InfoType.FuelStation] };
-    //public static readonly InfoCategory Sleep = new() { Name = "Sleep", Types = [] };
+    public static readonly InfoCategory Sleep = new() { Name = "Sleep", Types = [InfoType.Bed, InfoType.Outdoor, InfoType.Roof] };
 
-    public static readonly IEnumerable<InfoCategory> All = [Section, Water, Food, Shop/*, Sleep*/];
+    public static readonly IEnumerable<InfoCategory> All = [Section, Water, Food, Shop, Sleep];
 
     public static InfoCategory Get(InfoType type) => All.First(category => category.Types.Contains(type));
 
@@ -90,4 +90,8 @@ public enum InfoType
     Supermarket,
     Bakery,
     FuelStation,
+    // Sleep
+    Bed,
+    Outdoor,
+    Roof,
 }

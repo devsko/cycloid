@@ -168,6 +168,24 @@ partial class ViewModel
                     "fillColor": "#FF85F0EE", 
                     "iconColor": "#FF2E084A"
                   },
+                  "SleepBasePoint": {
+                    "parent": "POI.BasePoint", 
+                    "fillColor": "#FF000080", 
+                    "iconColor": "#FFF7F113",
+                    "strokeColor": "#FFFFFFFF"
+                  },
+                  "Bed": {
+                    "parent": "POI.SleepBasePoint",
+                    "shape-icon": "bed"
+                  },
+                  "Outdoor": {
+                    "parent": "POI.SleepBasePoint",
+                    "shape-icon": "star"
+                  },
+                  "Roof": {
+                    "parent": "POI.SleepBasePoint",
+                    "shape-icon": "tent"
+                  },
                   "Restaurant": {
                     "parent": "POI.FoodBasePoint", 
                     "shape-icon": "knifeAndFork"
