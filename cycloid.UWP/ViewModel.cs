@@ -128,7 +128,7 @@ public partial class ViewModel : ObservableObject,
                 CompareSessionCommand.NotifyCanExecuteChanged();
                 AddPointOfInterestCommand.NotifyCanExecuteChanged();
                 RemoveCurrentSectionCommand.NotifyCanExecuteChanged();
-                ExportWahooCommand.NotifyCanExecuteChanged();
+                ExportCommand.NotifyCanExecuteChanged();
 
                 StrongReferenceMessenger.Default.Send(new TrackChanged(this, oldValue, value));
             }

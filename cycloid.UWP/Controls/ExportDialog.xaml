@@ -1,0 +1,79 @@
+﻿<ContentDialog
+    x:Class="cycloid.Controls.ExportDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:cycloid.Controls"
+    Title="Export"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    PrimaryButtonText="Export">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="350" />
+        </Grid.ColumnDefinitions>
+
+        <CheckBox
+            Grid.Row="0"
+            Grid.Column="0"
+            Checked="CheckBox_Checked"
+            Content="Sections.csv"
+            IsChecked="{x:Bind Mode=TwoWay, Path=Response.Sections}" />
+        <TextBlock
+            Grid.Row="0"
+            Grid.Column="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Text="{x:Bind Mode=OneWay, Path=Response.SectionsFile.Path}" />
+        <CheckBox
+            Grid.Row="1"
+            Grid.Column="0"
+            Checked="CheckBox_Checked"
+            Content="Water.csv"
+            IsChecked="{x:Bind Mode=TwoWay, Path=Response.Water}" />
+        <TextBlock
+            Grid.Row="1"
+            Grid.Column="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Text="{x:Bind Mode=OneWay, Path=Response.WaterFile.Path}" />
+        <CheckBox
+            Grid.Row="2"
+            Grid.Column="0"
+            Checked="CheckBox_Checked"
+            Content="POIs.csv"
+            IsChecked="{x:Bind Mode=TwoWay, Path=Response.Pois}" />
+        <TextBlock
+            Grid.Row="2"
+            Grid.Column="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Text="{x:Bind Mode=OneWay, Path=Response.PoisFile.Path}" />
+        <CheckBox
+            Grid.Row="3"
+            Grid.Column="0"
+            Checked="CheckBox_Checked"
+            Content="Tracks.zip"
+            IsChecked="{x:Bind Mode=TwoWay, Path=Response.Tracks}" />
+        <TextBlock
+            Grid.Row="3"
+            Grid.Column="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Text="{x:Bind Mode=OneWay, Path=Response.TracksFile.Path}" />
+        <CheckBox
+            Grid.Row="4"
+            Grid.Column="0"
+            Content="Wahoo"
+            IsChecked="{x:Bind Mode=TwoWay, Path=Response.Wahoo}" />
+    </Grid>
+    
+</ContentDialog>

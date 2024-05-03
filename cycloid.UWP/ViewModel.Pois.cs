@@ -197,6 +197,8 @@ partial class ViewModel
                     await AddOnTrackPointsAsync(pointOfInterest, ui).ConfigureAwait(false);
                 }
             }
+
+            ExportCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -207,6 +209,7 @@ partial class ViewModel
         ClearBoundingBoxes();
 
         OnPropertyChanged(nameof(OnTrackCount));
+        ExportCommand.NotifyCanExecuteChanged();
     }
 
 

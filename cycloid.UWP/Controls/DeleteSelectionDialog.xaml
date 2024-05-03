@@ -9,12 +9,13 @@
 
     <Grid>
 
-        <StackPanel Spacing="16">
+        <StackPanel Spacing="20">
             <TextBlock>
                 <Run Text="{x:Bind Mode=OneTime, Path=Selection.StartLocation}" />
                 <Run Text=" - " />
                 <Run Text="{x:Bind Mode=OneTime, Path=Selection.EndLocation}" />
-                <LineBreak />
+            </TextBlock>
+            <TextBlock>
                 <Run Text="Do you want to delete " />
                 <Run Text="{x:Bind Mode=OneTime, Path=Selection.WayPointCount}" />
                 <Run Text="waypoints?" />

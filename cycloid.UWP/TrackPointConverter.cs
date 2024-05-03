@@ -109,6 +109,7 @@ public static class TrackPointConverter
             enumerator.MoveNext();
 
             RoutePoint previous = enumerator.Current;
+            float previousAltitude = previous.Altitude ?? 0; // TODO null Altitude at beginning?
 
             double runningDistance = 0;
             float ascent = 0;
@@ -116,6 +117,7 @@ public static class TrackPointConverter
             float ascentCumulated = 0;
             float descentCumulated = 0;
             RoutePoint current = default;
+            float currentAltitude = 0;
             bool more;
 
             do
@@ -140,6 +142,7 @@ public static class TrackPointConverter
                 if (more = enumerator.MoveNext())
                 {
                     current = enumerator.Current;
+                    currentAltitude = current.Altitude ?? previousAltitude;
 
                     (distance, heading) = GeoCalculation.DistanceAndHeading(previous, current);
 
@@ -149,7 +152,7 @@ public static class TrackPointConverter
                     }
                     else
                     {
-                        float altitudeDiff = current.Altitude - previous.Altitude;
+                        float altitudeDiff = currentAltitude - previousAltitude;
 
                         ascentCumulated += altitudeDiff;
                         descentCumulated += altitudeDiff;
@@ -185,13 +188,13 @@ public static class TrackPointConverter
                     distance = heading = gradient = speed = 0;
                 }
 
-                minAltitude = Math.Min(minAltitude, previous.Altitude);
-                maxAltitude = Math.Max(maxAltitude, previous.Altitude);
+                minAltitude = Math.Min(minAltitude, previousAltitude);
+                maxAltitude = Math.Max(maxAltitude, previousAltitude);
 
                 yield return new TrackPoint(
                     previous.Latitude,
                     previous.Longitude,
-                    previous.Altitude,
+                    previousAltitude,
                     previous.Time,
                     (float)runningDistance,
                     (float)heading,
@@ -202,6 +205,7 @@ public static class TrackPointConverter
                     surfaceEnumerator?.Current.Surface ?? previous.Surface);
 
                 previous = current;
+                previousAltitude = currentAltitude;
                 runningDistance += distance;
             }
             while (more);

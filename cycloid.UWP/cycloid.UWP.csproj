@@ -65,6 +65,9 @@
     <Compile Include="Controls\DeleteSelectionDialog.xaml.cs">
       <DependentUpon>DeleteSelectionDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\ExportDialog.xaml.cs">
+      <DependentUpon>ExportDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\InfoToggleButton.xaml.cs">
       <DependentUpon>InfoToggleButton.xaml</DependentUpon>
     </Compile>
@@ -202,6 +205,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\DeleteSelectionDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ExportDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

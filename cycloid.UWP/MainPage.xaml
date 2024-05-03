@@ -139,9 +139,13 @@
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <AppBarButton
-                    Command="{x:Bind Mode=OneTime, Path=ViewModel.ExportWahooCommand}"
+                    Command="{x:Bind Mode=OneTime, Path=ViewModel.ExportCommand}"
                     Icon="CellPhone"
-                    Label="Export" />
+                    Label="Export">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="E" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
             </StackPanel>
 
             <AutoSuggestBox

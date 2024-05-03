@@ -25,7 +25,8 @@ public sealed partial class MainPage : Page,
     IRecipient<FileChanged>,
     IRecipient<OnTrackAdded>,
     IRecipient<RequestPasteSelectionDetails>,
-    IRecipient<RequestDeleteSelectionDetails>
+    IRecipient<RequestDeleteSelectionDetails>,
+    IRecipient<RequestExportDetails>
 {
     private bool _initialNewFile;
     private IStorageFile _initialFile;
@@ -53,6 +54,7 @@ public sealed partial class MainPage : Page,
         StrongReferenceMessenger.Default.Register<OnTrackAdded>(this);
         StrongReferenceMessenger.Default.Register<RequestPasteSelectionDetails>(this);
         StrongReferenceMessenger.Default.Register<RequestDeleteSelectionDetails>(this);
+        StrongReferenceMessenger.Default.Register<RequestExportDetails>(this);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -246,5 +248,10 @@ public sealed partial class MainPage : Page,
     void IRecipient<RequestDeleteSelectionDetails>.Receive(RequestDeleteSelectionDetails message)
     {
         message.Reply(new DeleteSelectionDialog(message.Selection).GetResultAsync());
+    }
+
+    void IRecipient<RequestExportDetails>.Receive(RequestExportDetails message)
+    {
+        message.Reply(new ExportDialog(message).GetResultAsync());
     }
 }

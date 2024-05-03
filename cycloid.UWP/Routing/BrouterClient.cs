@@ -82,7 +82,7 @@ public partial class BrouterClient
                     (position, time) => new RoutePoint(
                         (float)position.Latitude,
                         (float)position.Longitude,
-                        (float)(position.Altitude ?? 0),
+                        (float?)position.Altitude,
                         TimeSpan.FromSeconds(time),
                         Surface.Unknown));
 
@@ -159,7 +159,7 @@ public partial class BrouterClient
     {
         string profileId = await GetProfileIdAsync(profile).ConfigureAwait(false);
 
-        string query = FormattableString.Invariant($"?lonlats={point.Longitude},{point.Latitude}|{point.Longitude},{point.Latitude}&profile={profileId}&alternativeidx=0&format=geojson");
+        string query = FormattableString.Invariant($"?lonlats={point.Longitude},{point.Latitude}|{point.Longitude + 1e-5},{point.Latitude + 1e-5}&profile={profileId}&alternativeidx=0&format=geojson");
 
         int retryCount = 0;
         while (true)
