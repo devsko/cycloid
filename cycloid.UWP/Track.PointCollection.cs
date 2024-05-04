@@ -130,6 +130,8 @@ partial class Track
             return (fileId, fileSplitDistance - distance);
         }
 
+        public int FileCount => _segments[^1].FileId;
+
         public (TrackPoint Point, Index Index) Search(float distance)
         {
             Index index = GetIndex(distance, out bool exactMatch);
@@ -376,6 +378,35 @@ partial class Track
 
                         currentDistance = current.Segment.Start.Distance + current.Point.Distance;
                     }
+                }
+            }
+        }
+
+        public IEnumerable<IEnumerable<TrackPoint>> EnumerateFiles()
+        {
+            int segmentIndex = 0;
+            while (segmentIndex < _segments.Count)
+            {
+                yield return EnumerateFilePoints();
+            }
+
+            IEnumerable<TrackPoint> EnumerateFilePoints()
+            {
+                Segment segment = _segments[segmentIndex];
+                int fileId = segment.FileId;
+                while (true)
+                {
+                    foreach (TrackPoint point in segment.Points.SkipLast(1))
+                    {
+                        yield return GetPoint(segment, point);
+                    }
+                    Segment nextSegment;
+                    if (++segmentIndex == _segments.Count || (nextSegment = _segments[segmentIndex]).FileId != fileId)
+                    {
+                        yield return GetPoint(segment, segment.Points[^1]);
+                        break;
+                    }
+                    segment = nextSegment;
                 }
             }
         }

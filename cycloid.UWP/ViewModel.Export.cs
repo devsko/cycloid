@@ -1,12 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using Microsoft.VisualStudio.Threading;
 using Windows.ApplicationModel;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -87,22 +91,15 @@ partial class ViewModel
             return;
         }
 
+        await TaskScheduler.Default;
+
         if (exportDetails.Sections)
         {
-            using IRandomAccessStream winRtStream = await exportDetails.SectionsFile.OpenAsync(FileAccessMode.ReadWrite);
-            winRtStream.Size = 0;
-            using Stream stream = winRtStream.AsStreamForWrite();
-            using StreamWriter writer = new(stream, Encoding.GetEncoding(1252));
-
-            CultureInfo de = CultureInfo.GetCultureInfo("de-DE");
-            foreach (var section in Sections)
-            {
-                if (!section.IsOffTrack)
-                {
-                    FormattableString str = $"\"{section.TrackFilePosition}\";\"{section.Name}\";\"{section.Distance / 1000:F1}\";\"{section.Ascent:F0}\";\"{section.Descent:F0}\";\"{section.Time:hh\\:mm}\"";
-                    await writer.WriteLineAsync(str.ToString(de));
-                }
-            }
+            await ExportSectionsAsync(exportDetails.SectionsFile);
+        }
+        if (exportDetails.Tracks)
+        {
+            await ExportTracksAsync(exportDetails.TracksFile);
         }
         if (exportDetails.Wahoo)
         {
@@ -113,6 +110,61 @@ partial class ViewModel
     private bool CanExport()
     {
         return HasTrack && !IsEditMode;
+    }
+
+    private async Task ExportSectionsAsync(IStorageFile sectionsFile)
+    {
+        using IRandomAccessStream winRtStream = await sectionsFile.OpenAsync(FileAccessMode.ReadWrite);
+        winRtStream.Size = 0;
+        using Stream stream = winRtStream.AsStreamForWrite();
+        using StreamWriter writer = new(stream, Encoding.GetEncoding(1252));
+
+        CultureInfo de = CultureInfo.GetCultureInfo("de-DE");
+        foreach (var section in Sections)
+        {
+            if (!section.IsOffTrack)
+            {
+                FormattableString str = $"\"{section.TrackFilePosition}\";\"{section.Name}\";\"{section.Distance / 1000:F1}\";\"{section.Ascent:F0}\";\"{section.Descent:F0}\";\"{section.Time:hh\\:mm}\"";
+                await writer.WriteLineAsync(str.ToString(de));
+            }
+        }
+    }
+
+    private async Task ExportTracksAsync(IStorageFile tracksFile)
+    {
+        using IRandomAccessStream winRtStream = await tracksFile.OpenAsync(FileAccessMode.ReadWrite);
+        winRtStream.Size = 0;
+        using Stream zipStream = winRtStream.AsStreamForWrite();
+        using ZipArchive archive = new(zipStream, ZipArchiveMode.Create);
+
+        int i = 0;
+        foreach (IEnumerable<TrackPoint> filePoints in Track.Points.EnumerateFiles())
+        {
+            DateTime start = DateTime.Now;
+            string name = $"{Track.Name} {++i}";
+
+            using Stream fileStream = archive.CreateEntry($"{name}.gpx").Open();
+            using var writer = XmlWriter.Create(fileStream, new XmlWriterSettings { Async = true, Indent = true });
+
+            const string ns = "http://www.topografix.com/GPX/1/1";
+            await writer.WriteStartDocumentAsync().ConfigureAwait(false);
+            await writer.WriteStartElementAsync(null, "gpx", ns).ConfigureAwait(false);
+            await writer.WriteStartElementAsync(null, "trk", ns).ConfigureAwait(false);
+            await writer.WriteElementStringAsync(null, "name", ns, name).ConfigureAwait(false);
+            await writer.WriteStartElementAsync(null, "trkseg", ns).ConfigureAwait(false);
+
+            foreach (TrackPoint point in filePoints)
+            {
+                await writer.WriteStartElementAsync(null, "trkpt", ns).ConfigureAwait(false);
+                await writer.WriteAttributeStringAsync(null, "lat", null, point.Latitude.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                await writer.WriteAttributeStringAsync(null, "lon", null, point.Longitude.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                await writer.WriteElementStringAsync(null, "ele", ns, point.Altitude.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                await writer.WriteElementStringAsync(null, "time", ns, (start + point.Time).ToString("O")).ConfigureAwait(false);
+                await writer.WriteEndElementAsync().ConfigureAwait(false);
+            }
+
+            await writer.WriteEndDocumentAsync().ConfigureAwait(false);
+        }
     }
 
     private async Task ExportWahooAsync()

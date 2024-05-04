@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
@@ -26,27 +27,10 @@ public sealed partial class ExportDialog : ContentDialog
     public async Task<ExportDetails> GetResultAsync()
     {
         Response = new();
-
-        if (StorageApplicationPermissions.FutureAccessList.ContainsItem("Sections.csv"))
-        {
-            Response.SectionsFile = await StorageApplicationPermissions.FutureAccessList.GetFileAsync("Sections.csv");
-            Response.Sections = true;
-        }
-        if (StorageApplicationPermissions.FutureAccessList.ContainsItem("Water.csv"))
-        {
-            Response.WaterFile = await StorageApplicationPermissions.FutureAccessList.GetFileAsync("Water.csv");
-            Response.Water = true;
-        }
-        if (StorageApplicationPermissions.FutureAccessList.ContainsItem("POIs.csv"))
-        {
-            Response.PoisFile = await StorageApplicationPermissions.FutureAccessList.GetFileAsync("POIs.csv");
-            Response.Pois = true;
-        }
-        if (StorageApplicationPermissions.FutureAccessList.ContainsItem("Tracks.zip"))
-        {
-            Response.TracksFile = await StorageApplicationPermissions.FutureAccessList.GetFileAsync("Tracks.zip");
-            Response.Tracks = true;
-        }
+        Response.Sections = (Response.SectionsFile = await GetFileAsync("Sections.csv")) is not null;
+        Response.Water = (Response.WaterFile = await GetFileAsync("Water.csv")) is not null;
+        Response.Pois = (Response.PoisFile = await GetFileAsync("POIs.csv")) is not null;
+        Response.Tracks = (Response.TracksFile = await GetFileAsync("Tracks.zip")) is not null;
          
         if (await ShowAsync() != ContentDialogResult.Primary)
         {
@@ -54,6 +38,21 @@ public sealed partial class ExportDialog : ContentDialog
         }
 
         return Response;
+
+        async Task<IStorageFile> GetFileAsync(string name)
+        {
+            if (StorageApplicationPermissions.FutureAccessList.ContainsItem(name))
+            {
+                try
+                {
+                    return await StorageApplicationPermissions.FutureAccessList.GetFileAsync(name);
+                }
+                catch (FileNotFoundException)
+                { }
+            }
+
+            return null;
+        }
     }
 
     private async void CheckBox_Checked(object sender, RoutedEventArgs e)
