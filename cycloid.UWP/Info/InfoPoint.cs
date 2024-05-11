@@ -83,15 +83,15 @@ public enum InfoType
     Water,
     Toilet,
     // Food
-    Restaurant,
-    FastFood,
-    Bar,
+    Restaurant, // R
+    FastFood, // F
+    Bar, // C
     // Shop
-    Supermarket,
-    Bakery,
-    FuelStation,
+    Supermarket, // S
+    Bakery, // B
+    FuelStation, // T
     // Sleep
-    Bed,
-    Outdoor,
-    Roof,
+    Bed, // H
+    Outdoor, // W
+    Roof, // D
 }

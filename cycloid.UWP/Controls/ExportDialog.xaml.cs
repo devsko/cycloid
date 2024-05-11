@@ -41,11 +41,12 @@ public sealed partial class ExportDialog : ContentDialog
 
         async Task<IStorageFile> GetFileAsync(string name)
         {
-            if (StorageApplicationPermissions.FutureAccessList.ContainsItem(name))
+            string key = GetKey(name);
+            if (StorageApplicationPermissions.FutureAccessList.ContainsItem(key))
             {
                 try
                 {
-                    return await StorageApplicationPermissions.FutureAccessList.GetFileAsync(name);
+                    return await StorageApplicationPermissions.FutureAccessList.GetFileAsync(key);
                 }
                 catch (FileNotFoundException)
                 { }
@@ -69,8 +70,10 @@ public sealed partial class ExportDialog : ContentDialog
             }
             else
             {
-                StorageApplicationPermissions.FutureAccessList.AddOrReplace(name, Response[name]);
+                StorageApplicationPermissions.FutureAccessList.AddOrReplace(GetKey(name), Response[name]);
             }
         }
     }
+
+    private string GetKey(string name) => $"{Request.TrackFile.Name}-{name}";
 }

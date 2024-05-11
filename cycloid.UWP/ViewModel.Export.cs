@@ -18,7 +18,9 @@ using Windows.Storage.Streams;
 namespace cycloid;
 
 public class RequestExportDetails : AsyncRequestMessage<ExportDetails>
-{ }
+{
+    public IStorageFile TrackFile { get; init; }
+}
 
 public class ExportDetails : INotifyPropertyChanged
 {
@@ -84,7 +86,7 @@ partial class ViewModel
     [RelayCommand(CanExecute = nameof(CanExport))]
     public async Task ExportAsync()
     {
-        ExportDetails exportDetails = await StrongReferenceMessenger.Default.Send(new RequestExportDetails());
+        ExportDetails exportDetails = await StrongReferenceMessenger.Default.Send(new RequestExportDetails { TrackFile = Track.File });
 
         if (exportDetails is null)
         {
@@ -96,6 +98,14 @@ partial class ViewModel
         if (exportDetails.Sections)
         {
             await ExportSectionsAsync(exportDetails.SectionsFile);
+        }
+        if (exportDetails.Water)
+        {
+            await ExportWaterAsync(exportDetails.WaterFile);
+        }
+        if (exportDetails.Pois)
+        {
+            await ExportPoisAsync(exportDetails.PoisFile);
         }
         if (exportDetails.Tracks)
         {
@@ -112,22 +122,74 @@ partial class ViewModel
         return HasTrack && !IsEditMode;
     }
 
+    private readonly CultureInfo _deCulture = CultureInfo.GetCultureInfo("de-DE");
+
     private async Task ExportSectionsAsync(IStorageFile sectionsFile)
     {
-        using IRandomAccessStream winRtStream = await sectionsFile.OpenAsync(FileAccessMode.ReadWrite);
-        winRtStream.Size = 0;
-        using Stream stream = winRtStream.AsStreamForWrite();
-        using StreamWriter writer = new(stream, Encoding.GetEncoding(1252));
+        using StreamWriter writer = await GetCsvWriterAsync(sectionsFile);
 
-        CultureInfo de = CultureInfo.GetCultureInfo("de-DE");
-        foreach (var section in Sections)
+        foreach (OnTrack section in Sections)
         {
             if (!section.IsOffTrack)
             {
                 FormattableString str = $"\"{section.TrackFilePosition}\";\"{section.Name}\";\"{section.Distance / 1000:F1}\";\"{section.Ascent:F0}\";\"{section.Descent:F0}\";\"{section.Time:hh\\:mm}\"";
-                await writer.WriteLineAsync(str.ToString(de));
+                await writer.WriteLineAsync(str.ToString(_deCulture));
             }
         }
+    }
+
+    private async Task ExportWaterAsync(IStorageFile waterFile)
+    {
+        using StreamWriter writer = await GetCsvWriterAsync(waterFile);
+
+        foreach (OnTrack onTrack in Points)
+        {
+            if (!onTrack.IsOffTrack && onTrack.PointOfInterest.Category == Info.InfoCategory.Water)
+            {
+                string name = onTrack.Name;
+                if (onTrack.PointOfInterest.Type == Info.InfoType.Toilet)
+                {
+                    name = "WC " + name;
+                }
+                FormattableString str = $"\"{onTrack.TrackFilePosition}\";\"{name}\"";
+                await writer.WriteLineAsync(str.ToString(_deCulture));
+            }
+        }
+    }
+
+    private async Task ExportPoisAsync(IStorageFile poisFile)
+    {
+        using StreamWriter writer = await GetCsvWriterAsync(poisFile);
+
+        foreach (OnTrack onTrack in Points)
+        {
+            if (!onTrack.IsOffTrack && onTrack.PointOfInterest.Category != Info.InfoCategory.Water)
+            {
+                string type = onTrack.PointOfInterest.Type switch 
+                {
+                    Info.InfoType.Restaurant => "R",
+                    Info.InfoType.FastFood => "F",
+                    Info.InfoType.Bar => "C",
+                    Info.InfoType.Supermarket => "S",
+                    Info.InfoType.Bakery => "B",
+                    Info.InfoType.FuelStation => "T",
+                    Info.InfoType.Bed => "H",
+                    Info.InfoType.Outdoor => "W",
+                    Info.InfoType.Roof => "D",
+                    _ => throw new InvalidOperationException() 
+                };
+                FormattableString str = $"\"{onTrack.TrackFilePosition}\";\"{type}\";\"{onTrack.Name}\"";
+                await writer.WriteLineAsync(str.ToString(_deCulture));
+            }
+        }
+    }
+
+    private async Task<StreamWriter> GetCsvWriterAsync(IStorageFile file)
+    {
+        IRandomAccessStream winRtStream = await file.OpenAsync(FileAccessMode.ReadWrite);
+        winRtStream.Size = 0;
+        
+        return new StreamWriter(winRtStream.AsStreamForWrite(), Encoding.GetEncoding(1252));
     }
 
     private async Task ExportTracksAsync(IStorageFile tracksFile)
