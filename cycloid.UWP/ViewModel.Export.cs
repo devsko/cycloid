@@ -198,13 +198,17 @@ partial class ViewModel
         winRtStream.Size = 0;
         using Stream zipStream = winRtStream.AsStreamForWrite();
         using ZipArchive archive = new(zipStream, ZipArchiveMode.Create);
+        
+        await WriteEntryAsync($"{Track.Name} complete", Track.Points, DateTime.Now).ConfigureAwait(false);
 
         int i = 0;
         foreach (IEnumerable<TrackPoint> filePoints in Track.Points.EnumerateFiles())
         {
-            DateTime start = DateTime.Now;
-            string name = $"{Track.Name} {++i}";
+            await WriteEntryAsync($"{Track.Name} {++i:D2}", filePoints, DateTime.Now).ConfigureAwait(false);
+        }
 
+        async Task WriteEntryAsync(string name, IEnumerable<TrackPoint> points, DateTime start)
+        {
             using Stream fileStream = archive.CreateEntry($"{name}.gpx").Open();
             using var writer = XmlWriter.Create(fileStream, new XmlWriterSettings { Async = true, Indent = true });
 
@@ -215,7 +219,7 @@ partial class ViewModel
             await writer.WriteElementStringAsync(null, "name", ns, name).ConfigureAwait(false);
             await writer.WriteStartElementAsync(null, "trkseg", ns).ConfigureAwait(false);
 
-            foreach (TrackPoint point in filePoints)
+            foreach (TrackPoint point in points)
             {
                 await writer.WriteStartElementAsync(null, "trkpt", ns).ConfigureAwait(false);
                 await writer.WriteAttributeStringAsync(null, "lat", null, point.Latitude.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);

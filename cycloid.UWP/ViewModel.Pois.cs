@@ -227,9 +227,9 @@ partial class ViewModel
             }
             if (startIndex is not null && (!isRelevant || i == _boundingBoxes.Length - 1))
             {
-                foreach ((TrackPoint Point, float Distance) point in Track.Points.GetNearPoints(pointOfInterest.Location, startIndex.Value, end, maxDistance, minDistanceDelta: 1_000))
+                foreach ((TrackPoint point, _) in Track.Points.GetNearPoints(pointOfInterest.Location, startIndex.Value, end, maxDistance, minDistanceDelta: 1_000))
                 {
-                    yield return point.Point;
+                    yield return point;
                 }
                 startIndex = null;
             }
