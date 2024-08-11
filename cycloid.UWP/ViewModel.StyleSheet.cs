@@ -6,6 +6,8 @@ partial class ViewModel
 {
     private static class StyleSheet
     {
+        // https://learn.microsoft.com/en-us/bingmaps/styling/map-style-sheet-entry-properties
+
         public static MapStyleSheet Extension { get; } = MapStyleSheet.ParseFromJson(/*lang=json*/ """
             {
               "version": "1.*",

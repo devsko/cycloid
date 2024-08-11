@@ -5,6 +5,7 @@
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     Loaded="Page_Loaded">
 
@@ -614,6 +615,18 @@
                         <mux:TabViewItem.IconSource>
                             <mux:SymbolIconSource Symbol="Play" />
                         </mux:TabViewItem.IconSource>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="{ui:SymbolIcon Symbol=Play}" />
+                                <Button Content="{ui:SymbolIcon Symbol=Up}" />
+                                <Button Content="{ui:SymbolIcon Symbol=DockBottom}" />
+                            </StackPanel>
+                            <mux:ProgressBar Grid.Row="1" />
+                        </Grid>
                     </mux:TabViewItem>
                 </mux:TabView.TabItems>
             </mux:TabView>

@@ -17,7 +17,7 @@ try
 
     while (true)
     {
-        string devices = await AdbAsync($"devices", true);
+        string devices = (await AdbAsync($"devices", false, true)).Item2;
 
         if (devices.Contains("\tdevice"))
         {
@@ -27,7 +27,7 @@ try
         await Task.Delay(TimeSpan.FromSeconds(1));
     }
 
-    await AdbAsync($"devices -l");
+    await AdbAsync($"devices -l", false);
 
     PointOfInterest[] pointsOfInterest;
     using (Stream json = File.OpenRead(trackFilePath))
@@ -41,9 +41,10 @@ try
     string localDirectory = Path.GetTempPath();
     string localFilePath = Path.Combine(localDirectory, "BoltApp.sqlite");
 
-    await DownloadAsync(localFilePath);
-    await DownloadAsync(localFilePath + "-shm");
-    await DownloadAsync(localFilePath + "-wal");
+    await DownloadAsync(localFilePath, false);
+    await DownloadAsync(localFilePath + "-shm", true);
+    await DownloadAsync(localFilePath + "-wal", true);
+    await DownloadAsync(localFilePath + "-journal", true);
 
     try
     {
@@ -99,12 +100,13 @@ try
         await UploadAsync(localFilePath);
         await UploadAsync(localFilePath + "-shm");
         await UploadAsync(localFilePath + "-wal");
+        await UploadAsync(localFilePath + "-journal");
 
-        await AdbAsync("reboot");
+        await AdbAsync("reboot", false);
     }
     finally
     {
-        await AdbAsync("kill-server");
+        await AdbAsync("kill-server", false);
 
         SqliteConnection.ClearAllPools();
 
@@ -118,25 +120,25 @@ try
         }
     }
 
-    async Task DownloadAsync(string localFilePath)
+    async Task DownloadAsync(string localFilePath, bool dontThrow)
     {
         File.Delete(localFilePath);
-        await AdbAsync($"pull /data/data/com.wahoofitness.bolt/databases/{Path.GetFileName(localFilePath)} {localFilePath}");
+        await AdbAsync($"pull /data/data/com.wahoofitness.bolt/databases/{Path.GetFileName(localFilePath)} {localFilePath}", dontThrow);
     }
 
     async Task UploadAsync(string localFilePath)
     {
         if (File.Exists(localFilePath))
         {
-            await AdbAsync($"push {localFilePath} /data/data/com.wahoofitness.bolt/databases/");
+            await AdbAsync($"push {localFilePath} /data/data/com.wahoofitness.bolt/databases/", false);
         }
         else
         {
-            await AdbAsync($"shell rm data/data/com.wahoofitness.bolt/databases/{Path.GetFileName(localFilePath)}");
+            await AdbAsync($"shell rm data/data/com.wahoofitness.bolt/databases/{Path.GetFileName(localFilePath)}", true);
         }
     }
 
-    async Task<string> AdbAsync(string parameter, bool supressOutput = false)
+    async Task<(bool, string)> AdbAsync(string parameter, bool dontThrow, bool supressOutput = false)
     {
         if (!supressOutput)
         {
@@ -145,13 +147,22 @@ try
 
         BufferedCommandResult result = await adb
             .WithArguments(parameter)
+            .WithValidation(dontThrow ? CommandResultValidation.None : CommandResultValidation.ZeroExitCode)
             .ExecuteBufferedAsync();
 
         string output = result.StandardOutput;
     
         if (!result.IsSuccess)
         {
-            throw new InvalidOperationException(output + Environment.NewLine + result.StandardError);
+            output += Environment.NewLine + result.StandardError;
+            if (dontThrow)
+            {
+                return (false, output);
+            }
+            else
+            {
+                throw new InvalidOperationException(output);
+            }
         }
 
         if (!supressOutput)
@@ -159,7 +170,7 @@ try
             Console.Write(output);
         }
 
-        return output;
+        return (true, output);
     }
 }
 catch (Exception ex)
