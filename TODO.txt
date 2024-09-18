@@ -1,0 +1,37 @@
+cycloid TODO 
+https://learn.microsoft.com/en-us/bingmaps/styling/map-style-sheet-entry-properties
+https://stefanwick.com/2018/10/07/app-elevation-samples-part-3/
+https://learn.microsoft.com/en-us/bingmaps/articles/bing-maps-tile-system?redirectedfrom=MSDN
+============
+
+Bug Surface verschoben (Holzbrücke in CH bei km 1402)
+Perf in Profile MaxElevation in EnsureTrack oder aus den MaxAltitudes der Segments in PointColection - auf jeden Fall nicht nochmal Enumerate()
+StreetView
+
+Bug Profile zeichnet nach oben bis in die Karte beim Zeichnen der Route
+Bug Fehler auf Proile wenn Kalkulation läuft (war nach löschen von selection)
+
+Train Mode
+CSV Export
+
+Start-Screen (ersetzt Öffnen/Neu AppButton)
+ Checkbox "in neuem Fenster"
+  Neu
+  Öffnen
+  Zuletzt
+
+
+(Höhenakkumulator zwischen Segmenten) Neuer WayPoint auf dadurch unveränderter Route -> warum ändern sich die Total Values
+
+Serialisierte Points behalten wenn nicht verändert
+
+WayPoints müssen eindeutig sein?
+
+Undo (Historie auch speichern)
+
+Splash-Screen
+
+Camera als ViewModel? oder in Map integriert
+
+Sections u Splits im ProfileControl anzeigen
+
