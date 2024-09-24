@@ -26,7 +26,7 @@
     <NoWarn>$(NoWarn);NU1702</NoWarn>
     <EntryPointProjectUniqueName>..\cycloid.UWP\cycloid.UWP.csproj</EntryPointProjectUniqueName>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <PackageCertificateKeyFile>D:\repos\devsko\cycloid\cycloid.UWP\cycloid_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>..\cycloid.UWP\cycloid_TemporaryKey.pfx</PackageCertificateKeyFile>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
