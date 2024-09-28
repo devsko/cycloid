@@ -228,7 +228,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\cycloid.Core\cycloid.Core.csproj" />
     <PackageReference Include="CommunityToolkit.Labs.Uwp.TransitionHelper">
       <Version>0.1.240917-build.1755</Version>
     </PackageReference>
@@ -285,6 +284,12 @@
     <SDKReference Include="WindowsDesktop, Version=10.0.22621.0">
       <Name>Windows Desktop Extensions for the UWP</Name>
     </SDKReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\cycloid.Core\cycloid.Core.csproj">
+      <Project>{dcdb4eb9-ad80-495c-856c-ad1ba7335b9e}</Project>
+      <Name>cycloid.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
