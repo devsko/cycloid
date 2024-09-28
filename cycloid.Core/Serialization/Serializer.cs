@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 
-namespace cycloid.Serizalization;
+namespace cycloid.Serialization;
 
 public static class Serializer
 {
@@ -41,7 +41,7 @@ public static class Serializer
             TrackContext.Default.Track, 
             cancellationToken
         ).ConfigureAwait(false);
-        await stream.FlushAsync().ConfigureAwait(false);
+        await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task SerializeAsync(Stream stream, string sourceTrack, string startLocation, string endLocation, cycloid.WayPoint[] wayPoints, cycloid.PointOfInterest[] pointsOfInterest)

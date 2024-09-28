@@ -51,7 +51,14 @@ public partial class BrouterClient
     {
         string profileId = await GetProfileIdAsync(profile).ConfigureAwait(false);
 
-        string query = FormattableString.Invariant($"?lonlats={from.Longitude},{from.Latitude}|{to.Longitude},{to.Latitude}&nogos={string.Join('|', noGoAreas.Select(noGo => FormattableString.Invariant($"{noGo.Center.Longitude},{noGo.Center.Latitude},{noGo.Radius}")))}&profile={profileId}&alternativeidx=0&format=geojson");
+        string noGos = string.Join(
+#if NETSTANDARD
+            "|"
+#else
+            '|'
+#endif
+            , noGoAreas.Select(noGo => FormattableString.Invariant($"{noGo.Center.Longitude},{noGo.Center.Latitude},{noGo.Radius}")));
+        string query = FormattableString.Invariant($"?lonlats={from.Longitude},{from.Latitude}|{to.Longitude},{to.Latitude}&nogos={noGos}&profile={profileId}&alternativeidx=0&format=geojson");
 
         int retryCount = 0;
         while (true)
@@ -59,7 +66,13 @@ public partial class BrouterClient
             using HttpResponseMessage response = await _http.GetAsync(query, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-                using Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                using Stream contentStream = await response.Content.
+#if NETSTANDARD
+                    ReadAsStreamAsync()
+#else
+                    ReadAsStreamAsync(cancellationToken)
+#endif
+                    .ConfigureAwait(false);
                 FeatureCollection result = await JsonSerializer.DeserializeAsync<FeatureCollection>(contentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 Feature feature = result?.Features.FirstOrDefault();
@@ -100,7 +113,7 @@ public partial class BrouterClient
 
         static SurfacePart CreateSurfacePart(JsonElement element)
         {
-            IEnumerator<JsonElement> enumerator = element.EnumerateArray().GetEnumerator();
+            JsonElement.ArrayEnumerator enumerator = element.EnumerateArray().GetEnumerator();
             enumerator.MoveNext();
             // Longitude
             enumerator.MoveNext();
@@ -167,7 +180,13 @@ public partial class BrouterClient
             using HttpResponseMessage response = await _http.GetAsync(query, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-                using Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                using Stream contentStream = await response.Content.
+#if NETSTANDARD
+                    ReadAsStreamAsync()
+#else
+                    ReadAsStreamAsync(cancellationToken)
+#endif
+                    .ConfigureAwait(false);
                 FeatureCollection result = await JsonSerializer.DeserializeAsync<FeatureCollection>(contentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 Feature feature = result?.Features.FirstOrDefault();
@@ -215,7 +234,7 @@ public partial class BrouterClient
         }
     }
 
-    private async Task<bool> CanRetryAsync(HttpResponseMessage response)
+    private static async Task<bool> CanRetryAsync(HttpResponseMessage response)
     {
         if (response.StatusCode is HttpStatusCode.NotFound)
         {

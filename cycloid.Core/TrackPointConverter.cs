@@ -82,11 +82,6 @@ public static class TrackPointConverter
 
     public static RouteResult Convert(IEnumerable<RoutePoint> points, int count, IEnumerable<SurfacePart> surfaces)
     {
-        if (count < 2)
-        {
-            throw new ArgumentException();
-        }
-
         TrackPoint[] trackPoints = new TrackPoint[count];
         float minAltitude = float.MaxValue;
         float maxAltitude = float.MinValue;

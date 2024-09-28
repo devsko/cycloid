@@ -81,19 +81,9 @@
       <DependentUpon>ProfileSelectionValues.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ViewModelControl.cs" />
-    <Compile Include="Extensions\EnumerableExtensions.cs" />
-    <Compile Include="ICanBeInvalid.cs" />
-    <Compile Include="Info\AmenitiesConverter.cs" />
-    <Compile Include="Info\InfoCache.cs" />
-    <Compile Include="Info\InfoPoint.cs" />
-    <Compile Include="OnTrack.cs" />
+    <Compile Include="Extensions\PointExtensions.cs" />
     <Compile Include="PeriodicAction.cs" />
-    <Compile Include="PointOfInterest.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Selection.cs" />
-    <Compile Include="Serialization\TrackContext.cs" />
-    <Compile Include="Track.Index.cs" />
-    <Compile Include="Track.CompareSession.cs" />
     <Compile Include="Controls\Bing.xaml.cs">
       <DependentUpon>Bing.xaml</DependentUpon>
     </Compile>
@@ -124,11 +114,6 @@
     </Compile>
     <Compile Include="Extensions\ConfigurationValue.cs" />
     <Compile Include="External\Osm.cs" />
-    <Compile Include="GeoCalculation.cs" />
-    <Compile Include="Info\OsmClient.cs" />
-    <Compile Include="MapPoint.cs" />
-    <Compile Include="Routing\BrouterClient.cs" />
-    <Compile Include="Routing\BrouterClient.ProfileTemplate.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -137,24 +122,10 @@
     </Compile>
     <Compile Include="Controls\PopupBrowser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Routing\RouteBuilder.ChangeLocker.cs" />
-    <Compile Include="Routing\RouteBuilder.cs" />
-    <Compile Include="Routing\RoutePoint.cs" />
-    <Compile Include="Routing\RouteResult.cs" />
-    <Compile Include="Routing\RouteSection.cs" />
     <Compile Include="External\Strava.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
-    <Compile Include="Serialization\Serializer.cs" />
-    <Compile Include="Serialization\Track.cs" />
     <Compile Include="Throttle.cs" />
-    <Compile Include="Track.cs" />
     <Compile Include="Convert.cs" />
-    <Compile Include="Track.PointCollection.cs" />
-    <Compile Include="Track.Segment.cs" />
-    <Compile Include="Track.SegmentCollection.cs" />
-    <Compile Include="TrackPointConverter.cs" />
-    <Compile Include="TrackPoint.cs" />
-    <Compile Include="TrackPoint.CommonValues.cs" />
     <Compile Include="ViewModel.Bing.cs" />
     <Compile Include="ViewModel.CompareSession.cs" />
     <Compile Include="ViewModel.cs" />
@@ -166,7 +137,6 @@
     <Compile Include="ViewModel.Routing.cs" />
     <Compile Include="ViewModel.Selection.cs" />
     <Compile Include="ViewModel.StyleSheet.cs" />
-    <Compile Include="WayPoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -258,6 +228,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\cycloid.Core\cycloid.Core.csproj" />
     <PackageReference Include="CommunityToolkit.Labs.Uwp.TransitionHelper">
       <Version>0.1.240917-build.1755</Version>
     </PackageReference>
@@ -289,7 +260,7 @@
       <Version>17.11.20</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Web.WebView2">
-      <Version>1.0.2739.15</Version>
+      <Version>1.0.2839-prerelease</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>

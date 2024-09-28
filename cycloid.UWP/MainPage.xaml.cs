@@ -143,7 +143,7 @@ public sealed partial class MainPage : Page,
             return;
         }
 
-        StrongReferenceMessenger.Default.Send(new BringLocationIntoViewMessage((MapPoint)point.Position));
+        StrongReferenceMessenger.Default.Send(new BringLocationIntoViewMessage(point.Position.ToMapPoint()));
     }
 
     private void PoisButton_CategoryChanged(InfoCategory category, bool value)

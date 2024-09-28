@@ -33,7 +33,7 @@ partial class Map :
     }
 
     private MapPoint? GetLocation(Point offset) 
-        => MapControl.TryGetLocationFromOffset(offset, out Geopoint location) ? (MapPoint)location.Position : null;
+        => MapControl.TryGetLocationFromOffset(offset, out Geopoint location) ? location.Position.ToMapPoint() : null;
 
     private MapIcon GetOnTrackIcon(OnTrack onTrack) 
         => _poisLayer.MapElements.OfType<MapIcon>().FirstOrDefault(element => (OnTrack)element.Tag == onTrack);
@@ -50,7 +50,7 @@ partial class Map :
                     OnTrack onTrack = (OnTrack)e.NewItems[0];
                     _poisLayer.MapElements.Add(new MapIcon
                     {
-                        Location = new Geopoint(onTrack.Location),
+                        Location = new Geopoint(onTrack.Location.ToBasicGeoposition()),
                         MapStyleSheetEntry = $"POI.{onTrack.PointOfInterest.Type}",
                         Title = onTrack.Name ?? "",
                         Tag = onTrack
@@ -103,7 +103,7 @@ partial class Map :
         MapIcon nearestIcon = elements
             .Where(element => element.Tag is InfoPoint)
             .Cast<MapIcon>()
-            .MinBy(element => GeoCalculation.Distance((MapPoint)element.Location.Position, value.Location));
+            .MinBy(element => GeoCalculation.Distance(element.Location.Position.ToMapPoint(), value.Location));
 
         InfoPoint nearestInfo = nearestIcon?.Tag as InfoPoint ?? InfoPoint.Invalid;
         if (nearestInfo != ViewModel.HoverInfo)
@@ -133,7 +133,7 @@ partial class Map :
         {
             GeoboundingBox box = GeoboundingBox.TryCompute(MapControl.GetVisibleRegion(MapVisibleRegionKind.Near).Positions);
 
-            return ((MapPoint)box.NorthwestCorner, (MapPoint)box.SoutheastCorner);
+            return (box.NorthwestCorner.ToMapPoint(), box.SoutheastCorner.ToMapPoint());
         }
     }
 
@@ -187,7 +187,7 @@ partial class Map :
         {
             _infoLayer.MapElements.Add(new MapIcon
             {
-                Location = new Geopoint(infoPoint.Location),
+                Location = new Geopoint(infoPoint.Location.ToBasicGeoposition()),
                 MapStyleSheetEntry = $"Info.{infoPoint.Type}",
                 Title = infoPoint.Name,
                 Tag = infoPoint,

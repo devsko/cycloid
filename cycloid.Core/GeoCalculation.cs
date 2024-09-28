@@ -158,4 +158,17 @@ public static class GeoCalculation
     private static double ToRadians(double degrees) => degrees * Math.PI / 180;
     private static float ToDegrees(float radians) => radians * 180 / MathF.PI;
     private static double ToDegrees(double radians) => radians * 180 / Math.PI;
+
+#if NETSTANDARD
+    private static class MathF
+    {
+        public const float PI = (float)Math.PI;
+        public static float Sqrt(float a) => (float)Math.Sqrt(a);
+        public static float Sin(float a) => (float)Math.Sin(a);
+        public static float Cos(float a) => (float)Math.Cos(a);
+        public static float Asin(float d) => (float)Math.Asin(d);
+        public static float Atan2(float y, float x) => (float)Math.Atan2(y, x);
+        public static float Pow(float x, float y) => (float)Math.Pow(x, y);
+    }
+#endif
 }

@@ -6,6 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		nuget.config = nuget.config
+		todo.md = todo.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cycloid.UWP", "cycloid.UWP\cycloid.UWP.csproj", "{684352C4-FF3E-4727-892E-EE2A36665370}"
@@ -13,6 +14,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cycloid.Wahoo", "cycloid.Wahoo\cycloid.Wahoo.csproj", "{095A45AC-EEE8-4251-9BE7-578223A6DC1A}"
 EndProject
 Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "cycloid.Package", "cycloid.Package\cycloid.Package.wapproj", "{439902FD-2D44-43B5-A0B5-E6669EB38835}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{AC6568CC-B30B-4CEC-A994-DC164AA68E7F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cycloid.Core", "cycloid.Core\cycloid.Core.csproj", "{DCDB4EB9-AD80-495C-856C-AD1BA7335B9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,7 +34,9 @@ Global
 		{684352C4-FF3E-4727-892E-EE2A36665370}.Optimized|Any CPU.Deploy.0 = Optimized|x64
 		{684352C4-FF3E-4727-892E-EE2A36665370}.Package Release|Any CPU.ActiveCfg = Release|x64
 		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Debug|Any CPU.Build.0 = Debug|x64
 		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Optimized|Any CPU.ActiveCfg = Release|x64
+		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Optimized|Any CPU.Build.0 = Release|x64
 		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Package Release|Any CPU.ActiveCfg = Release|x64
 		{095A45AC-EEE8-4251-9BE7-578223A6DC1A}.Package Release|Any CPU.Build.0 = Release|x64
 		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Debug|Any CPU.ActiveCfg = Debug|x64
@@ -37,6 +44,17 @@ Global
 		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Package Release|Any CPU.ActiveCfg = Release|x64
 		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Package Release|Any CPU.Build.0 = Release|x64
 		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Package Release|Any CPU.Deploy.0 = Release|x64
+		{AC6568CC-B30B-4CEC-A994-DC164AA68E7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC6568CC-B30B-4CEC-A994-DC164AA68E7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC6568CC-B30B-4CEC-A994-DC164AA68E7F}.Optimized|Any CPU.ActiveCfg = Release|Any CPU
+		{AC6568CC-B30B-4CEC-A994-DC164AA68E7F}.Optimized|Any CPU.Build.0 = Release|Any CPU
+		{AC6568CC-B30B-4CEC-A994-DC164AA68E7F}.Package Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCDB4EB9-AD80-495C-856C-AD1BA7335B9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCDB4EB9-AD80-495C-856C-AD1BA7335B9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCDB4EB9-AD80-495C-856C-AD1BA7335B9E}.Optimized|Any CPU.ActiveCfg = Release|Any CPU
+		{DCDB4EB9-AD80-495C-856C-AD1BA7335B9E}.Optimized|Any CPU.Build.0 = Release|Any CPU
+		{DCDB4EB9-AD80-495C-856C-AD1BA7335B9E}.Package Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCDB4EB9-AD80-495C-856C-AD1BA7335B9E}.Package Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

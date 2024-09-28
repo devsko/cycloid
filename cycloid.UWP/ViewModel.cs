@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -8,6 +9,7 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 using cycloid.External;
 using cycloid.Info;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 
 namespace cycloid;
 
@@ -35,6 +37,7 @@ public partial class ViewModel : ObservableObject,
     private readonly SynchronizationContext _ui;
     private Modes _mode;
     private Track _track;
+    private IStorageFile _file;
     private bool _trackIsInitialized;
     private TrackPoint _currentPoint = TrackPoint.Invalid;
     private TrackPoint _hoverPoint = TrackPoint.Invalid;
@@ -135,7 +138,21 @@ public partial class ViewModel : ObservableObject,
         }
     }
 
-    public bool HasTrack => Track is not null;
+    public IStorageFile File
+    {
+        get => _file;
+        set
+        {
+            if (SetProperty(ref _file, value))
+            {
+                Track.Name = value is null ? "" : Path.GetFileNameWithoutExtension(value.Name);
+
+                StrongReferenceMessenger.Default.Send(new FileChanged(value));
+            }
+        }
+    }
+
+    public bool HasTrack => _track is not null;
 
     public bool TrackIsInitialized
     {

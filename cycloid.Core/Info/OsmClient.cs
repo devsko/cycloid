@@ -19,11 +19,21 @@ public class OsmClient
     {
         StringBuilder query = new();
         AddFilter("mountain_pass=yes");
-        foreach (string amenity in Enum.GetNames(typeof(OverpassAmenities)))
+        foreach (string amenity in
+#if NETSTANDARD
+            Enum.GetNames(typeof(OverpassAmenities)))
+#else
+            Enum.GetNames<OverpassAmenities>())
+#endif
         {
             AddFilter($"amenity={amenity}");
         }
-        foreach (string shop in Enum.GetNames(typeof(OverpassShops)))
+        foreach (string shop in
+#if NETSTANDARD
+            Enum.GetNames(typeof(OverpassShops)))
+#else
+            Enum.GetNames<OverpassShops>())
+#endif
         {
             AddFilter($"shop={shop}");
         }
@@ -54,7 +64,13 @@ public class OsmClient
             using HttpResponseMessage response = await _http.PostAsync("", new StringContent(content), cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-                using Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                using Stream stream = await response.Content.
+#if NETSTANDARD
+                    ReadAsStreamAsync()
+#else
+                    ReadAsStreamAsync(cancellationToken)
+#endif
+                    .ConfigureAwait(false);
 
                 OverpassResponse overpass = await JsonSerializer.DeserializeAsync(stream, OsmContext.Default.OverpassResponse, cancellationToken).ConfigureAwait(false);
 

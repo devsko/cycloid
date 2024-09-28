@@ -1,17 +1,15 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Info;
 using cycloid.Routing;
-using Windows.Storage;
 
 namespace cycloid;
 
 public partial class Track : ObservableObject
 {
-    public IStorageFile File { get; set; }
+    public string Name { get; set; }
 
     public RouteBuilder RouteBuilder { get; }
 
@@ -19,9 +17,8 @@ public partial class Track : ObservableObject
 
     public List<PointOfInterest> PointsOfInterest { get; }
 
-    public Track(IStorageFile file, bool isNew)
+    public Track(bool isNew)
     {
-        File = file;
         RouteBuilder = new RouteBuilder();
         Points = new PointCollection(this);
         PointsOfInterest = [];
@@ -37,8 +34,6 @@ public partial class Track : ObservableObject
             PointsOfInterest.Add(goal);
         }
     }
-
-    public string Name => File is null ? "" : Path.GetFileNameWithoutExtension(File.Name);
 
     public void ClearViewState()
     {

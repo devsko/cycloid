@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using cycloid.Routing;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -28,6 +29,8 @@ sealed partial class App : Application
             e.Handled = true;
             ShowExceptionAsync(e.Exception?.ToString() ?? e.Message).FireAndForget();
         };
+
+        RouteBuilder.ExceptionHandler = Current.ShowExceptionAsync;
         
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 

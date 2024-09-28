@@ -110,7 +110,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
     private async Task SetCenterAsync(IEnumerable<MapPoint> points)
     {
-        GeoboundingBox bounds = GeoboundingBox.TryCompute(points.Select(trackPoint => (BasicGeoposition)trackPoint));
+        GeoboundingBox bounds = GeoboundingBox.TryCompute(points.Select(trackPoint => trackPoint.ToBasicGeoposition()));
         if (bounds is not null)
         {
             await MapControl.TrySetViewBoundsAsync(bounds, new Thickness(ActualWidth * .05), MapAnimationKind.Bow);
@@ -164,7 +164,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         ViewModel.InfoIsLoading = true;
         try
         {
-            await ViewModel.Infos.LoadAsync((MapPoint)MapControl.ActualCamera.Location.Position, cancellationToken);
+            await ViewModel.Infos.LoadAsync(MapControl.ActualCamera.Location.Position.ToMapPoint(), cancellationToken);
         }
         finally
         {
@@ -280,13 +280,13 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
         if (ctrl)
         {
-            ViewModel.AddDestinationAsync((MapPoint)args.Location.Position).FireAndForget();
+            ViewModel.AddDestinationAsync(args.Location.Position.ToMapPoint()).FireAndForget();
         }
     }
 
     private void MapControl_MapContextRequested(MapControl _, MapContextRequestedEventArgs args)
     {
-        ShowMapMenu(args.Position, (MapPoint)args.Location.Position);
+        ShowMapMenu(args.Position, args.Location.Position.ToMapPoint());
     }
 
     private void MapControl_LosingFocus(UIElement _, LosingFocusEventArgs args)
@@ -329,7 +329,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         if (args.TryGetPosition(MapControl, out Point position) && 
             MapControl.TryGetLocationFromOffset(position, out Geopoint location))
         {
-            ShowMapMenu(position, (MapPoint)location.Position);
+            ShowMapMenu(position, location.Position.ToMapPoint());
         }
     }
 
@@ -383,14 +383,14 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
     void IRecipient<BringLocationIntoViewMessage>.Receive(BringLocationIntoViewMessage message)
     {
-        SetCenterAsync(new Geopoint(message.Value)).FireAndForget();
+        SetCenterAsync(new Geopoint(message.Value.ToBasicGeoposition())).FireAndForget();
     }
 
     void IRecipient<BringTrackIntoViewMessage>.Receive(BringTrackIntoViewMessage message)
     {
         if (!message.Value.Item2.IsValid)
         {
-            SetCenterAsync(new Geopoint((MapPoint)message.Value.Item1)).FireAndForget();
+            SetCenterAsync(new Geopoint(message.Value.Item1.ToBasicGeoposition())).FireAndForget();
         }
         else
         {

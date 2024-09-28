@@ -1,13 +1,22 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace System.Linq;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public static class EnumerableExtensions
 {
+#if NETSTANDARD
+    public static IEnumerable<TSource> SkipLast<TSource>(this ICollection<TSource> source, int count)
+    {
+        return source.Take(source.Count - count);
+    }
+#endif
+
     public static TSource MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> selector, TSource defaultValue = default, IComparer<TKey> comparer = null)
     {
-        if (source == null) throw new ArgumentNullException("source");
-        if (selector == null) throw new ArgumentNullException("selector");
         comparer ??= Comparer<TKey>.Default;
 
         using var sourceIterator = source.GetEnumerator();
@@ -32,8 +41,6 @@ public static class EnumerableExtensions
 
     public static (TSource, TKey) MinByWithKey<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> selector, IComparer<TKey> comparer = null)
     {
-        if (source == null) throw new ArgumentNullException("source");
-        if (selector == null) throw new ArgumentNullException("selector");
         comparer ??= Comparer<TKey>.Default;
 
         using var sourceIterator = source.GetEnumerator();

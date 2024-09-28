@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using cycloid.Serizalization;
+using cycloid.Serialization;
 using Microsoft.VisualStudio.Threading;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
@@ -102,10 +102,8 @@ partial class ViewModel
         }
         else
         {
-            await Track.File.CopyAndReplaceAsync(file);
-            Track.File = file;
-
-            StrongReferenceMessenger.Default.Send(new FileChanged(file));
+            await File.CopyAndReplaceAsync(file);
+            File = file;
         }
     }
 
@@ -136,16 +134,16 @@ partial class ViewModel
                 StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
             }
 
-            Track = new Track(file, true);
+            Track = new Track(true);
+            File = file;
 
             await SaveAsync();
 
-            StrongReferenceMessenger.Default.Send(new FileChanged(file));
             StrongReferenceMessenger.Default.Send(new TrackComplete(true));
 
             Status = $"{Track.Name} created";
 
-            StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", Track.File);
+            StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", File);
 
             async Task SaveAsync()
             {
@@ -157,7 +155,7 @@ partial class ViewModel
                     await Serializer.SerializeAsync(stream, Track, default).ConfigureAwait(false);
                 }
 
-                await tempFile.CopyAndReplaceAsync(Track.File);
+                await tempFile.CopyAndReplaceAsync(File);
             }
         }
         else
@@ -184,7 +182,7 @@ partial class ViewModel
 
                 Status = $"{Track.Name} saved ({watch.ElapsedMilliseconds} ms) {++_saveCounter}";
 
-                StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", Track.File);
+                StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", File);
 
                 async Task SaveAsync()
                 {
@@ -196,7 +194,7 @@ partial class ViewModel
                         await Serializer.SerializeAsync(stream, Track, cancellationToken).ConfigureAwait(false);
                     }
                     cancellationToken.ThrowIfCancellationRequested();
-                    await tempFile.MoveAndReplaceAsync(Track.File);
+                    await tempFile.MoveAndReplaceAsync(File);
                 }
             }
             catch (OperationCanceledException)
@@ -210,9 +208,8 @@ partial class ViewModel
 
     private async Task LoadTrackFileAsync(IStorageFile file)
     {
-        Track = new Track(file, false);
-
-        StrongReferenceMessenger.Default.Send(new FileChanged(file));
+        Track = new Track(false);
+        File = file;
 
         Stopwatch watch = Stopwatch.StartNew();
 
@@ -227,7 +224,7 @@ partial class ViewModel
             SynchronizationContext ui = SynchronizationContext.Current;
             await TaskScheduler.Default;
 
-            Stream stream = await Track.File.OpenStreamForReadAsync().ConfigureAwait(false);
+            Stream stream = await File.OpenStreamForReadAsync().ConfigureAwait(false);
             {
                 await Serializer.LoadAsync(stream, Track, ui).ConfigureAwait(false);
             }

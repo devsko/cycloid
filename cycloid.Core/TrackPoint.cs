@@ -1,7 +1,7 @@
 using cycloid.Routing;
 using System;
 using System.Collections.Generic;
-using Windows.Devices.Geolocation;
+using System.Diagnostics.CodeAnalysis;
 
 namespace cycloid;
 
@@ -16,12 +16,6 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
     }
 
     public static readonly TrackPoint Invalid = new(float.NaN, float.NaN);
-
-    public static explicit operator TrackPoint(BasicGeoposition position) => new((float)position.Latitude, (float)position.Longitude, 0);
-
-    public static explicit operator BasicGeoposition(TrackPoint point) => point.IsValid
-        ? new() { Latitude = point.Latitude, Longitude = point.Longitude }
-        : throw new ArgumentException("invalid", nameof(point));
 
     public static TrackPoint Lerp(TrackPoint previous, TrackPoint next, float fraction)
     {
@@ -42,7 +36,11 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
             latitude,
             longitude,
             previous.Altitude + fraction * (next.Altitude - previous.Altitude),
+#if NETSTANDARD
+            previous.Time + TimeSpan.FromTicks((long)(fraction * (next.Time - previous.Time).Ticks)),
+#else
             previous.Time + fraction * (next.Time - previous.Time),
+#endif
             previous.Distance + distance,
             previous.Heading,
             previous.Gradient,
@@ -92,4 +90,20 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
     public bool Equals(TrackPoint other) =>
         other._latitude == _latitude &&
         other._longitude == _longitude;
+
+    public override bool Equals([NotNullWhen(true)] object obj) => 
+        obj is TrackPoint other && Equals(other);
+
+    public override int GetHashCode() =>
+#if NETSTANDARD
+        _latitude.GetHashCode() ^ _longitude.GetHashCode();
+#else
+        HashCode.Combine(_latitude, _longitude);
+#endif
+
+    public static bool operator ==(TrackPoint left, TrackPoint right) => 
+        left.Equals(right);
+
+    public static bool operator !=(TrackPoint left, TrackPoint right) => 
+        !(left == right);
 }

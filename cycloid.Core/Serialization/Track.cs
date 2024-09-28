@@ -1,7 +1,7 @@
 using System;
 using cycloid.Info;
 
-namespace cycloid.Serizalization;
+namespace cycloid.Serialization;
 
 public class Track
 {

@@ -52,6 +52,8 @@ public enum CalculationDelayMode
 
 public partial class RouteBuilder
 {
+    public static Func<Exception, Task> ExceptionHandler { get; set; } = ex => Task.CompletedTask;
+
     private readonly Dictionary<WayPoint, RouteSection> _sections;
     private TaskCompletionSource<bool> _delayTaskSource;
     private CalculationDelayMode _delayMode;
@@ -74,7 +76,7 @@ public partial class RouteBuilder
         DelayCalculation = CalculationDelayMode.None;
     }
 
-    public IEnumerable<RouteSection> Sections 
+    public IEnumerable<RouteSection> Sections
         => Points.SkipLast(1).Select(point => _sections[point]);
 
     public CalculationDelayMode DelayCalculation
@@ -123,7 +125,7 @@ public partial class RouteBuilder
 
     public void StartCalculation(RouteSection section)
     {
-        CalculateAsync(section).FireAndForget();
+        FireAndForget(CalculateAsync(section));
     }
 
     public async Task RecalculateAllAsync(CancellationToken cancellationToken)
@@ -140,6 +142,23 @@ public partial class RouteBuilder
             foreach (RouteSection section in routeBuiler._sections.Values)
             {
                 section.Cancel();
+            }
+        }
+    }
+
+    private static void FireAndForget(Task task)
+    {
+        _ = ForgetAsync();
+
+        async Task ForgetAsync()
+        {
+            try
+            {
+                await task.ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await ExceptionHandler(ex);
             }
         }
     }
@@ -201,7 +220,7 @@ public partial class RouteBuilder
 
             void RetryCallback()
             {
-                RetryAsync().FireAndForget();
+                FireAndForget(RetryAsync());
 
                 async Task RetryAsync()
                 {
@@ -364,10 +383,21 @@ public partial class RouteBuilder
     private void RemoveSection(int startIndex, WayPoint startPoint = null)
     {
         WayPoint point = startPoint ?? Points[startIndex];
+#if NETSTANDARD
+        if (_sections.TryGetValue(point, out RouteSection section))
+        {
+            _sections.Remove(point);
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
+#else
         if (!_sections.Remove(point, out RouteSection section))
         {
             throw new InvalidOperationException();
         }
+#endif
         section.Cancel();
 
         StrongReferenceMessenger.Default.Send(new SectionRemoved(section, startIndex));

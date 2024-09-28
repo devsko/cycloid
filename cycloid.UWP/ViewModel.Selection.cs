@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using cycloid.Serizalization;
+using cycloid.Serialization;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Devices.Geolocation;
 using Windows.Storage.Streams;
@@ -66,8 +66,8 @@ partial class ViewModel
             return;
         }
 
-        string startLocation = await GetAddressAsync(new Geopoint(wayPoints[0].Location), shorter: true);
-        string endLocation = await GetAddressAsync(new Geopoint(wayPoints[^1].Location), shorter: true);
+        string startLocation = await GetAddressAsync(new Geopoint(wayPoints[0].Location.ToBasicGeoposition()), shorter: true);
+        string endLocation = await GetAddressAsync(new Geopoint(wayPoints[^1].Location.ToBasicGeoposition()), shorter: true);
 
         if (await StrongReferenceMessenger.Default.Send(
             new RequestDeleteSelectionDetails(new SelectionDescription(null, startLocation, endLocation, wayPoints.Length))))
@@ -104,8 +104,8 @@ partial class ViewModel
         await Serializer.SerializeAsync(
             output, 
             Track.Name, 
-            await GetAddressAsync(new Geopoint(wayPoints[0].Location), shorter: true),
-            await GetAddressAsync(new Geopoint(wayPoints[^1].Location), shorter: true),
+            await GetAddressAsync(new Geopoint(wayPoints[0].Location.ToBasicGeoposition()), shorter: true),
+            await GetAddressAsync(new Geopoint(wayPoints[^1].Location.ToBasicGeoposition()), shorter: true),
             wayPoints, 
             pointsOfInterest
         ).ConfigureAwait(false);

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace cycloid.Serizalization;
+namespace cycloid.Serialization;
 
 [JsonSerializable(typeof(Track))]
 [JsonSerializable(typeof(Selection))]

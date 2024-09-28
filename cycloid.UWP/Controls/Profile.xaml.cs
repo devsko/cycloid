@@ -109,7 +109,7 @@ public sealed partial class Profile : ViewModelControl,
 
     private void HorizontalZoomChanged(DependencyPropertyChangedEventArgs _)
     {
-        if (ViewModel.Track is not null)
+        if (ViewModel.HasTrack)
         {
             ProcessChangeAsync(Change.Zoom).FireAndForget();
         }
@@ -306,7 +306,7 @@ public sealed partial class Profile : ViewModelControl,
         if (_isOuterSizeChange)
         {
             _isOuterSizeChange = false;
-            ProcessChangeAsync(ViewModel.Track is null ? Change.VerticalSize : Change.Zoom | Change.VerticalSize).FireAndForget();
+            ProcessChangeAsync(!ViewModel.HasTrack ? Change.VerticalSize : Change.Zoom | Change.VerticalSize).FireAndForget();
         }
     }
 
@@ -326,7 +326,7 @@ public sealed partial class Profile : ViewModelControl,
 
     private void Root_PointerMoved(object _, PointerRoutedEventArgs e)
     {
-        if (ViewModel.Track is not null)
+        if (ViewModel.HasTrack)
         {
             Window.Current.CoreWindow.PointerCursor =
                 ViewModel.GetHoveredSelectionBorder(5 / _horizontalScale) == null
@@ -414,7 +414,7 @@ public sealed partial class Profile : ViewModelControl,
 
     private void Root_Tapped(object _1, TappedRoutedEventArgs _2)
     {
-        if (ViewModel.Track is not null && ViewModel.HoverPoint.IsValid)
+        if (ViewModel.HasTrack && ViewModel.HoverPoint.IsValid)
         {
             if (ViewModel.Mode is Modes.Sections or Modes.POIs)
             {
@@ -437,7 +437,7 @@ public sealed partial class Profile : ViewModelControl,
 
     private void Root_DoubleTapped(object _1, DoubleTappedRoutedEventArgs _2)
     {
-        if (ViewModel.Track is not null && ViewModel.HoverPoint.IsValid)
+        if (ViewModel.HasTrack && ViewModel.HoverPoint.IsValid)
         {
             StrongReferenceMessenger.Default.Send(new BringTrackIntoViewMessage(ViewModel.HoverPoint));
         }

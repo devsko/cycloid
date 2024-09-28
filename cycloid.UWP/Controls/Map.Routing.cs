@@ -168,7 +168,7 @@ partial class Map :
     {
         if (MapControl.TryGetLocationFromOffset(point, out Geopoint location))
         {
-            ViewModel.ContinueDragWayPointAsync((MapPoint)location.Position).FireAndForget();
+            ViewModel.ContinueDragWayPointAsync(location.Position.ToMapPoint()).FireAndForget();
         }
     }
 
@@ -241,7 +241,7 @@ partial class Map :
             }
             else if (ViewModel.HoveredSection is not null)
             {
-                ViewModel.StartDragNewWayPointAsync((MapPoint)args.Location.Position).FireAndForget();
+                ViewModel.StartDragNewWayPointAsync(args.Location.Position.ToMapPoint()).FireAndForget();
             }
         }
     }
@@ -255,7 +255,7 @@ partial class Map :
                     WayPoint newPoint = (WayPoint)e.NewItems[0];
                     _routingLayer.MapElements.Add(new MapIcon
                     {
-                        Location = new Geopoint(newPoint.Location),
+                        Location = new Geopoint(newPoint.Location.ToBasicGeoposition()),
                         Tag = newPoint,
                         NormalizedAnchorPoint = new Point(.5, .5),
                         MapStyleSheetEntry = newPoint.IsFileSplit ? "Routing.SplitPoint" : "Routing.Point",
@@ -284,7 +284,7 @@ partial class Map :
                         ViewModel.HoveredWayPoint = newPoint;
                     }
                     MapIcon icon = GetWayPointIcon(oldPoint);
-                    icon.Location = new Geopoint((BasicGeoposition)newPoint.Location);
+                    icon.Location = new Geopoint(newPoint.Location.ToBasicGeoposition());
                     icon.Tag = newPoint;
                 }
                 break;
@@ -315,7 +315,7 @@ partial class Map :
         if (transform.TryTransform(pointer, out pointer) &&
             MapControl.TryGetLocationFromOffset(pointer, out Geopoint location))
         {
-            ViewModel.ContinueDragWayPointAsync((MapPoint)location.Position).FireAndForget();
+            ViewModel.ContinueDragWayPointAsync(location.Position.ToMapPoint()).FireAndForget();
         }
     }
 
@@ -346,7 +346,7 @@ partial class Map :
                 MapStyleSheetEntry = "Routing.Line",
                 MapStyleSheetEntryState = "Routing.new",
                 Tag = message.Section,
-                Path = new Geopath([(BasicGeoposition)message.Section.Start.Location, (BasicGeoposition)message.Section.End.Location]),
+                Path = new Geopath([message.Section.Start.Location.ToBasicGeoposition(), message.Section.End.Location.ToBasicGeoposition()]),
             });
         }
     }
@@ -394,7 +394,7 @@ partial class Map :
             {
                 if (line.Path.Positions.Count < 2)
                 {
-                    line.Path = new Geopath([(BasicGeoposition)message.Section.Start.Location, (BasicGeoposition)message.Section.End.Location]);
+                    line.Path = new Geopath([message.Section.Start.Location.ToBasicGeoposition(), message.Section.End.Location.ToBasicGeoposition()]);
                 }
                 line.MapStyleSheetEntryState = "Routing.error";
             }
@@ -421,7 +421,7 @@ partial class Map :
         {
             BasicGeoposition[] positions = ViewModel.Track.Points
                 .Enumerate(message.Value.Start.Distance, message.Value.End.Distance)
-                .Select(p => (BasicGeoposition)p.Location)
+                .Select(p => p.Location.ToBasicGeoposition())
                 .ToArray();
             if (positions.Length > 0)
             {

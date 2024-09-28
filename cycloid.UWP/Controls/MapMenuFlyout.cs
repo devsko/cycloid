@@ -39,7 +39,7 @@ public class MapMenuFlyout : MenuFlyout
             string address = null;
             try
             {
-                address = await ViewModel.GetAddressAsync(new Geopoint((BasicGeoposition)location));
+                address = await ViewModel.GetAddressAsync(new Geopoint(location.ToBasicGeoposition()));
             }
             catch
             { }

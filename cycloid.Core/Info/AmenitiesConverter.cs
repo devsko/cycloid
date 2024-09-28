@@ -14,8 +14,18 @@ public class OverpassEnumConverter<T> : JsonConverter<T> where T: struct, Enum
     {
         Dictionary<string, T> knownValues = [];
 
-        string[] names = Enum.GetNames(typeof(T));
-        Array values = Enum.GetValues(typeof(T));
+        string[] names =
+#if NETSTANDARD
+            Enum.GetNames(typeof(T));
+#else
+            Enum.GetNames<T>();
+#endif
+        Array values =
+#if NETSTANDARD
+            Enum.GetValues(typeof(T));
+#else
+            Enum.GetValues<T>();
+#endif
 
         for (int i = 0; i < names.Length; i++)
         {
