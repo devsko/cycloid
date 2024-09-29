@@ -149,6 +149,7 @@
     <Content Include="Assets\FastFood.png" />
     <Content Include="Assets\FuelStation.png" />
     <Content Include="Assets\Restaurant.png" />
+    <Content Include="Assets\StreetView.html" />
     <Content Include="Assets\Supermarket.png" />
     <Content Include="Assets\Toilet.png" />
     <Content Include="Assets\Water.png" />

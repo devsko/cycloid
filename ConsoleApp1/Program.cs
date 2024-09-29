@@ -12,5 +12,5 @@ using StreamWriter output = File.CreateText(@"C:\Users\stefa\OneDrive\Dokumente\
 
 foreach (var point in track.Points)
 {
-    await output.WriteLineAsync(string.Create(CultureInfo.InvariantCulture, $"[{point.Longitude},{point.Latitude}],"));
+    await output.WriteLineAsync(string.Create(CultureInfo.InvariantCulture, $"[{point.Latitude},{point.Longitude}],"));
 }

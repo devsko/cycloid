@@ -665,8 +665,6 @@
                 Margin="10"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
-                ImageHeight="320"
-                ImageWidth="480"
                 Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}" />
 
             <controls:Bing
