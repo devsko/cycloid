@@ -16,6 +16,7 @@ namespace cycloid.Controls;
 public sealed partial class Profile : ViewModelControl,
     IRecipient<TrackChanged>,
     IRecipient<HoverPointChanged>,
+    IRecipient<CurrentPointChanged>,
     IRecipient<SelectionChanged>,
     IRecipient<CurrentSectionChanged>,
     IRecipient<RouteChanged>,
@@ -80,6 +81,7 @@ public sealed partial class Profile : ViewModelControl,
 
         StrongReferenceMessenger.Default.Register<TrackChanged>(this);
         StrongReferenceMessenger.Default.Register<HoverPointChanged>(this);
+        StrongReferenceMessenger.Default.Register<CurrentPointChanged>(this);
         StrongReferenceMessenger.Default.Register<SelectionChanged>(this);
         StrongReferenceMessenger.Default.Register<CurrentSectionChanged>(this);
         StrongReferenceMessenger.Default.Register<BringTrackIntoViewMessage>(this);
@@ -418,6 +420,8 @@ public sealed partial class Profile : ViewModelControl,
         {
             if (ViewModel.Mode is Modes.Sections or Modes.POIs)
             {
+                ViewModel.CurrentPoint = ViewModel.HoverPoint;
+
                 foreach (OnTrack section in ViewModel.Sections)
                 {
                     if (section.IsCurrent(ViewModel.HoverPoint.Distance))
@@ -474,6 +478,11 @@ public sealed partial class Profile : ViewModelControl,
     void IRecipient<HoverPointChanged>.Receive(HoverPointChanged message)
     {
         UpdateMarker(message.Value, HoverPointLine1, HoverPointLine2, HoverPointCircle);
+    }
+
+    void IRecipient<CurrentPointChanged>.Receive(CurrentPointChanged message)
+    {
+        UpdateMarker(message.Value, CurrentPointLine1, CurrentPointLine2, CurrentPointCircle);
     }
 
     void IRecipient<SelectionChanged>.Receive(SelectionChanged _)

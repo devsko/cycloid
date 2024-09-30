@@ -87,6 +87,11 @@ partial class Map :
         GetOnTrackIcon(onTrack).Title = onTrack.Name ?? "";
     }
 
+    private void HandlePoiTapped()
+    {
+        ViewModel.CurrentPoint = ViewModel.HoverPoint;
+    }
+
     private void HandlePoiPointerMoved(Point offset)
     {
         MapPoint? tryLocation = GetLocation(offset);

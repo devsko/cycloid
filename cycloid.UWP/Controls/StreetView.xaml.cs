@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.Web.WebView2.Core;
 using Windows.Storage;
 using Windows.UI.Xaml;
 
@@ -15,20 +18,19 @@ public sealed partial class StreetView : TrackPointControl
     public static readonly DependencyProperty IsCollapsedProperty =
         DependencyProperty.Register(nameof(IsCollapsed), typeof(bool), typeof(StreetView), new PropertyMetadata(true, (sender, e) => ((StreetView)sender).IsCollapsedChanged(e)));
 
-    public double HeadingOffset
-    {
-        get => (double)GetValue(HeadingOffsetProperty);
-        set => SetValue(HeadingOffsetProperty, value);
-    }
-
-    public static readonly DependencyProperty HeadingOffsetProperty =
-        DependencyProperty.Register(nameof(HeadingOffset), typeof(double), typeof(StreetView), new PropertyMetadata(0d, (sender, _) => ((StreetView)sender).Update()));
-
     public StreetView()
     {
         InitializeComponent();
 
         VisualStateManager.GoToState(this, "CollapsedState", false);
+    }
+
+    protected override void PointChanged(DependencyPropertyChangedEventArgs e)
+    {
+        if (!IsCollapsed)
+        {
+            SetLocation();
+        }
     }
 
     private async void IsCollapsedChanged(DependencyPropertyChangedEventArgs _)
@@ -37,13 +39,28 @@ public sealed partial class StreetView : TrackPointControl
 
         if (!IsCollapsed)
         {
+            bool large = Window.Current.Bounds.Width > 1_600 && Window.Current.Bounds.Height > 800;
+            (Root.Height, Root.Width) = large ? (480, 720) : (320, 480);
+            
             StorageFile htmlFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/StreetView.html"));
             Uri fileUri = new Uri(htmlFile.Path);
+
+            WebView.NavigationCompleted += WebView_NavigationCompleted;
             WebView.Source = fileUri;
-            // Update
+        }
+
+        void WebView_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        {
+            sender.NavigationCompleted -= WebView_NavigationCompleted;
+            SetLocation();
         }
     }
 
-    private void Update()
-    { }
+    private void SetLocation()
+    {
+        if (Point.IsValid)
+        {
+            _ = WebView.ExecuteScriptAsync(FormattableString.Invariant($"setLocation({Point.Latitude}, {Point.Longitude}, {Point.Heading});"));
+        }
+    }
 }

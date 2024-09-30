@@ -305,6 +305,10 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         {
             HandleRoutingPanelTapped();
         }
+        else
+        {
+            HandlePoiTapped();
+        }
 
         e.Handled = true;
     }

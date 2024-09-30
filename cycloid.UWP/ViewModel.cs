@@ -31,6 +31,8 @@ public class TrackChanged(object sender, Track oldValue, Track newValue) : Prope
 
 public class HoverPointChanged(TrackPoint value) : ValueChangedMessage<TrackPoint>(value);
 
+public class CurrentPointChanged(TrackPoint value) : ValueChangedMessage<TrackPoint>(value);
+
 public partial class ViewModel : ObservableObject,
     IRecipient<TrackComplete>
 {
@@ -183,6 +185,8 @@ public partial class ViewModel : ObservableObject,
             if (SetProperty(ref _currentPoint, value))
             {
                 _getAddressThrottle.Next(value, this);
+
+                StrongReferenceMessenger.Default.Send(new CurrentPointChanged(value));
             }
         }
     }
