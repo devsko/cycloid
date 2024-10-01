@@ -177,11 +177,13 @@ public static class Convert
         };
     }
 
-    public static Visibility SurfaceToVisibilityy(Surface value) => value <= cycloid.Surface.paving_stones ? Visibility.Collapsed : Visibility.Visible;
+    public static Visibility SurfaceToVisibility(Surface value) => value <= cycloid.Surface.paving_stones ? Visibility.Collapsed : Visibility.Visible;
 
     public static Geopoint ToGeopoint(TrackPoint point) => point.IsValid ? new Geopoint(point.ToBasicGeoposition()) : _emptyGeopoint;
 
     public static Visibility VisibleIf(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+
+    public static Visibility VisibleIfNot(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
 
     public static Visibility VisibleIfNotNull(object value) => value is null ? Visibility.Collapsed : Visibility.Visible;
     
