@@ -1,43 +1,51 @@
-<html style="height: 100%; margin: 0; padding: 0">
+<html>
 <head>
     <title>Street View Containers</title>
+    <script type="text/javascript">
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            key: "AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg", v: "weekly"
+        });
+    </script>
 </head>
 <body style="height: 100%; margin: 0; padding: 0">
     <div id="street-view" style="height: 100%"></div>
 
-    <!--
-      The `defer` attribute causes the script to execute after the full HTML
-      document has been parsed. For non-blocking uses, avoiding race conditions,
-      and consistent behavior across browsers, consider loading using Promises. See
-      https://developers.google.com/maps/documentation/javascript/load-maps-js-api
-      for more information.
-      -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&callback=initialize&v=weekly"
-            defer></script>
     <script type="text/javascript">
-        let panorama;
+        let panorama, service;
 
-        function initialize() {
-            panorama = new google.maps.StreetViewPanorama(
-                document.getElementById("street-view"),
+        async function initPanorama() {
+            const { StreetViewService, StreetViewPanorama } = await google.maps.importLibrary("streetView");
+
+            service = new StreetViewService();
+            panorama = new StreetViewPanorama(
+        document.getElementById("street-view"),
                 {
                     zoom: 1,
                     addressControl: true,
                     imageDateControl: true,
                     panControl:false,
                     fullscreenControl: false,
-                    linksControl: false,
+                    linksControl: true,
                     zoomControl: false
                 }
             );
         }
 
-        function setLocation(latitude, longitude, heading) {
-            panorama.setPosition({ lat: latitude, lng: longitude });
-            panorama.setPov({ heading: heading, pitch: panorama.getPov().pitch });
-        }
+        initPanorama();
 
-        window.initialize = initialize;
+        function setLocation(latitude, longitude, heading) {
+            service.getPanorama({
+                location: new google.maps.LatLng(latitude, longitude),
+                preference: google.maps.StreetViewPreference.BEST,
+                radius: 20
+            }).then((panoramaData) => {
+                window.chrome.webview.postMessage('OK');
+                panorama.setPano(panoramaData.data.location.pano);
+                panorama.setPov({ heading: heading, pitch: panorama.getPov().pitch });
+            }, (reason) => {
+                window.chrome.webview.postMessage(reason.code);
+            });
+        }
     </script>
 </body>
 </html>

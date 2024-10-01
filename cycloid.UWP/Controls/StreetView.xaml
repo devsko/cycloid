@@ -10,9 +10,6 @@
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI">
-    <!--
-    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(Point)}">
-    -->
 
     <controls:TrackPointControl.Resources>
         <labs:TransitionHelper x:Key="Transition">
@@ -31,7 +28,7 @@
             labs:TransitionHelper.Id="root"
             Visibility="Collapsed">
             <Grid x:Name="Root" Margin="0 10 0 0">
-                <mux:WebView2 x:Name="WebView" Background="Transparent" Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(Point)}" />
+                <mux:WebView2 x:Name="WebView" Background="Transparent" />
                 <Grid
                     Margin="8"
                     HorizontalAlignment="Right"

@@ -178,9 +178,13 @@ public sealed partial class MainPage : Page,
 
     private void OnTracks_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (e.AddedItems.Count > 0)
+        if (e.AddedItems is [ OnTrack onTrack, .. ])
         {
-            ((ListView)sender).ScrollIntoView(e.AddedItems[0]);
+            ((ListView)sender).ScrollIntoView(onTrack);
+            if (!onTrack.PointOfInterest.IsSection)
+            {
+                ViewModel.CurrentPoint = onTrack.TrackPoint;
+            }
         }
     }
 

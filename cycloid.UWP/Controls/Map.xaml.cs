@@ -21,6 +21,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     IRecipient<ModeChanged>,
     IRecipient<TrackChanged>,
     IRecipient<HoverPointChanged>,
+    IRecipient<CurrentPointChanged>,
     IRecipient<InfoVisibleChanged>,
     IRecipient<BringLocationIntoViewMessage>,
     IRecipient<BringTrackIntoViewMessage>,
@@ -53,6 +54,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
         StrongReferenceMessenger.Default.Register<ModeChanged>(this);
         StrongReferenceMessenger.Default.Register<TrackChanged>(this);
+        StrongReferenceMessenger.Default.Register<CurrentPointChanged>(this);
         StrongReferenceMessenger.Default.Register<HoverPointChanged>(this);
         StrongReferenceMessenger.Default.Register<InfoVisibleChanged>(this);
         StrongReferenceMessenger.Default.Register<BringLocationIntoViewMessage>(this);
@@ -373,6 +375,11 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     }
 
     void IRecipient<HoverPointChanged>.Receive(HoverPointChanged message)
+    {
+        Nudge();
+    }
+
+    void IRecipient<CurrentPointChanged>.Receive(CurrentPointChanged message)
     {
         Nudge();
     }
