@@ -665,6 +665,7 @@
                 Margin="10"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
+                GoogleApiKey="{cycloid:ConfigurationValue Key=Google:ServiceApiKey}"
                 Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}"
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNot(ViewModel.IsEditMode)}"/>
 
