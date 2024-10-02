@@ -27,7 +27,15 @@
             x:Name="Expanded"
             labs:TransitionHelper.Id="root"
             Visibility="Collapsed">
-            <Grid x:Name="Root" Margin="0 15 0 0">
+            <Grid x:Name="ContentRoot" Margin="0,15,0,0">
+                <FontIcon
+                    x:Name="NoStreetView"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontFamily="FluentSystemIcons-Regular"
+                    FontSize="38"
+                    Glyph="&#xF853;"
+                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(Point.IsValid)}" />
                 <mux:WebView2 x:Name="WebView" />
                 <Grid
                     Margin="4"
@@ -37,7 +45,7 @@
                         Margin="1"
                         Background="#7F000000"
                         CornerRadius="4" />
-                    <Button Content="{ui:SymbolIcon Symbol=ClosePane}">
+                    <Button Content="{ui:FontIcon FontFamily=FluentSystemIcons-Regular, Glyph=}">
                         <interactivity:Interaction.Behaviors>
                             <core:EventTriggerBehavior EventName="Click">
                                 <labs:ReverseTransitionAction Transition="{StaticResource Transition}" />
@@ -58,12 +66,12 @@
             VerticalAlignment="Bottom"
             labs:TransitionHelper.Id="root"
             Visibility="Visible">
-            <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom">
+            <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="-2">
                 <Border
                     Margin="1"
                     Background="#7F000000"
                     CornerRadius="4" />
-                <Button Content="{ui:SymbolIcon Symbol=Camera}">
+                <Button Content="{ui:FontIcon FontFamily=FluentSystemIcons-Regular, Glyph=}">
                     <interactivity:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="Click">
                             <labs:StartTransitionAction

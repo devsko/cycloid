@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Storage;
@@ -77,7 +76,7 @@ public sealed partial class StreetView : TrackPointControl
         else
         {
             bool large = Window.Current.Bounds.Width > 1_600 && Window.Current.Bounds.Height > 800;
-            (Root.Height, Root.Width) = large ? (480, 720) : (320, 480);
+            (ContentRoot.Height, ContentRoot.Width) = large ? (480, 720) : (320, 480);
 
             if (_isWebViewInitialized)
             {
