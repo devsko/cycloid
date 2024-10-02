@@ -27,17 +27,17 @@
             x:Name="Expanded"
             labs:TransitionHelper.Id="root"
             Visibility="Collapsed">
-            <Grid x:Name="Root" Margin="0 10 0 0">
-                <mux:WebView2 x:Name="WebView" Background="Transparent" />
+            <Grid x:Name="Root" Margin="0 15 0 0">
+                <mux:WebView2 x:Name="WebView" />
                 <Grid
-                    Margin="8"
+                    Margin="4"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top">
                     <Border
                         Margin="1"
                         Background="#7F000000"
                         CornerRadius="4" />
-                    <Button Content="{ui:SymbolIcon Symbol=Cancel}">
+                    <Button Content="{ui:SymbolIcon Symbol=ClosePane}">
                         <interactivity:Interaction.Behaviors>
                             <core:EventTriggerBehavior EventName="Click">
                                 <labs:ReverseTransitionAction Transition="{StaticResource Transition}" />

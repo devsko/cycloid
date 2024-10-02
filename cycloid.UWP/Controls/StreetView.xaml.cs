@@ -9,6 +9,8 @@ namespace cycloid.Controls;
 
 public sealed partial class StreetView : TrackPointControl
 {
+    private bool _isWebViewInitialized;
+
     public string GoogleApiKey { get; set; }
 
     public bool IsCollapsed
@@ -50,9 +52,15 @@ public sealed partial class StreetView : TrackPointControl
         WebView.Visibility = status == "OK" ? Visibility.Visible : Visibility.Collapsed;
     }
 
+    private void WebView_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+    {
+        _isWebViewInitialized = true;
+        Update();
+    }
+
     protected override void PointChanged(DependencyPropertyChangedEventArgs e)
     {
-        if (!IsCollapsed)
+        if (_isWebViewInitialized && !IsCollapsed)
         {
             Update();
         }
@@ -71,7 +79,14 @@ public sealed partial class StreetView : TrackPointControl
             bool large = Window.Current.Bounds.Width > 1_600 && Window.Current.Bounds.Height > 800;
             (Root.Height, Root.Width) = large ? (480, 720) : (320, 480);
 
-            _ = WebView.EnsureCoreWebView2Async();
+            if (_isWebViewInitialized)
+            {
+                Update();
+            }
+            else
+            {
+                _ = WebView.EnsureCoreWebView2Async();
+            }
         }
     }
 
@@ -79,27 +94,11 @@ public sealed partial class StreetView : TrackPointControl
     {
         if (Point.IsValid)
         {
-            _ = SetLocationAsync();
+            _ = WebView.ExecuteScriptAsync(FormattableString.Invariant($"setLocation({Point.Latitude}, {Point.Longitude}, {Point.Heading});"));
         }
         else
         {
             WebView.Visibility = Visibility.Collapsed;
-        }
-    }
-
-    private bool isWebViewInitialized;
-
-    private void WebView_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
-    {
-        isWebViewInitialized = true;
-        Update();
-    }
-
-    private async Task SetLocationAsync()
-    {
-        if (isWebViewInitialized && Point.IsValid)
-        {
-            await WebView.ExecuteScriptAsync(FormattableString.Invariant($"setLocation({Point.Latitude}, {Point.Longitude}, {Point.Heading});"));
         }
     }
 }
