@@ -28,14 +28,7 @@
             labs:TransitionHelper.Id="root"
             Visibility="Collapsed">
             <Grid x:Name="ContentRoot" Margin="0,15,0,0">
-                <FontIcon
-                    x:Name="NoStreetView"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontFamily="FluentSystemIcons-Regular"
-                    FontSize="38"
-                    Glyph="&#xF853;"
-                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(Point.IsValid)}" />
+                <!--<fluent:FluentSymbolIcon Symbol="CameraOff24" Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(Point.IsValid)}" />-->
                 <mux:WebView2 x:Name="WebView" />
                 <Grid
                     Margin="4"
@@ -45,7 +38,10 @@
                         Margin="1"
                         Background="#7F000000"
                         CornerRadius="4" />
-                    <Button Content="{ui:FontIcon FontFamily=FluentSystemIcons-Regular, Glyph=}">
+                    <Button>
+                        <Button.Content>
+                            <!--<fluent:FluentSymbolIcon Symbol="ArrowMinimize24" />-->
+                        </Button.Content>
                         <interactivity:Interaction.Behaviors>
                             <core:EventTriggerBehavior EventName="Click">
                                 <labs:ReverseTransitionAction Transition="{StaticResource Transition}" />
@@ -66,12 +62,18 @@
             VerticalAlignment="Bottom"
             labs:TransitionHelper.Id="root"
             Visibility="Visible">
-            <Grid HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="-2">
+            <Grid
+                Margin="-2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom">
                 <Border
                     Margin="1"
                     Background="#7F000000"
                     CornerRadius="4" />
-                <Button Content="{ui:FontIcon FontFamily=FluentSystemIcons-Regular, Glyph=}">
+                <Button>
+                    <!--<Button.Content>
+                        <fluent:FluentSymbolIcon Symbol="Camera24" />
+                    </Button.Content>-->
                     <interactivity:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="Click">
                             <labs:StartTransitionAction

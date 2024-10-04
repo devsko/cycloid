@@ -621,9 +621,12 @@
                                 <RowDefinition />
                             </Grid.RowDefinitions>
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="{ui:SymbolIcon Symbol=Play}" />
-                                <Button Content="{ui:SymbolIcon Symbol=Up}" />
-                                <Button Content="{ui:SymbolIcon Symbol=DockBottom}" />
+                                <Button Content="{ui:SymbolIcon Symbol=Previous}" />
+                                <Button Content="{ui:FontIcon FontFamily='FluentSystemIcons-Regular', FontSize=18, Glyph=}" />
+                                <Button Content="{ui:SymbolIcon Symbol=Play}" Command="{x:Bind Mode=OneTime, Path=ViewModel.PlayCommand}" Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNot(ViewModel.IsPlaying)}" />
+                                <Button Content="{ui:SymbolIcon Symbol=Pause}" Command="{x:Bind Mode=OneTime, Path=ViewModel.PlayCancelCommand}" Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.IsPlaying)}" />
+                                <Button Content="{ui:FontIcon FontFamily='FluentSystemIcons-Regular', FontSize=24, Glyph=}" />
+                                <Button Content="{ui:SymbolIcon Symbol=Next}" />
                             </StackPanel>
                             <mux:ProgressBar Grid.Row="1" />
                         </Grid>

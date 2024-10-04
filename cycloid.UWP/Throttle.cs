@@ -51,10 +51,10 @@ public class Throttle<TValue, TState>(Action<TValue, TState> action, TimeSpan de
     }
 }
 
-public class AsyncThrottle<TValue, TState>(Func<TValue, TState, CancellationToken, Task> action, TimeSpan delay)
+public class AsyncThrottle<TValue, TState>(Func<TValue, TState, CancellationToken, Task> action, TimeSpan? delay = null)
 {
     private readonly Func<TValue, TState, CancellationToken, Task> _action = action;
-    private readonly TimeSpan _delay = delay;
+    private readonly TimeSpan _delay = delay ?? TimeSpan.Zero;
     private volatile bool _isBusy;
     private volatile bool _hasValue;
     private CancellationTokenSource _cts = new();
@@ -95,9 +95,12 @@ public class AsyncThrottle<TValue, TState>(Func<TValue, TState, CancellationToke
                 {
                     await App.Current.ShowExceptionAsync(ex);
                 }
-                
-                // Do NOT cancel the delay when another Next() happens. That's the throttling.
-                await Task.Delay(_delay);
+
+                if (_delay != TimeSpan.Zero)
+                {
+                    // Do NOT cancel the delay when another Next() happens. That's the throttling.
+                    await Task.Delay(_delay);
+                }
 
                 _isBusy = false;
                 value = _value;

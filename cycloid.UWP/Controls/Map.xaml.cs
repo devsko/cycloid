@@ -379,8 +379,45 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         Nudge();
     }
 
+    private float distance = 150;
+    private float height = 40;
+    private float pitch = 75;
+
+    private readonly AsyncThrottle<(TrackPoint Current, TrackPoint Camera), Map> _cameraThrottle = new(SetCameraAsync, TimeSpan.FromMilliseconds(20));
+
+    private static async Task SetCameraAsync((TrackPoint Current, TrackPoint Camera) value, Map @this, CancellationToken cancellationToken)
+    {
+        float heading = GeoCalculation.Heading(value.Camera, value.Current);
+        (float latitude, float longitude) = GeoCalculation.Add(value.Current, heading + 180, @this.distance);
+
+        BasicGeoposition cameraPosition = new()
+        {
+            Latitude = latitude,
+            Longitude = longitude,
+            Altitude = @this.height
+        };
+        MapCamera camera = new(
+            location: new Geopoint(cameraPosition, AltitudeReferenceSystem.Surface),
+            headingInDegrees: heading,
+            pitchInDegrees: @this.pitch,
+            rollInDegrees: 0,
+            fieldOfViewInDegrees: 45);
+
+        bool animate = true;
+        if (MathF.Abs(GeoCalculation.Distance(cameraPosition.ToMapPoint(), @this.MapControl.ActualCamera.Location.Position.ToMapPoint())) > 5_000)
+        {
+            animate = false;
+        }
+
+        await @this.MapControl.TrySetSceneAsync(MapScene.CreateFromCamera(camera), animate ? MapAnimationKind.Default : MapAnimationKind.None);
+    }
+
     void IRecipient<CurrentPointChanged>.Receive(CurrentPointChanged message)
     {
+        if (ViewModel.IsPlaying)
+        {
+            _cameraThrottle.Next((ViewModel.CurrentPoint, ViewModel.CameraPoint), this);
+        }
         Nudge();
     }
 

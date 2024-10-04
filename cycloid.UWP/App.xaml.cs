@@ -1,4 +1,5 @@
-﻿using cycloid.Routing;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using cycloid.Routing;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Diagnostics;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
 using Windows.Services.Maps;
 using Windows.Storage;
+using Windows.System.Display;
 using Windows.UI.Core;
 using Windows.UI.StartScreen;
 using Windows.UI.Xaml;
@@ -15,7 +17,8 @@ using Windows.UI.Xaml.Controls;
 
 namespace cycloid;
 
-sealed partial class App : Application
+sealed partial class App : Application,
+    IRecipient<PlayerStatusChanged>
 {
     public const string NewTrackSentinel = "{NewTrack}";
     public IConfigurationRoot Configuration { get; }
@@ -41,6 +44,8 @@ sealed partial class App : Application
         MapService.ServiceToken = Configuration["Bing:ServiceApiKey"];
 
         InitializeComponent();
+
+        StrongReferenceMessenger.Default.Register<PlayerStatusChanged>(this);
     }
 
     public static new App Current => (App)Application.Current;
@@ -128,6 +133,19 @@ sealed partial class App : Application
         catch (Exception ex)
         {
             Debug.WriteLine($"Cannot show error dialog. {ex.Message}");
+        }
+    }
+
+    private readonly DisplayRequest _displayRequest = new();
+    void IRecipient<PlayerStatusChanged>.Receive(PlayerStatusChanged message)
+    {
+        if (message.Value)
+        {
+            _displayRequest.RequestActive();
+        }
+        else
+        {
+            _displayRequest.RequestRelease();
         }
     }
 }

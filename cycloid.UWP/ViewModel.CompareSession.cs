@@ -7,7 +7,6 @@ using CommunityToolkit.Mvvm.Messaging;
 
 namespace cycloid;
 
-
 partial class ViewModel :
     IRecipient<CompareSessionChanged>
 {

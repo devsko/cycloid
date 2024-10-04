@@ -418,7 +418,7 @@ public sealed partial class Profile : ViewModelControl,
     {
         if (ViewModel.HasTrack && ViewModel.HoverPoint.IsValid)
         {
-            if (ViewModel.Mode is Modes.Sections or Modes.POIs)
+            if (!ViewModel.IsEditMode)
             {
                 ViewModel.CurrentPoint = ViewModel.HoverPoint;
 
@@ -431,11 +431,6 @@ public sealed partial class Profile : ViewModelControl,
                     }
                 }
             }
-
-            //
-            //ViewModel.CurrentPoint = ViewModel.Track.Pin.Search(distance);
-            //if (!Camera.AutoUpdate)
-            //    Camera.Set(setView: false);
         }
     }
 

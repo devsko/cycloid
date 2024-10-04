@@ -98,6 +98,7 @@ public partial class ViewModel : ObservableObject,
 
                 AddPointOfInterestCommand.NotifyCanExecuteChanged();
                 RemoveCurrentSectionCommand.NotifyCanExecuteChanged();
+                PlayCommand.NotifyCanExecuteChanged();
 
                 StrongReferenceMessenger.Default.Send(new ModeChanged(this, oldValue, value));
             }
@@ -133,6 +134,7 @@ public partial class ViewModel : ObservableObject,
                 CompareSessionCommand.NotifyCanExecuteChanged();
                 AddPointOfInterestCommand.NotifyCanExecuteChanged();
                 RemoveCurrentSectionCommand.NotifyCanExecuteChanged();
+                PlayCommand.NotifyCanExecuteChanged();
                 ExportCommand.NotifyCanExecuteChanged();
 
                 StrongReferenceMessenger.Default.Send(new TrackChanged(this, oldValue, value));

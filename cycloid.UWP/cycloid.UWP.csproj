@@ -133,6 +133,7 @@
     <Compile Include="ViewModel.Export.cs" />
     <Compile Include="ViewModel.IO.cs" />
     <Compile Include="ViewModel.Map.cs" />
+    <Compile Include="ViewModel.Player.cs" />
     <Compile Include="ViewModel.Pois.cs" />
     <Compile Include="ViewModel.Routing.cs" />
     <Compile Include="ViewModel.Selection.cs" />
