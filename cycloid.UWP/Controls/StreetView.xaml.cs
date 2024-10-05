@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Storage;
@@ -9,6 +11,8 @@ namespace cycloid.Controls;
 public sealed partial class StreetView : TrackPointControl
 {
     private bool _isWebViewInitialized;
+    private AsyncThrottle<TrackPoint, StreetView> _updateThrottle = new(SetLocationAsync, TimeSpan.FromSeconds(1));
+    private TaskCompletionSource<object> _setLocationTcs;
 
     public string GoogleApiKey { get; set; }
 
@@ -37,7 +41,7 @@ public sealed partial class StreetView : TrackPointControl
         WebView.NavigationCompleted += WebView_NavigationCompleted;
         WebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
 
-        StorageFile templateFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/StreetView.html"));
+        StorageFile templateFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Controls/StreetView.html"));
         string htmlTemplate = await FileIO.ReadTextAsync(templateFile);
         StorageFile htmlFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("StreetView.html", CreationCollisionOption.ReplaceExisting);
         await FileIO.WriteTextAsync(htmlFile, htmlTemplate.Replace("{{GoogleApiKey}}", GoogleApiKey));
@@ -49,6 +53,7 @@ public sealed partial class StreetView : TrackPointControl
     {
         string status = args.TryGetWebMessageAsString();
         WebView.Visibility = status == "OK" ? Visibility.Visible : Visibility.Collapsed;
+        _setLocationTcs.TrySetResult(null);
     }
 
     private void WebView_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
@@ -93,11 +98,19 @@ public sealed partial class StreetView : TrackPointControl
     {
         if (Point.IsValid)
         {
-            _ = WebView.ExecuteScriptAsync(FormattableString.Invariant($"setLocation({Point.Latitude}, {Point.Longitude}, {Point.Heading});"));
+            _updateThrottle.Next(Point, this);
         }
         else
         {
             WebView.Visibility = Visibility.Collapsed;
         }
+    }
+
+    private static async Task SetLocationAsync(TrackPoint point, StreetView @this, CancellationToken cancellationToken)
+    {
+        @this._setLocationTcs = new();
+        await @this.WebView.ExecuteScriptAsync(FormattableString.Invariant(
+            $"setLocation({point.Latitude}, {point.Longitude}, {point.Heading});"));
+        await @this._setLocationTcs.Task;
     }
 }

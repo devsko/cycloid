@@ -379,6 +379,9 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         Nudge();
     }
 
+
+    // WIP
+
     private float distance = 150;
     private float height = 40;
     private float pitch = 75;
@@ -397,7 +400,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
             Altitude = @this.height
         };
         MapCamera camera = new(
-            location: new Geopoint(cameraPosition, AltitudeReferenceSystem.Surface),
+            location: new Geopoint(cameraPosition, AltitudeReferenceSystem.Terrain),
             headingInDegrees: heading,
             pitchInDegrees: @this.pitch,
             rollInDegrees: 0,

@@ -36,7 +36,7 @@
         function setLocation(latitude, longitude, heading) {
             service.getPanorama({
                 location: new google.maps.LatLng(latitude, longitude),
-                preference: google.maps.StreetViewPreference.BEST,
+                preference: google.maps.StreetViewPreference.NEAREST,
                 radius: 20
             }).then((panoramaData) => {
                 window.chrome.webview.postMessage('OK');
