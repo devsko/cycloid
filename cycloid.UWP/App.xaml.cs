@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Routing;
+using FluentIcons.Uwp;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Diagnostics;
@@ -34,9 +35,11 @@ sealed partial class App : Application,
         };
 
         RouteBuilder.ExceptionHandler = Current.ShowExceptionAsync;
+
+        this.UseSegoeMetrics();
         
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
+        
         var builder = new ConfigurationBuilder();
         builder.AddUserSecrets("not used");
         Configuration = builder.Build();

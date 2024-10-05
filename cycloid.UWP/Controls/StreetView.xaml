@@ -6,6 +6,7 @@
     xmlns:controls="using:cycloid.Controls"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:cycloid="using:cycloid"
+    xmlns:ic="using:FluentIcons.Uwp"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls"
@@ -28,7 +29,11 @@
             labs:TransitionHelper.Id="root"
             Visibility="Collapsed">
             <Grid x:Name="ContentRoot" Margin="0,15,0,0">
-                <!--<fluent:FluentSymbolIcon Symbol="CameraOff24" Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(Point.IsValid)}" />-->
+                <ic:SymbolIcon
+                    FontSize="32"
+                    Opacity=".5"
+                    Symbol="CameraOff"
+                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(Point.IsValid)}" />
                 <mux:WebView2 x:Name="WebView" />
                 <Grid
                     Margin="4"
@@ -38,10 +43,7 @@
                         Margin="1"
                         Background="#7F000000"
                         CornerRadius="4" />
-                    <Button>
-                        <Button.Content>
-                            <!--<fluent:FluentSymbolIcon Symbol="ArrowMinimize24" />-->
-                        </Button.Content>
+                    <Button Content="{ic:SymbolIcon Symbol=ArrowMinimize}">
                         <interactivity:Interaction.Behaviors>
                             <core:EventTriggerBehavior EventName="Click">
                                 <labs:ReverseTransitionAction Transition="{StaticResource Transition}" />
@@ -70,10 +72,7 @@
                     Margin="1"
                     Background="#7F000000"
                     CornerRadius="4" />
-                <Button>
-                    <!--<Button.Content>
-                        <fluent:FluentSymbolIcon Symbol="Camera24" />
-                    </Button.Content>-->
+                <Button Content="{ic:SymbolIcon Symbol=Camera}">
                     <interactivity:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="Click">
                             <labs:StartTransitionAction
