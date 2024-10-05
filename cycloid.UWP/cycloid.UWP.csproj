@@ -230,6 +230,12 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="$(PkgFluentIcons_Uwp)\contentFiles\any\**\*.*">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Labs.Uwp.TransitionHelper">
       <Version>0.1.240917-build.1755</Version>
     </PackageReference>
@@ -247,6 +253,7 @@
     </PackageReference>
     <PackageReference Include="FluentIcons.Uwp">
       <Version>1.1.259</Version>
+      <GeneratePathProperty>True</GeneratePathProperty>
     </PackageReference>
     <PackageReference Include="GeoJSON.Text">
       <Version>1.0.2</Version>
