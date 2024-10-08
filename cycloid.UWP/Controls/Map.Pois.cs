@@ -21,7 +21,7 @@ partial class Map :
     IRecipient<InfosDeactivated>
 {
     private readonly Throttle<(Point, MapPoint), Map> _hoverElementThrottle = new(
-        static (location, @this) => @this.HoverElement(location),
+        static (value, @this) => @this.HoverElement(value),
         TimeSpan.FromMilliseconds(70));
 
     private void RegisterPoisMessages()

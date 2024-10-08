@@ -8,7 +8,10 @@ namespace cycloid;
 
 partial class ViewModel
 {
-    private readonly AsyncThrottle<TrackPoint, ViewModel> _getAddressThrottle = new(GetAddressAsync, TimeSpan.FromSeconds(5));
+    private readonly AsyncThrottle<TrackPoint, ViewModel> _getAddressThrottle = new(
+        static (value, @this, cancellationToken) => @this.GetAddressAsync(value, cancellationToken),
+        TimeSpan.FromSeconds(5));
+
     private string _currentPointAddress;
 
     public string CurrentPointAddress
@@ -17,18 +20,18 @@ partial class ViewModel
         set => SetProperty(ref _currentPointAddress, value);
     }
 
-    private static async Task GetAddressAsync(TrackPoint point, ViewModel @this, CancellationToken _)
+    private async Task GetAddressAsync(TrackPoint point, CancellationToken _)
     {
         if (!point.IsValid)
         {
-            @this.CurrentPointAddress = string.Empty;
+            CurrentPointAddress = string.Empty;
         }
         else
         {
             string address = await GetAddressAsync(Convert.ToGeopoint(point));
             if (address is not null)
             {
-                @this.CurrentPointAddress = address;
+                CurrentPointAddress = address;
             }
         }
     }

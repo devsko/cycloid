@@ -10,8 +10,11 @@ namespace cycloid.Controls;
 
 public sealed partial class StreetView : TrackPointControl
 {
+    private readonly AsyncThrottle<TrackPoint, StreetView> _updateThrottle = new(
+        static (value, @this, cancellationToken) => @this.SetLocationAsync(value, cancellationToken),
+        TimeSpan.FromSeconds(1));
+
     private bool _isWebViewInitialized;
-    private AsyncThrottle<TrackPoint, StreetView> _updateThrottle = new(SetLocationAsync, TimeSpan.FromSeconds(1));
     private TaskCompletionSource<object> _setLocationTcs;
 
     public string GoogleApiKey { get; set; }
@@ -53,7 +56,7 @@ public sealed partial class StreetView : TrackPointControl
     {
         string status = args.TryGetWebMessageAsString();
         WebView.Visibility = status == "OK" ? Visibility.Visible : Visibility.Collapsed;
-        _setLocationTcs.TrySetResult(null);
+        _setLocationTcs?.TrySetResult(null);
     }
 
     private void WebView_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
@@ -106,11 +109,11 @@ public sealed partial class StreetView : TrackPointControl
         }
     }
 
-    private static async Task SetLocationAsync(TrackPoint point, StreetView @this, CancellationToken cancellationToken)
+    private async Task SetLocationAsync(TrackPoint point, CancellationToken _)
     {
-        @this._setLocationTcs = new();
-        await @this.WebView.ExecuteScriptAsync(FormattableString.Invariant(
+        _setLocationTcs = new();
+        await WebView.ExecuteScriptAsync(FormattableString.Invariant(
             $"setLocation({point.Latitude}, {point.Longitude}, {point.Heading});"));
-        await @this._setLocationTcs.Task;
+        await _setLocationTcs.Task;
     }
 }

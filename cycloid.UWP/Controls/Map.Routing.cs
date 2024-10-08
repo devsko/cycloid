@@ -83,7 +83,7 @@ partial class Map :
     }
 
     private readonly Throttle<Point, Map> _dragWayPointThrottle = new(
-        static (point, @this) => @this.DragWayPoint(point),
+        static (value, @this) => @this.DragWayPoint(value), 
         TimeSpan.FromMilliseconds(100));
 
     private DragState _dragStateTo;

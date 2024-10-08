@@ -46,7 +46,7 @@ public sealed partial class Profile : ViewModelControl,
     private const float VerticalRulerTickMinimumGap = 25;
 
     private readonly Throttle<double, Profile> _setHoverPointThrottle = new(
-        static (x, @this) => @this.SetHoverPoint(x),
+        static (value, @this) => @this.SetHoverPoint(value),
         TimeSpan.FromMilliseconds(100));
 
     private readonly PeriodicAction<Profile, int> _periodicScroll = new(
