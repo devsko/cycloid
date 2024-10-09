@@ -2,67 +2,45 @@
 
 public static class GeoHasher
 {
-    private static readonly char[] base32Chars = "0123456789bcdefghjkmnpqrstuvwxyz".ToCharArray();
-    private static readonly int[] bits = [16, 8, 4, 2, 1];
+    private const string _base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
 
-    public static string Encode(double latitude, double longitude, int precision = 12)
+    private struct Interval
     {
-        double[] latInterval = [-90.0, 90.0];
-        double[] lonInterval = [-180.0, 180.0];
+        public double Min;
+        public double Max;
+        public double Value;
 
-        Span<char> hash = stackalloc char[precision];
-        bool isEven = true;
-        int bit = 0;
-        int ch = 0;
-
-        int pos = 0;
-        while (pos < precision)
+        public int Bisect()
         {
-            double mid;
-
-            if (isEven)
+            double center = (Max + Min) / 2;
+            if (Value >= center)
             {
-                mid = (lonInterval[0] + lonInterval[1]) / 2;
-
-                if (longitude >= mid)
-                {
-                    ch |= bits[bit];
-                    lonInterval[0] = mid;
-                }
-                else
-                {
-                    lonInterval[1] = mid;
-                }
+                Min = center;
+                return 1;
             }
             else
             {
-                mid = (latInterval[0] + latInterval[1]) / 2;
-
-                if (latitude >= mid)
-                {
-                    ch |= bits[bit];
-                    latInterval[0] = mid;
-                }
-                else
-                {
-                    latInterval[1] = mid;
-                }
-            }
-
-            isEven = !isEven;
-
-            if (bit < 4)
-            {
-                bit++;
-            }
-            else
-            {
-                hash[pos++] = base32Chars[ch];
-                bit = 0;
-                ch = 0;
+                Max = center;
+                return 0;
             }
         }
+    }
+    public static void Encode(double latitude, double longitude, Span<char> hash)
+    {
+        Interval latitudeInterval = new() { Min = -90, Max = 90, Value = latitude };
+        Interval longitudeInterval = new() { Min = -180, Max = 180, Value = longitude };
 
-        return hash.ToString();
+        int pos = 0;
+        int bit = 0;
+        while (pos < hash.Length)
+        {
+            int ch = 0;
+            for (int i = 0; i < 5; i++)
+            {
+                ch = ch << 1 | (bit++ % 2 == 0 ? ref longitudeInterval : ref latitudeInterval).Bisect();
+            } 
+
+            hash[pos++] = _base32[ch];
+        }
     }
 }

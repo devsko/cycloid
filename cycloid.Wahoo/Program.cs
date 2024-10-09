@@ -1,5 +1,6 @@
 ﻿// https://www.youtube.com/watch?v=Sl--gcJ95XM
 
+using System.Globalization;
 using System.Text.Json;
 using cycloid.Info;
 using cycloid.Serialization;
@@ -53,10 +54,11 @@ try
         await ExecuteAsync("UPDATE sqlite_sequence SET seq = (SELECT MAX(id) FROM CloudPoiDao) WHERE name='CloudPoiDao'");
 
         int added = 0;
+        char[] hash = new char[12];
         foreach (PointOfInterest pointOfInterest in pointsOfInterest.Where(poi => poi.Type != InfoType.Split))
         {
-            string hash = GeoHasher.Encode(pointOfInterest.Location.Lat, pointOfInterest.Location.Lon);
-            await ExecuteAsync(FormattableString.Invariant($"""
+            GeoHasher.Encode(pointOfInterest.Location.Lat, pointOfInterest.Location.Lon, hash);
+            await ExecuteAsync(string.Create(CultureInfo.InvariantCulture, $"""
                 INSERT INTO CloudPoiDao (address, custom, geoHash, isDeleted, latDeg, lonDeg, name, poiToken, poiType, objectCloudId, updateTimeMs, userCloudId) 
                 VALUES ('[cycloid] {trackName}', {customBinary}, '{hash}', 0, {pointOfInterest.Location.Lat:f13}, {pointOfInterest.Location.Lon:f13}, '{Escape(pointOfInterest.Name)} ({pointOfInterest.Type})', '{Guid.NewGuid()}', 0, 0, 1677695093935, 0)
                 """));
