@@ -163,14 +163,12 @@ partial class Track
         {
             foreach (var (previous, current) in Enumerate(index).InPairs())
             {
-                if (current.Segment.Start.Time + current.Point.Time >= time)
+                if (current.Segment.Start.Time + current.Point.Time > time)
                 {
                     TrackPoint currentPoint = GetPoint(current.Segment, current.Point);
                     TrackPoint previousPoint = GetPoint(previous.Segment, previous.Point);
-                     
-                    currentPoint = TrackPoint.Lerp(previousPoint, currentPoint, (time - previousPoint.Time).Ticks / (float)(currentPoint.Time - previousPoint.Time).Ticks);
 
-                    return (currentPoint, previous.Index);
+                    return (TrackPoint.Lerp(previousPoint, currentPoint, (time - previousPoint.Time).Ticks / (float)(currentPoint.Time - previousPoint.Time).Ticks), previous.Index);
                 }
             }
 

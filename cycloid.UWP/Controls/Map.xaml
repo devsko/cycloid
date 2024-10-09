@@ -58,9 +58,7 @@
             <MenuFlyoutSeparator />
             <MenuFlyoutItem IsEnabled="False" Text="Add forbidden area (NYI)" />
             <MenuFlyoutSeparator />
-            <MenuFlyoutItem
-                Command="{x:Bind Mode=OneTime, Path=ViewModel.PasteWayPointsCommand}"
-                Text="Paste waypoints" />
+            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.PasteWayPointsCommand}" Text="Paste waypoints" />
         </controls:MapMenuFlyout>
         <controls:MapMenuFlyout x:Name="MapEditPointMenu">
             <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.DeleteWayPointCommand}" Text="Delete waypoint" />
@@ -76,9 +74,7 @@
                 Text="Don't split GPX here"
                 Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNotVisible(SplitGpxHere.Visibility)}" />
             <MenuFlyoutSeparator />
-            <MenuFlyoutItem
-                Command="{x:Bind Mode=OneTime, Path=ViewModel.PasteWayPointsCommand}"
-                Text="Paste waypoints" />
+            <MenuFlyoutItem Command="{x:Bind Mode=OneTime, Path=ViewModel.PasteWayPointsCommand}" Text="Paste waypoints" />
         </controls:MapMenuFlyout>
         <controls:MapMenuFlyout x:Name="MapEditSectionMenu">
             <MenuFlyoutItem
@@ -124,7 +120,6 @@
 
     <maps:MapControl
         x:Name="MapControl"
-        ActualCameraChanged="MapControl_ActualCameraChanged"
         Loaded="MapControl_Loaded"
         LosingFocus="MapControl_LosingFocus"
         MapContextRequested="MapControl_MapContextRequested"
@@ -166,8 +161,11 @@
 
         <controls:PointerPanel
             x:Name="PointerPanel"
+            PointerWheelChanged="PointerPanel_PointerWheelChanged"
             ContextRequested="PointerPanel_ContextRequested"
             PointerMoved="PointerPanel_PointerMoved"
+            PointerPressed="PointerPanel_PointerPressed"
+            PointerReleased="PointerPanel_PointerReleased"
             Tapped="PointerPanel_Tapped" />
 
         <!--  CurrentPoint  -->
@@ -194,10 +192,10 @@
 
         <!--  HoverPoint  -->
         <Border
-            ContextRequested="PointerPanel_ContextRequested"
-            Tapped="PointerPanel_Tapped"
             maps:MapControl.Location="{x:Bind Mode=OneWay, Path=cycloid:Convert.ToGeopoint(ViewModel.HoverPoint)}"
             maps:MapControl.NormalizedAnchorPoint=".5 .5"
+            ContextRequested="PointerPanel_ContextRequested"
+            Tapped="PointerPanel_Tapped"
             UseLayoutRounding="False"
             Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.MapHoverPointVisible)}">
             <Grid>

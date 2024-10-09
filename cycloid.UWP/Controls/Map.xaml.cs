@@ -10,6 +10,7 @@ using Windows.Devices.Geolocation;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
+using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Maps;
@@ -30,8 +31,8 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     private static readonly PropertyChangedEventArgs _centerChangedEventArgs = new(nameof(Center));
     private static readonly PropertyChangedEventArgs _headingChangedEventArgs = new(nameof(Heading));
 
-    private readonly AsyncThrottle<object, Map> _loadInfosThrottle = new(
-        static (_, @this, cancellationToken) => @this.LoadInfosAsync(cancellationToken),
+    private readonly AsyncThrottle<MapPoint, Map> _loadInfosThrottle = new(
+        static (value, @this, cancellationToken) => @this.LoadInfosAsync(value, cancellationToken),
         TimeSpan.FromSeconds(5));
 
     private MapTileSource _heatmap;
@@ -154,19 +155,18 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         menu.ShowAt(MapControl, location, position);
     }
 
-    // WORKAROUND Change the view slightly to update moved child controls.
     private void Nudge()
     {
         MapControl.MapElements.Clear();
         MapControl.MapElements.Add(new MapIcon { MapStyleSheetEntry = "Dummy.Point", Location = MapControl.Center });
     }
 
-    private async Task LoadInfosAsync(CancellationToken cancellationToken)
+    private async Task LoadInfosAsync(MapPoint location, CancellationToken cancellationToken)
     {
         ViewModel.InfoIsLoading = true;
         try
         {
-            await ViewModel.Infos.LoadAsync(MapControl.ActualCamera.Location.Position.ToMapPoint(), cancellationToken);
+            await ViewModel.Infos.LoadAsync(location, cancellationToken);
         }
         finally
         {
@@ -229,6 +229,8 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         _trainLayer = (MapElementsLayer)MapControl.Resources["TrainLayer"];
         MapControl.Layers.Add(_trainLayer);
 
+        MapControl.ActualCameraChanging += MapControl_ActualCameraChanging;
+
         //XAsync().FireAndForget();
 
         //async Task XAsync()
@@ -246,11 +248,11 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         //}
     }
 
-    private void MapControl_ActualCameraChanged(MapControl _1, MapActualCameraChangedEventArgs _2)
+    private void MapControl_ActualCameraChanging(MapControl _1, MapActualCameraChangingEventArgs args)
     {
         if (ViewModel.InfoVisible)
         {
-            _loadInfosThrottle.Next(null, this);
+            _loadInfosThrottle.Next(args.Camera.Location.Position.ToMapPoint(), this);
         }
     }
 
@@ -317,10 +319,15 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
     private void PointerPanel_PointerMoved(object _, PointerRoutedEventArgs e)
     {
-        Point position = e.GetCurrentPoint(MapControl).Position;
+        PointerPoint pointer = e.GetCurrentPoint(MapControl);
+        Point position = pointer.Position;
         if (ViewModel.Mode == Modes.Edit)
         {
             HandleRoutingPointerMoved(position);
+        }
+        else if (ViewModel.Mode == Modes.Train)
+        {
+            HandleTrainingPointerMoved(pointer);
         }
         else
         {
@@ -333,7 +340,8 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     private void PointerPanel_ContextRequested(UIElement _, ContextRequestedEventArgs args)
     {
         if (args.TryGetPosition(MapControl, out Point position) && 
-            MapControl.TryGetLocationFromOffset(position, out Geopoint location))
+            MapControl.TryGetLocationFromOffset(position, out Geopoint location) &&
+            !(ViewModel.IsPlaying && _pointerPanelPointerMoved))
         {
             ShowMapMenu(position, location.Position.ToMapPoint());
         }
@@ -379,56 +387,11 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
         Nudge();
     }
 
-
-    // WIP
-
-    private float distance = 150;
-    private float height = 40;
-    private float pitch = 75;
-
-    private readonly AsyncThrottle<(TrackPoint Current, TrackPoint Camera), Map> _cameraThrottle = new(SetCameraAsync, TimeSpan.FromMilliseconds(20));
-
-    private static async Task SetCameraAsync((TrackPoint Current, TrackPoint Camera) value, Map @this, CancellationToken cancellationToken)
-    {
-        float heading = GeoCalculation.Heading(value.Camera, value.Current);
-        (float latitude, float longitude) = GeoCalculation.Add(value.Current, heading + 180, @this.distance);
-
-        BasicGeoposition cameraPosition = new()
-        {
-            Latitude = latitude,
-            Longitude = longitude,
-            Altitude = @this.height
-        };
-        MapCamera camera = new(
-            location: new Geopoint(cameraPosition, AltitudeReferenceSystem.Terrain),
-            headingInDegrees: heading,
-            pitchInDegrees: @this.pitch,
-            rollInDegrees: 0,
-            fieldOfViewInDegrees: 45);
-
-        bool animate = true;
-        if (MathF.Abs(GeoCalculation.Distance(cameraPosition.ToMapPoint(), @this.MapControl.ActualCamera.Location.Position.ToMapPoint())) > 5_000)
-        {
-            animate = false;
-        }
-
-        await @this.MapControl.TrySetSceneAsync(MapScene.CreateFromCamera(camera), animate ? MapAnimationKind.Default : MapAnimationKind.None);
-    }
-
-    void IRecipient<CurrentPointChanged>.Receive(CurrentPointChanged message)
-    {
-        if (ViewModel.IsPlaying)
-        {
-            _cameraThrottle.Next((ViewModel.CurrentPoint, ViewModel.CameraPoint), this);
-        }
-        Nudge();
-    }
-
     void IRecipient<InfoVisibleChanged>.Receive(InfoVisibleChanged message)
     {
         if (message.Value)
         {
-            _loadInfosThrottle.Next(null, this);
+            _loadInfosThrottle.Next(MapControl.ActualCamera.Location.Position.ToMapPoint(), this);
         }
     }
 

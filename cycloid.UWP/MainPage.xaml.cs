@@ -13,7 +13,6 @@ using Windows.Globalization.NumberFormatting;
 using Windows.Services.Maps;
 using Windows.Storage;
 using Windows.System;
-using Windows.System.Display;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;

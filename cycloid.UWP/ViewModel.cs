@@ -73,6 +73,11 @@ public partial class ViewModel : ObservableObject,
             Modes oldValue = _mode;
             if (SetProperty(ref _mode, value))
             {
+                if (oldValue == Modes.Train && IsPlaying)
+                {
+                    PlayCancelCommand.Execute(null);
+                }
+
                 bool isEditMode = value == Modes.Edit;
                 if (isEditMode != (oldValue == Modes.Edit))
                 {

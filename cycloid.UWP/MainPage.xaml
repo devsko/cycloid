@@ -622,8 +622,11 @@
                                 <RowDefinition />
                             </Grid.RowDefinitions>
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="{ui:SymbolIcon Symbol=Previous}" />
-                                <Button Content="{ic:SymbolIcon Symbol=SkipBack10}" />
+                                <Button Command="{x:Bind Mode=OneTime, Path=ViewModel.SkipMinutesCommand}" Content="{ic:SymbolIcon Symbol=SkipBack10}">
+                                    <Button.CommandParameter>
+                                        <x:Int32>-10</x:Int32>
+                                    </Button.CommandParameter>
+                                </Button>
                                 <Button
                                     Command="{x:Bind Mode=OneTime, Path=ViewModel.PlayCommand}"
                                     Content="{ui:SymbolIcon Symbol=Play}"
@@ -632,8 +635,11 @@
                                     Command="{x:Bind Mode=OneTime, Path=ViewModel.PlayCancelCommand}"
                                     Content="{ui:SymbolIcon Symbol=Pause}"
                                     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.IsPlaying)}" />
-                                <Button Content="{ic:SymbolIcon Symbol=SkipForward10}" />
-                                <Button Content="{ic:SymbolIcon Symbol=SkipForward30}" />
+                                <Button Command="{x:Bind Mode=OneTime, Path=ViewModel.SkipMinutesCommand}" Content="{ic:SymbolIcon Symbol=SkipForward10}">
+                                    <Button.CommandParameter>
+                                        <x:Int32>10</x:Int32>
+                                    </Button.CommandParameter>
+                                </Button>
                             </StackPanel>
                             <mux:ProgressBar Grid.Row="1" />
                         </Grid>

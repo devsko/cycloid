@@ -40,7 +40,12 @@ partial class Track
             }
         }
 
-        public void AdvanceBy(TimeSpan difference) => GoTo(CurrentPoint.Time + difference);
+        public void AdvanceBy(TimeSpan difference)
+        {
+            GoTo(Clamp(CurrentPoint.Time + difference, TimeSpan.Zero, Points.Last().Time));
+
+            TimeSpan Clamp(TimeSpan value, TimeSpan min, TimeSpan max) => value < min ? min : value > max ? max : value;
+        }
     }
 
     private sealed class ChildPin : Pin

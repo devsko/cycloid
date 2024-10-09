@@ -72,6 +72,7 @@
       <DependentUpon>InfoToggleButton.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\Map.CompareSession.cs" />
+    <Compile Include="Controls\Map.Playing.cs" />
     <Compile Include="Controls\Map.Pois.cs" />
     <Compile Include="Controls\Map.Routing.cs" />
     <Compile Include="Controls\PasteSelectionDialog.xaml.cs">
