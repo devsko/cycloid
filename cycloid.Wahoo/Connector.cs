@@ -81,12 +81,14 @@ public class Connector : IAsyncDisposable
             _tempDirectory?.Delete(recursive: true);
         }
         catch { }
+
+        GC.SuppressFinalize(this);
     }
 
-    private Task DownloadAsync(string filePath, bool dontThrow) => 
+    private Task<(bool Success, string Output)> DownloadAsync(string filePath, bool dontThrow) => 
         AdbAsync($"pull /data/data/com.wahoofitness.bolt/databases/{Path.GetFileName(filePath)} {filePath}", dontThrow);
 
-    private Task UploadAsync(string filePath) => 
+    private Task<(bool Success, string Output)> UploadAsync(string filePath) => 
         File.Exists(filePath)
             ? AdbAsync($"push {filePath} /data/data/com.wahoofitness.bolt/databases/", false)
             : AdbAsync($"shell rm data/data/com.wahoofitness.bolt/databases/{Path.GetFileName(filePath)}", true);
