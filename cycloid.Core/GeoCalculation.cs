@@ -50,10 +50,10 @@ public static class GeoCalculation
             cosLat1 * sinLat2 - sinLat1 * cosLat2 * cosDLon)) + 360) % 360;
     }
 
-    public static (double Distance, double Heading) DistanceAndHeading<T1, T2>(T1 from, T2 to) where T1 : IMapPoint where T2 : IMapPoint
+    public static (float Distance, float Heading) DistanceAndHeading<T1, T2>(T1 from, T2 to) where T1 : IMapPoint where T2 : IMapPoint
         => DistanceAndHeading(from.Latitude, from.Longitude, to.Latitude, to.Longitude);
 
-    public static (double Distance, double Heading) DistanceAndHeading(float fromLat, float fromLon, float toLat, float toLon)
+    public static (float Distance, float Heading) DistanceAndHeading(float fromLat, float fromLon, float toLat, float toLon)
     {
         float lat1 = ToRadians(fromLat);
         float lat2 = ToRadians(toLat);
@@ -78,7 +78,7 @@ public static class GeoCalculation
             cosLat2 * sinDLon,
             cosLat1 * sinLat2 - sinLat1 * cosLat2 * cosDLon)) + 360) % 360;
 
-        return (distance, heading);
+        return ((float)distance, (float)heading);
     }
 
     public static (float Lat, float Lon) Add<T>(T start, double heading, double distance) where T : IMapPoint

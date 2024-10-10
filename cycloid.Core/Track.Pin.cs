@@ -44,7 +44,7 @@ partial class Track
         {
             GoTo(Clamp(CurrentPoint.Time + difference, TimeSpan.Zero, Points.Last().Time));
 
-            TimeSpan Clamp(TimeSpan value, TimeSpan min, TimeSpan max) => value < min ? min : value > max ? max : value;
+            static TimeSpan Clamp(TimeSpan value, TimeSpan min, TimeSpan max) => value < min ? min : value > max ? max : value;
         }
     }
 

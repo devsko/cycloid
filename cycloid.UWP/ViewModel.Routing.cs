@@ -86,12 +86,12 @@ partial class ViewModel :
 
     public bool TrackIsCalculating => Track is not null && Track.RouteBuilder.IsCalculating;
 
-    public bool IsCaptured => _capturedWayPoint is not null;
+    public bool IsDraggingWayPoint => _capturedWayPoint is not null;
 
     [RelayCommand]
     public async Task AddDestinationAsync(MapPoint location)
     {
-        if (IsEditMode && Track is not null && !IsCaptured)
+        if (IsEditMode && Track is not null && !IsDraggingWayPoint)
         {
             await Track.RouteBuilder.AddLastPointAsync(new WayPoint(location, false, false));
         }
@@ -100,7 +100,7 @@ partial class ViewModel :
     [RelayCommand]
     public async Task AddStartAsync(MapPoint location)
     {
-        if (IsEditMode && Track is not null && !IsCaptured)
+        if (IsEditMode && Track is not null && !IsDraggingWayPoint)
         {
             await Track.RouteBuilder.AddFirstPointAsync(new WayPoint(location, false, false));
         }
@@ -109,7 +109,7 @@ partial class ViewModel :
     [RelayCommand]
     public async Task AddWayPointAsync(MapPoint location)
     {
-        if (IsEditMode && Track is not null && !IsCaptured)
+        if (IsEditMode && Track is not null && !IsDraggingWayPoint)
         {
             if (Track.Points.IsEmpty)
             {
@@ -128,7 +128,7 @@ partial class ViewModel :
     [RelayCommand]
     public async Task DeleteWayPointAsync()
     {
-        if (IsEditMode && Track is not null && !IsCaptured && HoveredWayPoint is not null)
+        if (IsEditMode && Track is not null && !IsDraggingWayPoint && HoveredWayPoint is not null)
         {
             await Track.RouteBuilder.RemovePointAsync(HoveredWayPoint);
         }
@@ -137,7 +137,7 @@ partial class ViewModel :
     [RelayCommand]
     public void StartDragWayPoint()
     {
-        if (IsEditMode && Track is not null && !IsCaptured && HoveredWayPoint is not null)
+        if (IsEditMode && Track is not null && !IsDraggingWayPoint && HoveredWayPoint is not null)
         {
             Track.RouteBuilder.DelayCalculation = CalculationDelayMode.LongSections;
 
@@ -153,7 +153,7 @@ partial class ViewModel :
     [RelayCommand]
     public async Task StartDragNewWayPointAsync(MapPoint location)
     {
-        if (IsEditMode && Track is not null && !IsCaptured && HoveredSection is not null)
+        if (IsEditMode && Track is not null && !IsDraggingWayPoint && HoveredSection is not null)
         {
             Track.RouteBuilder.DelayCalculation = CalculationDelayMode.LongSections;
 
@@ -168,7 +168,7 @@ partial class ViewModel :
 
     public async Task ContinueDragWayPointAsync(MapPoint location)
     {
-        if (IsEditMode && Track is not null && IsCaptured)
+        if (IsEditMode && Track is not null && IsDraggingWayPoint)
         {
             _capturedWayPoint = await Track.RouteBuilder.MovePointAsync(_capturedWayPoint, location);
         }
@@ -176,7 +176,7 @@ partial class ViewModel :
 
     public void EndDragWayPoint()
     {
-        if (IsEditMode && Track is not null && IsCaptured)
+        if (IsEditMode && Track is not null && IsDraggingWayPoint)
         {
             StrongReferenceMessenger.Default.Send(new DragWayPointEnded());
 
@@ -189,7 +189,7 @@ partial class ViewModel :
 
     public async Task CancelDragWayPointAsync()
     {
-        if (IsEditMode && Track is not null && IsCaptured)
+        if (IsEditMode && Track is not null && IsDraggingWayPoint)
         {
             StrongReferenceMessenger.Default.Send(new DragWayPointEnded());
 
@@ -292,7 +292,7 @@ partial class ViewModel :
         OnPropertyChanged(nameof(TrackIsCalculating));
         OnPropertyChanged(nameof(CompareSessionState));
 
-        if (!message.Initialization && !IsCaptured)
+        if (!message.Initialization && !IsDraggingWayPoint)
         {
             SaveTrackAsync().FireAndForget();
         }

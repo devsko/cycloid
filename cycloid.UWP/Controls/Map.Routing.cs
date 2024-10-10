@@ -225,7 +225,7 @@ partial class Map :
 
         //bool ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
 
-        if (!ViewModel.IsCaptured)
+        if (!ViewModel.IsDraggingWayPoint)
         {
             if (ViewModel.HoveredWayPoint is not null)
             {
@@ -366,7 +366,7 @@ partial class Map :
 
     void IRecipient<CalculationStarting>.Receive(CalculationStarting message)
     {
-        if (!ViewModel.IsCaptured)
+        if (!ViewModel.IsDraggingWayPoint)
         {
             GetSectionLine(message.Section).MapStyleSheetEntryState = "Routing.calculating";
         }

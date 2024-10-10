@@ -73,7 +73,7 @@ public sealed partial class StreetView : TrackPointControl
         }
     }
 
-    private void IsCollapsedChanged(DependencyPropertyChangedEventArgs __)
+    private void IsCollapsedChanged(DependencyPropertyChangedEventArgs _1)
     {
         DragableBehavior.IsEnabled = !IsCollapsed;
 

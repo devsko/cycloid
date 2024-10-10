@@ -297,7 +297,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     {
         // WORKAROUND: Focus gets lost (to root scroller) when paning the map
 
-        if (ViewModel.IsCaptured)
+        if (ViewModel.IsDraggingWayPoint)
         {
             args.TryCancel();
         }
@@ -334,6 +334,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
             HandlePoiPointerMoved(position);
         }
 
+        _pointerPanelPointerMoved = true;
         e.Handled = true;
     }
 
