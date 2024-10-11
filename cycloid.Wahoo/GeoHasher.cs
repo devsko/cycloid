@@ -36,9 +36,7 @@ public static class GeoHasher
         {
             int ch = 0;
             for (int i = 0; i < 5; i++)
-            {
                 ch = ch << 1 | (bit++ % 2 == 0 ? ref longitudeInterval : ref latitudeInterval).Bisect();
-            } 
 
             hash[pos++] = _base32[ch];
         }
