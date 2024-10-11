@@ -6,7 +6,6 @@
     xmlns:cycloid="using:cycloid"
     xmlns:ic="using:FluentIcons.Uwp"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls"
-    xmlns:ui="using:CommunityToolkit.WinUI"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     Loaded="Page_Loaded">
 
@@ -20,6 +19,12 @@
 
                     <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}" TargetType="AppBarButton">
                         <Setter Property="Width" Value="56" />
+                    </Style>
+
+                    <Style BasedOn="{StaticResource DefaultToggleButtonStyle}" TargetType="ToggleButton">
+                        <Setter Property="Width" Value="32" />
+                        <Setter Property="Height" Value="28" />
+                        <Setter Property="Padding" Value="0" />
                     </Style>
 
                     <Style x:Key="SectionsListViewStyle" TargetType="ListView">
@@ -88,612 +93,660 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid
-        Padding="3,0,0,0"
-        ColumnSpacing="3"
-        RowSpacing="3">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="4*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="225" />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
+
+        <!--  Title Bar  -->
+
+        <Grid>
+            <Grid x:Name="TitleBar" Background="Transparent">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
+                    <ColumnDefinition Width="225" />
+                    <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    x:Name="TitleTextBlock"
+                    Grid.Column="1"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Text="cycloid" />
+            </Grid>
+
+            <Grid
+                x:Name="TitleBarControlsRoot"
+                Margin="228,0,0,0"
+                Padding="3"
+                ColumnSpacing="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="184" />
+                    <ColumnDefinition Width="175" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="2*" MaxWidth="350" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel
+                    Grid.Column="0"
+                    Orientation="Horizontal"
+                    Spacing="4">
+                    <ToggleButton Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}" IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
+                        <ToggleButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="H" Modifiers="Control" />
+                        </ToggleButton.KeyboardAccelerators>
+                        <Border Width="20" Height="20">
+                            <PathIcon HorizontalAlignment="Center" Data="M 6.426 0.7 L 0.63 11.9 L 4.046 11.9 L 6.426 7.433 L 8.792 11.9 L 12.18 11.9 L 6.426 0.7 Z M 12.18 11.9 L 10.5 15.252 L 8.792 11.9 L 6.202 11.9 L 10.5 20.3 L 14.77 11.9 L 12.18 11.9 Z" />
+                        </Border>
+                    </ToggleButton>
+                    <ToggleButton IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.HasTrack}">
+                        <ToggleButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="T" Modifiers="Control" />
+                        </ToggleButton.KeyboardAccelerators>
+                        <ToggleButton.Content>
+                            <Grid>
+                                <SymbolIcon Symbol="Directions" />
+                                <mux:ProgressBar
+                                    Margin="-8,0,-8,-4"
+                                    VerticalAlignment="Bottom"
+                                    Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
+                                    IsIndeterminate="True"
+                                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.TrackIsCalculating)}" />
+                            </Grid>
+                        </ToggleButton.Content>
+                    </ToggleButton>
+                    <controls:InfoToggleButton
+                        CategoryChanged="PoisButton_CategoryChanged"
+                        IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.PoisVisible}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.PoisEnabled}"
+                        IsLoading="{x:Bind Mode=OneWay, Path=ViewModel.PoisAreLoading}"
+                        Symbol="MapPin"
+                        TotalCount="{x:Bind Mode=OneWay, Path=ViewModel.OnTrackCount}"
+                        VisibleCount="{x:Bind Mode=OneWay, Path=ViewModel.OnTrackCount}">
+                        <controls:InfoToggleButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="P" Modifiers="Control" />
+                        </controls:InfoToggleButton.KeyboardAccelerators>
+                    </controls:InfoToggleButton>
+                    <controls:InfoToggleButton
+                        CategoryChanged="InfoButton_CategoryChanged"
+                        IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.InfoVisible}"
+                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.InfoEnabled}"
+                        IsLoading="{x:Bind Mode=OneWay, Path=ViewModel.InfoIsLoading}"
+                        Symbol="OutlineStar"
+                        TotalCount="{x:Bind Mode=OneWay, Path=ViewModel.Infos.CachedCount}"
+                        VisibleCount="{x:Bind Mode=OneWay, Path=ViewModel.Infos.ActivatedCount}">
+                        <controls:InfoToggleButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="I" Modifiers="Control" />
+                        </controls:InfoToggleButton.KeyboardAccelerators>
+                    </controls:InfoToggleButton>
+                </StackPanel>
+
+                <ComboBox
+                    Grid.Column="1"
+                    Height="28"
+                    HorizontalAlignment="Stretch"
+                    DisplayMemberPath="Name"
+                    ItemsSource="{x:Bind Mode=OneTime, Path=cycloid:ViewModel.MapStyleAndColors}"
+                    SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.MapStyleAndColor}" />
+
+                <AutoSuggestBox
+                    Grid.Column="3"
+                    Height="28"
+                    HorizontalAlignment="Stretch"
+                    DisplayMemberPath="DisplayName"
+                    PlaceholderText="Search a location"
+                    QueryIcon="Find"
+                    QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                    SuggestionChosen="AutoSuggestBox_SuggestionChosen"
+                    TextChanged="AutoSuggestBox_TextChanged"
+                    TextMemberPath="DisplayName" />
+
+            </Grid>
+        </Grid>
+
+        <!--  End Title Bar  -->
 
         <Grid
-            Grid.Row="0"
-            Grid.RowSpan="2"
-            Grid.Column="0"
-            RowSpacing="10">
+            Grid.Row="1"
+            Padding="3,0,0,0"
+            ColumnSpacing="3"
+            RowSpacing="3">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="4*" />
                 <RowDefinition />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="225" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Row="0" Orientation="Horizontal">
-                <AppBarButton
-                    Command="{x:Bind ViewModel.OpenTrackCommand}"
-                    Icon="OpenLocal"
-                    Label="Open">
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="O" Modifiers="Control" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarButton
-                    Command="{x:Bind ViewModel.NewTrackCommand}"
-                    Icon="NewFolder"
-                    Label="New">
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="N" Modifiers="Control" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarButton
-                    Command="{x:Bind ViewModel.SaveTrackAsCommand}"
-                    Icon="SaveLocal"
-                    Label="Save As">
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="S" Modifiers="Control" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-                <AppBarButton
-                    Command="{x:Bind Mode=OneTime, Path=ViewModel.ExportCommand}"
-                    Icon="CellPhone"
-                    Label="Export">
-                    <AppBarButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="E" Modifiers="Control" />
-                    </AppBarButton.KeyboardAccelerators>
-                </AppBarButton>
-            </StackPanel>
+            <Grid
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                Grid.Column="0"
+                RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-            <AutoSuggestBox
-                Grid.Row="1"
-                DisplayMemberPath="DisplayName"
-                PlaceholderText="Search a location"
-                QuerySubmitted="AutoSuggestBox_QuerySubmitted"
-                SuggestionChosen="AutoSuggestBox_SuggestionChosen"
-                TextChanged="AutoSuggestBox_TextChanged"
-                TextMemberPath="DisplayName" />
+                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                    <AppBarButton
+                        Command="{x:Bind ViewModel.OpenTrackCommand}"
+                        Icon="OpenLocal"
+                        Label="Open">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="O" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton
+                        Command="{x:Bind ViewModel.NewTrackCommand}"
+                        Icon="NewFolder"
+                        Label="New">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="N" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton
+                        Command="{x:Bind ViewModel.SaveTrackAsCommand}"
+                        Icon="SaveLocal"
+                        Label="Save As">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="S" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    <AppBarButton
+                        Command="{x:Bind Mode=OneTime, Path=ViewModel.ExportCommand}"
+                        Icon="CellPhone"
+                        Label="Export">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="E" Modifiers="Control" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                </StackPanel>
 
-            <StackPanel
-                Grid.Row="2"
-                Orientation="Horizontal"
-                Spacing="5">
-                <ToggleButton Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}" IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
-                    <ToggleButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="H" Modifiers="Control" />
-                    </ToggleButton.KeyboardAccelerators>
-                    <Border Width="20" Height="20">
-                        <PathIcon HorizontalAlignment="Center" Data="M 6.426 0.7 L 0.63 11.9 L 4.046 11.9 L 6.426 7.433 L 8.792 11.9 L 12.18 11.9 L 6.426 0.7 Z M 12.18 11.9 L 10.5 15.252 L 8.792 11.9 L 6.202 11.9 L 10.5 20.3 L 14.77 11.9 L 12.18 11.9 Z" />
-                    </Border>
-                </ToggleButton>
-                <ToggleButton IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.TrackVisible}" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.HasTrack}">
-                    <ToggleButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="T" Modifiers="Control" />
-                    </ToggleButton.KeyboardAccelerators>
-                    <ToggleButton.Content>
-                        <Grid>
-                            <SymbolIcon Symbol="Directions" />
-                            <mux:ProgressBar
-                                Margin="-8,-6,-8,-6"
-                                VerticalAlignment="Bottom"
-                                Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
-                                IsIndeterminate="True"
-                                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.TrackIsCalculating)}" />
-                        </Grid>
-                    </ToggleButton.Content>
-                </ToggleButton>
-                <controls:InfoToggleButton
-                    CategoryChanged="PoisButton_CategoryChanged"
-                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.PoisVisible}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.PoisEnabled}"
-                    IsLoading="{x:Bind Mode=OneWay, Path=ViewModel.PoisAreLoading}"
-                    Symbol="MapPin"
-                    TotalCount="{x:Bind Mode=OneWay, Path=ViewModel.OnTrackCount}"
-                    VisibleCount="{x:Bind Mode=OneWay, Path=ViewModel.OnTrackCount}">
-                    <controls:InfoToggleButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="P" Modifiers="Control" />
-                    </controls:InfoToggleButton.KeyboardAccelerators>
-                </controls:InfoToggleButton>
-                <controls:InfoToggleButton
-                    CategoryChanged="InfoButton_CategoryChanged"
-                    IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.InfoVisible}"
-                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.InfoEnabled}"
-                    IsLoading="{x:Bind Mode=OneWay, Path=ViewModel.InfoIsLoading}"
-                    Symbol="OutlineStar"
-                    TotalCount="{x:Bind Mode=OneWay, Path=ViewModel.Infos.CachedCount}"
-                    VisibleCount="{x:Bind Mode=OneWay, Path=ViewModel.Infos.ActivatedCount}">
-                    <controls:InfoToggleButton.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="I" Modifiers="Control" />
-                    </controls:InfoToggleButton.KeyboardAccelerators>
-                </controls:InfoToggleButton>
-            </StackPanel>
 
-            <ComboBox
-                Grid.Row="3"
-                HorizontalAlignment="Stretch"
-                DisplayMemberPath="Name"
-                ItemsSource="{x:Bind Mode=OneTime, Path=cycloid:ViewModel.MapStyleAndColors}"
-                SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.MapStyleAndColor}" />
 
-            <mux:TabView
-                x:Name="TabView"
-                Grid.Row="4"
-                VerticalAlignment="Stretch"
-                IsAddTabButtonVisible="False"
-                SelectedItem="{x:Bind Mode=TwoWay, Path=GetTabItem(ViewModel.Mode), BindBack=GetMode}"
-                TabWidthMode="Compact">
-                <mux:TabView.TabItems>
-                    <mux:TabViewItem
-                        Header="Edit"
-                        IsClosable="false"
-                        Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Edit}">
-                        <mux:TabViewItem.IconSource>
-                            <mux:SymbolIconSource Symbol="Edit" />
-                        </mux:TabViewItem.IconSource>
-                        <Grid RowSpacing="15">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition />
-                            </Grid.RowDefinitions>
-                            <Grid
-                                Grid.Row="0"
-                                ColumnSpacing="10"
-                                RowSpacing="5">
+
+                <mux:TabView
+                    x:Name="TabView"
+                    Grid.Row="1"
+                    VerticalAlignment="Stretch"
+                    IsAddTabButtonVisible="False"
+                    SelectedItem="{x:Bind Mode=TwoWay, Path=GetTabItem(ViewModel.Mode), BindBack=GetMode}"
+                    TabWidthMode="Compact">
+                    <mux:TabView.TabItems>
+                        <mux:TabViewItem
+                            Header="Edit"
+                            IsClosable="false"
+                            Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Edit}">
+                            <mux:TabViewItem.IconSource>
+                                <mux:SymbolIconSource Symbol="Edit" />
+                            </mux:TabViewItem.IconSource>
+                            <Grid RowSpacing="15">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
                                 </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="4*" />
-                                    <ColumnDefinition Width="4*" />
-                                    <ColumnDefinition Width="3*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock
+                                <Grid
                                     Grid.Row="0"
-                                    Grid.Column="0"
-                                    HorizontalTextAlignment="End"
-                                    Text="Distance" />
-                                <TextBlock
-                                    Grid.Row="1"
-                                    Grid.Column="0"
-                                    HorizontalTextAlignment="End"
-                                    Text="Time" />
-                                <TextBlock
+                                    ColumnSpacing="10"
+                                    RowSpacing="5">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="4*" />
+                                        <ColumnDefinition Width="4*" />
+                                        <ColumnDefinition Width="3*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        HorizontalTextAlignment="End"
+                                        Text="Distance" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        HorizontalTextAlignment="End"
+                                        Text="Time" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Grid.Column="0"
+                                        HorizontalTextAlignment="End"
+                                        Text="Ascent" />
+                                    <TextBlock
+                                        Grid.Row="3"
+                                        Grid.Column="0"
+                                        HorizontalTextAlignment="End"
+                                        Text="Descent" />
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(ViewModel.Track.Points.Total.Distance)}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.Track.Points.Total.Time)}" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Ascent)}" />
+                                    <TextBlock
+                                        Grid.Row="3"
+                                        Grid.Column="1"
+                                        Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Descent)}" />
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Right"
+                                        Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.Track.CompareSession.Diff.Distance)}"
+                                        Text="{x:Bind Mode=OneWay, Path=cycloid:Format.FlexDistance(ViewModel.Track.CompareSession.Diff.Distance)}"
+                                        Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Right"
+                                        Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.Track.CompareSession.Diff.Time)}"
+                                        Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.Track.CompareSession.Diff.Time)}"
+                                        Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Right"
+                                        Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.Track.CompareSession.Diff.Ascent)}"
+                                        Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(ViewModel.Track.CompareSession.Diff.Ascent)}"
+                                        Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
+                                    <TextBlock
+                                        Grid.Row="3"
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Right"
+                                        Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.ReverseDifferenceBrush(ViewModel.Track.CompareSession.Diff.Descent)}"
+                                        Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(ViewModel.Track.CompareSession.Diff.Descent)}"
+                                        Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
+                                </Grid>
+                                <Grid Grid.Row="1" ColumnSpacing="5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Button
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{x:Bind Mode=OneTime, Path=ViewModel.CompareSessionCommand}"
+                                        Content="{x:Bind Mode=OneWay, Path=ViewModel.CompareSessionCommandName}" />
+                                    <Button
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{x:Bind Mode=OneTime, Path=ViewModel.CancelCompareSessionCommand}"
+                                        Content="Rollback" />
+                                </Grid>
+                                <Grid
                                     Grid.Row="2"
-                                    Grid.Column="0"
-                                    HorizontalTextAlignment="End"
-                                    Text="Ascent" />
+                                    ColumnSpacing="10"
+                                    RowSpacing="5">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="3*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        VerticalAlignment="Center"
+                                        HorizontalTextAlignment="End"
+                                        Text="Down Cost/Cutoff" />
+                                    <mux:NumberBox
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
+                                        LargeChange="5"
+                                        Minimum="0"
+                                        SmallChange="1"
+                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.DownhillCost}" />
+                                    <mux:NumberBox
+                                        x:Name="DownhillCutoff"
+                                        Grid.Row="0"
+                                        Grid.Column="2"
+                                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
+                                        LargeChange="1"
+                                        Minimum="0"
+                                        SmallChange="0.1"
+                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.DownhillCutoff}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        VerticalAlignment="Center"
+                                        HorizontalTextAlignment="End"
+                                        Text="Up Cost/Cutoff" />
+                                    <mux:NumberBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
+                                        LargeChange="5"
+                                        Minimum="0"
+                                        SmallChange="1"
+                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.UphillCost}" />
+                                    <mux:NumberBox
+                                        x:Name="UphillCutoff"
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
+                                        LargeChange="1"
+                                        Minimum="0"
+                                        SmallChange="0.1"
+                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.UphillCutoff}" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Grid.Column="0"
+                                        VerticalAlignment="Center"
+                                        HorizontalTextAlignment="End"
+                                        Text="Power" />
+                                    <mux:NumberBox
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
+                                        LargeChange="20"
+                                        Minimum="0"
+                                        SmallChange="5"
+                                        Value="{x:Bind Mode=TwoWay, Path=ViewModel.BikerPower}" />
+                                </Grid>
+                                <Grid Grid.Row="3" ColumnSpacing="5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Button
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{x:Bind Mode=OneTime, Path=ViewModel.RecalculateCommand}"
+                                        Content="Recalculate" />
+                                </Grid>
                                 <TextBlock
-                                    Grid.Row="3"
-                                    Grid.Column="0"
-                                    HorizontalTextAlignment="End"
-                                    Text="Descent" />
-                                <TextBlock
-                                    Grid.Row="0"
-                                    Grid.Column="1"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(ViewModel.Track.Points.Total.Distance)}" />
-                                <TextBlock
-                                    Grid.Row="1"
-                                    Grid.Column="1"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.Track.Points.Total.Time)}" />
-                                <TextBlock
-                                    Grid.Row="2"
-                                    Grid.Column="1"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Ascent)}" />
-                                <TextBlock
-                                    Grid.Row="3"
-                                    Grid.Column="1"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(ViewModel.Track.Points.Total.Descent)}" />
-                                <TextBlock
-                                    Grid.Row="0"
-                                    Grid.Column="2"
-                                    HorizontalAlignment="Right"
-                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.Track.CompareSession.Diff.Distance)}"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.FlexDistance(ViewModel.Track.CompareSession.Diff.Distance)}"
-                                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
-                                <TextBlock
-                                    Grid.Row="1"
-                                    Grid.Column="2"
-                                    HorizontalAlignment="Right"
-                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.Track.CompareSession.Diff.Time)}"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(ViewModel.Track.CompareSession.Diff.Time)}"
-                                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
-                                <TextBlock
-                                    Grid.Row="2"
-                                    Grid.Column="2"
-                                    HorizontalAlignment="Right"
-                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.DifferenceBrush(ViewModel.Track.CompareSession.Diff.Ascent)}"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(ViewModel.Track.CompareSession.Diff.Ascent)}"
-                                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
-                                <TextBlock
-                                    Grid.Row="3"
-                                    Grid.Column="2"
-                                    HorizontalAlignment="Right"
-                                    Foreground="{x:Bind Mode=OneWay, Path=cycloid:Convert.ReverseDifferenceBrush(ViewModel.Track.CompareSession.Diff.Descent)}"
-                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(ViewModel.Track.CompareSession.Diff.Descent)}"
-                                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
+                                    Grid.Row="4"
+                                    HorizontalTextAlignment="Center"
+                                    Text="{x:Bind Mode=OneWay, Path=ViewModel.CompareSessionState}" />
+                                <ListView
+                                    Grid.Row="5"
+                                    ItemsSource="{x:Bind Mode=OneWay, Path=ViewModel.Track.CompareSession.Differences}"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                    ScrollViewer.VerticalScrollMode="Auto"
+                                    SelectionChanged="Differences_SelectionChanged">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="cycloid:TrackDifference">
+                                            <Grid>
+                                                <TextBlock Text="{x:Bind Mode=OneTime, Path=cycloid:Format.FlexDistance(Length)}" />
+                                                <TextBlock HorizontalAlignment="Right">
+                                                    <Run Foreground="{x:Bind Mode=OneTime, Path=cycloid:Convert.DifferenceBrush(Diff.Distance)}" Text="{x:Bind Mode=OneTime, Path=cycloid:Format.FlexDistance(Diff.Distance)}" />
+                                                    <Run>/</Run>
+                                                    <Run Foreground="{x:Bind Mode=OneTime, Path=cycloid:Convert.DifferenceBrush(Diff.Ascent)}" Text="{x:Bind Mode=OneTime, Path=cycloid:Format.ShortDistance(Diff.Ascent)}" />
+                                                </TextBlock>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
                             </Grid>
-                            <Grid Grid.Row="1" ColumnSpacing="5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-                                <Button
-                                    Grid.Column="0"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.CompareSessionCommand}"
-                                    Content="{x:Bind Mode=OneWay, Path=ViewModel.CompareSessionCommandName}" />
-                                <Button
-                                    Grid.Column="1"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.CancelCompareSessionCommand}"
-                                    Content="Rollback" />
-                            </Grid>
-                            <Grid
-                                Grid.Row="2"
-                                ColumnSpacing="10"
-                                RowSpacing="5">
+                        </mux:TabViewItem>
+                        <mux:TabViewItem
+                            Header="Sections"
+                            IsClosable="false"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
+                            Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Sections}">
+                            <mux:TabViewItem.IconSource>
+                                <mux:SymbolIconSource Symbol="FullScreen" />
+                            </mux:TabViewItem.IconSource>
+                            <Grid>
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="3*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock
+                                <ListView
+                                    x:Name="Sections"
                                     Grid.Row="0"
-                                    Grid.Column="0"
-                                    VerticalAlignment="Center"
-                                    HorizontalTextAlignment="End"
-                                    Text="Down Cost/Cutoff" />
-                                <mux:NumberBox
-                                    Grid.Row="0"
-                                    Grid.Column="1"
-                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
-                                    LargeChange="5"
-                                    Minimum="0"
-                                    SmallChange="1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.DownhillCost}" />
-                                <mux:NumberBox
-                                    x:Name="DownhillCutoff"
-                                    Grid.Row="0"
-                                    Grid.Column="2"
-                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
-                                    LargeChange="1"
-                                    Minimum="0"
-                                    SmallChange="0.1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.DownhillCutoff}" />
-                                <TextBlock
-                                    Grid.Row="1"
-                                    Grid.Column="0"
-                                    VerticalAlignment="Center"
-                                    HorizontalTextAlignment="End"
-                                    Text="Up Cost/Cutoff" />
-                                <mux:NumberBox
-                                    Grid.Row="1"
-                                    Grid.Column="1"
-                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
-                                    LargeChange="5"
-                                    Minimum="0"
-                                    SmallChange="1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.UphillCost}" />
-                                <mux:NumberBox
-                                    x:Name="UphillCutoff"
-                                    Grid.Row="1"
-                                    Grid.Column="2"
-                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
-                                    LargeChange="1"
-                                    Minimum="0"
-                                    SmallChange="0.1"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.UphillCutoff}" />
-                                <TextBlock
-                                    Grid.Row="2"
-                                    Grid.Column="0"
-                                    VerticalAlignment="Center"
-                                    HorizontalTextAlignment="End"
-                                    Text="Power" />
-                                <mux:NumberBox
-                                    Grid.Row="2"
-                                    Grid.Column="1"
-                                    IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.CanEditProfile}"
-                                    LargeChange="20"
-                                    Minimum="0"
-                                    SmallChange="5"
-                                    Value="{x:Bind Mode=TwoWay, Path=ViewModel.BikerPower}" />
+                                    ContainerContentChanging="OnTracks_ContainerContentChanging"
+                                    DoubleTapped="OnTracks_DoubleTapped"
+                                    ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Sections}"
+                                    PreviewKeyDown="OnTracks_PreviewKeyDown"
+                                    SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentSection}"
+                                    SelectionChanged="OnTracks_SelectionChanged"
+                                    Style="{StaticResource SectionsListViewStyle}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="cycloid:OnTrack">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    HorizontalTextAlignment="Right"
+                                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    HorizontalTextAlignment="Right"
+                                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(Time)}" />
+                                                <StackPanel
+                                                    Grid.Row="1"
+                                                    Grid.Column="0"
+                                                    Orientation="Horizontal"
+                                                    Spacing="1">
+                                                    <FontIcon FontSize="9" Glyph="&#xF0AD;" />
+                                                    <TextBlock Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Ascent)}" />
+                                                </StackPanel>
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Grid.Column="1"
+                                                    HorizontalTextAlignment="Right"
+                                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Speed(Speed)}" />
+                                                <StackPanel
+                                                    Grid.Row="1"
+                                                    Grid.Column="2"
+                                                    HorizontalAlignment="Right"
+                                                    Orientation="Horizontal"
+                                                    Spacing="1">
+                                                    <FontIcon FontSize="9" Glyph="&#xF0AE;" />
+                                                    <TextBlock Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Descent)}" />
+                                                </StackPanel>
+                                                <TextBox
+                                                    Grid.Row="2"
+                                                    Grid.ColumnSpan="3"
+                                                    CharacterReceived="TextBox_CharacterReceived"
+                                                    IsSpellCheckEnabled="False"
+                                                    Text="{x:Bind Mode=TwoWay, Path=Name}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                                <CommandBar Grid.Row="1" OverflowButtonVisibility="Collapsed">
+                                    <AppBarButton Command="{x:Bind Mode=OneTime, Path=ViewModel.RemoveCurrentSectionCommand}" Icon="Delete">
+                                        <AppBarButton.KeyboardAccelerators>
+                                            <KeyboardAccelerator Key="Delete" />
+                                        </AppBarButton.KeyboardAccelerators>
+                                    </AppBarButton>
+                                </CommandBar>
                             </Grid>
-                            <Grid Grid.Row="3" ColumnSpacing="5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-                                <Button
-                                    Grid.Column="1"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.RecalculateCommand}"
-                                    Content="Recalculate" />
+                        </mux:TabViewItem>
+                        <mux:TabViewItem
+                            Header="POIs"
+                            IsClosable="false"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
+                            Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.POIs}">
+                            <mux:TabViewItem.IconSource>
+                                <mux:SymbolIconSource Symbol="MapPin" />
+                            </mux:TabViewItem.IconSource>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <ListView
+                                    x:Name="Pois"
+                                    Grid.Row="0"
+                                    ContainerContentChanging="OnTracks_ContainerContentChanging"
+                                    DoubleTapped="OnTracks_DoubleTapped"
+                                    ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Points}"
+                                    PreviewKeyDown="OnTracks_PreviewKeyDown"
+                                    SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoi}"
+                                    SelectionChanged="OnTracks_SelectionChanged"
+                                    Style="{StaticResource OnTracksListViewStyle}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="cycloid:OnTrack">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="24" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <Image
+                                                    Grid.RowSpan="2"
+                                                    Width="22"
+                                                    Height="22"
+                                                    VerticalAlignment="Center"
+                                                    Source="{x:Bind Mode=OneWay, Path=cycloid:Convert.InfoTypeIcon(PointOfInterest.Type)}" />
+                                                <TextBlock Grid.Column="1" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    HorizontalTextAlignment="Right"
+                                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}" />
+                                                <TextBlock
+                                                    Grid.Column="3"
+                                                    HorizontalTextAlignment="Right"
+                                                    Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(Time)}" />
+                                                <TextBox
+                                                    Grid.Row="1"
+                                                    Grid.Column="1"
+                                                    Grid.ColumnSpan="3"
+                                                    CharacterReceived="TextBox_CharacterReceived"
+                                                    IsSpellCheckEnabled="False"
+                                                    Text="{x:Bind Mode=TwoWay, Path=Name}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                                <CommandBar Grid.Row="1" OverflowButtonVisibility="Collapsed">
+                                    <AppBarButton Command="{x:Bind Mode=OneTime, Path=ViewModel.RemoveCurrentPoiCommand}" Icon="Delete">
+                                        <AppBarButton.KeyboardAccelerators>
+                                            <KeyboardAccelerator Key="Delete" />
+                                        </AppBarButton.KeyboardAccelerators>
+                                    </AppBarButton>
+                                </CommandBar>
                             </Grid>
-                            <TextBlock
-                                Grid.Row="4"
-                                HorizontalTextAlignment="Center"
-                                Text="{x:Bind Mode=OneWay, Path=ViewModel.CompareSessionState}" />
-                            <ListView
-                                Grid.Row="5"
-                                ItemsSource="{x:Bind Mode=OneWay, Path=ViewModel.Track.CompareSession.Differences}"
-                                ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                ScrollViewer.VerticalScrollMode="Auto"
-                                SelectionChanged="Differences_SelectionChanged">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate x:DataType="cycloid:TrackDifference">
-                                        <Grid>
-                                            <TextBlock Text="{x:Bind Mode=OneTime, Path=cycloid:Format.FlexDistance(Length)}" />
-                                            <TextBlock HorizontalAlignment="Right">
-                                                <Run Foreground="{x:Bind Mode=OneTime, Path=cycloid:Convert.DifferenceBrush(Diff.Distance)}" Text="{x:Bind Mode=OneTime, Path=cycloid:Format.FlexDistance(Diff.Distance)}" />
-                                                <Run>/</Run>
-                                                <Run Foreground="{x:Bind Mode=OneTime, Path=cycloid:Convert.DifferenceBrush(Diff.Ascent)}" Text="{x:Bind Mode=OneTime, Path=cycloid:Format.ShortDistance(Diff.Ascent)}" />
-                                            </TextBlock>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </Grid>
-                    </mux:TabViewItem>
-                    <mux:TabViewItem
-                        Header="Sections"
-                        IsClosable="false"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
-                        Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Sections}">
-                        <mux:TabViewItem.IconSource>
-                            <mux:SymbolIconSource Symbol="FullScreen" />
-                        </mux:TabViewItem.IconSource>
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <ListView
-                                x:Name="Sections"
-                                Grid.Row="0"
-                                ContainerContentChanging="OnTracks_ContainerContentChanging"
-                                DoubleTapped="OnTracks_DoubleTapped"
-                                ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Sections}"
-                                PreviewKeyDown="OnTracks_PreviewKeyDown"
-                                SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentSection}"
-                                SelectionChanged="OnTracks_SelectionChanged"
-                                Style="{StaticResource SectionsListViewStyle}">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate x:DataType="cycloid:OnTrack">
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition />
-                                                <ColumnDefinition />
-                                                <ColumnDefinition />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
-                                            <TextBlock
-                                                Grid.Column="1"
-                                                HorizontalTextAlignment="Right"
-                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}" />
-                                            <TextBlock
-                                                Grid.Column="2"
-                                                HorizontalTextAlignment="Right"
-                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(Time)}" />
-                                            <StackPanel
-                                                Grid.Row="1"
-                                                Grid.Column="0"
-                                                Orientation="Horizontal"
-                                                Spacing="1">
-                                                <FontIcon FontSize="9" Glyph="&#xF0AD;" />
-                                                <TextBlock Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Ascent)}" />
-                                            </StackPanel>
-                                            <TextBlock
-                                                Grid.Row="1"
-                                                Grid.Column="1"
-                                                HorizontalTextAlignment="Right"
-                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Speed(Speed)}" />
-                                            <StackPanel
-                                                Grid.Row="1"
-                                                Grid.Column="2"
-                                                HorizontalAlignment="Right"
-                                                Orientation="Horizontal"
-                                                Spacing="1">
-                                                <FontIcon FontSize="9" Glyph="&#xF0AE;" />
-                                                <TextBlock Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Descent)}" />
-                                            </StackPanel>
-                                            <TextBox
-                                                Grid.Row="2"
-                                                Grid.ColumnSpan="3"
-                                                CharacterReceived="TextBox_CharacterReceived"
-                                                IsSpellCheckEnabled="False"
-                                                Text="{x:Bind Mode=TwoWay, Path=Name}" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                            <CommandBar Grid.Row="1" OverflowButtonVisibility="Collapsed">
-                                <AppBarButton Command="{x:Bind Mode=OneTime, Path=ViewModel.RemoveCurrentSectionCommand}" Icon="Delete">
-                                    <AppBarButton.KeyboardAccelerators>
-                                        <KeyboardAccelerator Key="Delete" />
-                                    </AppBarButton.KeyboardAccelerators>
-                                </AppBarButton>
-                            </CommandBar>
-                        </Grid>
-                    </mux:TabViewItem>
-                    <mux:TabViewItem
-                        Header="POIs"
-                        IsClosable="false"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
-                        Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.POIs}">
-                        <mux:TabViewItem.IconSource>
-                            <mux:SymbolIconSource Symbol="MapPin" />
-                        </mux:TabViewItem.IconSource>
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <ListView
-                                x:Name="Pois"
-                                Grid.Row="0"
-                                ContainerContentChanging="OnTracks_ContainerContentChanging"
-                                DoubleTapped="OnTracks_DoubleTapped"
-                                ItemsSource="{x:Bind Mode=OneTime, Path=ViewModel.Points}"
-                                PreviewKeyDown="OnTracks_PreviewKeyDown"
-                                SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentPoi}"
-                                SelectionChanged="OnTracks_SelectionChanged"
-                                Style="{StaticResource OnTracksListViewStyle}">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate x:DataType="cycloid:OnTrack">
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="24" />
-                                                <ColumnDefinition />
-                                                <ColumnDefinition />
-                                                <ColumnDefinition />
-                                            </Grid.ColumnDefinitions>
-                                            <Image
-                                                Grid.RowSpan="2"
-                                                Width="22"
-                                                Height="22"
-                                                VerticalAlignment="Center"
-                                                Source="{x:Bind Mode=OneWay, Path=cycloid:Convert.InfoTypeIcon(PointOfInterest.Type)}" />
-                                            <TextBlock Grid.Column="1" Text="{x:Bind Mode=OneWay, Path=TrackFilePosition}" />
-                                            <TextBlock
-                                                Grid.Column="2"
-                                                HorizontalTextAlignment="Right"
-                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Distance(Distance)}" />
-                                            <TextBlock
-                                                Grid.Column="3"
-                                                HorizontalTextAlignment="Right"
-                                                Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Duration(Time)}" />
-                                            <TextBox
-                                                Grid.Row="1"
-                                                Grid.Column="1"
-                                                Grid.ColumnSpan="3"
-                                                CharacterReceived="TextBox_CharacterReceived"
-                                                IsSpellCheckEnabled="False"
-                                                Text="{x:Bind Mode=TwoWay, Path=Name}" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                            <CommandBar Grid.Row="1" OverflowButtonVisibility="Collapsed">
-                                <AppBarButton Command="{x:Bind Mode=OneTime, Path=ViewModel.RemoveCurrentPoiCommand}" Icon="Delete">
-                                    <AppBarButton.KeyboardAccelerators>
-                                        <KeyboardAccelerator Key="Delete" />
-                                    </AppBarButton.KeyboardAccelerators>
-                                </AppBarButton>
-                            </CommandBar>
-                        </Grid>
-                    </mux:TabViewItem>
-                    <mux:TabViewItem
-                        Header="Train"
-                        IsClosable="false"
-                        IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
-                        Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Train}">
-                        <mux:TabViewItem.IconSource>
-                            <mux:SymbolIconSource Symbol="Play" />
-                        </mux:TabViewItem.IconSource>
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition />
-                            </Grid.RowDefinitions>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Command="{x:Bind Mode=OneTime, Path=ViewModel.SkipMinutesCommand}" Content="{ic:SymbolIcon Symbol=SkipBack10}">
-                                    <Button.CommandParameter>
-                                        <x:Int32>-10</x:Int32>
-                                    </Button.CommandParameter>
-                                </Button>
-                                <Button
-                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.PlayCommand}"
-                                    Content="{ui:SymbolIcon Symbol=Play}"
-                                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNot(ViewModel.IsPlaying)}" />
-                                <Button
-                                    Command="{x:Bind Mode=OneTime, Path=ViewModel.PlayCancelCommand}"
-                                    Content="{ui:SymbolIcon Symbol=Pause}"
-                                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.IsPlaying)}" />
-                                <Button Command="{x:Bind Mode=OneTime, Path=ViewModel.SkipMinutesCommand}" Content="{ic:SymbolIcon Symbol=SkipForward10}">
-                                    <Button.CommandParameter>
-                                        <x:Int32>10</x:Int32>
-                                    </Button.CommandParameter>
-                                </Button>
-                            </StackPanel>
-                            <mux:ProgressBar Grid.Row="1" />
-                        </Grid>
-                    </mux:TabViewItem>
-                </mux:TabView.TabItems>
-            </mux:TabView>
+                        </mux:TabViewItem>
+                        <mux:TabViewItem
+                            Header="Train"
+                            IsClosable="false"
+                            IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
+                            Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Train}">
+                            <mux:TabViewItem.IconSource>
+                                <mux:SymbolIconSource Symbol="Play" />
+                            </mux:TabViewItem.IconSource>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Command="{x:Bind Mode=OneTime, Path=ViewModel.SkipMinutesCommand}" Content="{ic:SymbolIcon Symbol=SkipBack10}">
+                                        <Button.CommandParameter>
+                                            <x:Int32>-10</x:Int32>
+                                        </Button.CommandParameter>
+                                    </Button>
+                                    <Button
+                                        Command="{x:Bind Mode=OneTime, Path=ViewModel.PlayCommand}"
+                                        Content="{ic:SymbolIcon Symbol=Play}"
+                                        Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNot(ViewModel.IsPlaying)}" />
+                                    <Button
+                                        Command="{x:Bind Mode=OneTime, Path=ViewModel.PlayCancelCommand}"
+                                        Content="{ic:SymbolIcon Symbol=Pause}"
+                                        Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.IsPlaying)}" />
+                                    <Button Command="{x:Bind Mode=OneTime, Path=ViewModel.SkipMinutesCommand}" Content="{ic:SymbolIcon Symbol=SkipForward10}">
+                                        <Button.CommandParameter>
+                                            <x:Int32>10</x:Int32>
+                                        </Button.CommandParameter>
+                                    </Button>
+                                </StackPanel>
+                                <mux:ProgressBar Grid.Row="1" />
+                            </Grid>
+                        </mux:TabViewItem>
+                    </mux:TabView.TabItems>
+                </mux:TabView>
 
-            <TextBlock
-                Grid.Row="5"
-                Margin="5,0,0,2"
-                FontSize="11"
-                Text="{x:Bind Mode=OneWay, Path=ViewModel.Status}" />
+                <TextBlock
+                    Grid.Row="2"
+                    Margin="5,0,0,2"
+                    FontSize="11"
+                    Text="{x:Bind Mode=OneWay, Path=ViewModel.Status}" />
 
-        </Grid>
+            </Grid>
 
-        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid Grid.Row="0" Grid.Column="1">
 
-            <controls:Map x:Name="Map" />
+                <controls:Map x:Name="Map" />
 
-            <controls:StreetView
-                Margin="10"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                GoogleApiKey="{cycloid:ConfigurationValue Key=Google:ServiceApiKey}"
-                Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}"
-                Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNot(ViewModel.IsEditMode)}" />
-
-            <StackPanel
-                Margin="10"
-                HorizontalAlignment="Left"
-                Orientation="Vertical"
-                Spacing="10">
-
-                <controls:Compass
-                    HorizontalAlignment="Left"
-                    Heading="{x:Bind Mode=OneWay, Path=Map.Heading}"
-                    Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}" />
-
-                <controls:MapCurrentPointValues
-                    HorizontalAlignment="Left"
+                <controls:StreetView
+                    Margin="10"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    GoogleApiKey="{cycloid:ConfigurationValue Key=Google:ServiceApiKey}"
                     Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}"
-                    Track="{x:Bind Mode=OneWay, Path=ViewModel.Track}" />
+                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfNot(ViewModel.IsEditMode)}" />
 
-            </StackPanel>
+                <StackPanel
+                    Margin="10"
+                    HorizontalAlignment="Left"
+                    Orientation="Vertical"
+                    Spacing="10">
 
-            <controls:Bing
-                Margin="10"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom"
-                Address="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPointAddress}" />
+                    <controls:Compass
+                        HorizontalAlignment="Left"
+                        Heading="{x:Bind Mode=OneWay, Path=Map.Heading}"
+                        Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}" />
+
+                    <controls:MapCurrentPointValues
+                        HorizontalAlignment="Left"
+                        Point="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPoint}"
+                        Track="{x:Bind Mode=OneWay, Path=ViewModel.Track}" />
+
+                </StackPanel>
+
+                <controls:Bing
+                    Margin="10"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Address="{x:Bind Mode=OneWay, Path=ViewModel.CurrentPointAddress}" />
+
+            </Grid>
+
+            <controls:Profile Grid.Row="1" Grid.Column="1" />
 
         </Grid>
-
-        <controls:Profile Grid.Row="1" Grid.Column="1" />
 
     </Grid>
 

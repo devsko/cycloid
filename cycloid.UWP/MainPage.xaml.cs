@@ -8,15 +8,20 @@ using CommunityToolkit.WinUI;
 using cycloid.Controls;
 using cycloid.Info;
 using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel.Core;
 using Windows.Devices.Geolocation;
 using Windows.Globalization.NumberFormatting;
 using Windows.Services.Maps;
 using Windows.Storage;
 using Windows.System;
+using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace cycloid;
@@ -36,6 +41,17 @@ public sealed partial class MainPage : Page,
     public MainPage()
     {
         InitializeComponent();
+
+        CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
+        titleBar.ExtendViewIntoTitleBar = true;
+
+        ApplicationView.GetForCurrentView().TitleBar.ButtonBackgroundColor = Colors.Transparent;
+
+        Window.Current.SetTitleBar(TitleBar);
+
+        titleBar.LayoutMetricsChanged += TitleBar_LayoutMetricsChanged;
+        titleBar.IsVisibleChanged += TitleBar_IsVisibleChanged;
+        Window.Current.CoreWindow.Activated += CoreWindow_Activated;
 
         // Workaround: Cannot create IncrementNumberRounder as XAML resource
         DecimalFormatter cutoffFormatter = new()
@@ -234,9 +250,60 @@ public sealed partial class MainPage : Page,
         }
     }
 
+    private void TitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
+    {
+        LeftPaddingColumn.Width = new GridLength(sender.SystemOverlayLeftInset);
+        RightPaddingColumn.Width = new GridLength(sender.SystemOverlayRightInset);
+        TitleBarControlsRoot.Margin = new Thickness(228, 0, sender.SystemOverlayRightInset, 0);
+    }
+
+    private void TitleBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)
+    {
+        TitleBar.Visibility = sender.IsVisible ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void CoreWindow_Activated(CoreWindow sender, WindowActivatedEventArgs args)
+    {
+        UISettings settings = new UISettings();
+        if (args.WindowActivationState == CoreWindowActivationState.Deactivated)
+        {
+            TitleTextBlock.Foreground = new SolidColorBrush(settings.UIElementColor(UIElementType.GrayText));
+            Brush background = (Brush)this.FindResource("AccentFillColorDisabledBrush");
+            Brush foreground = (Brush)this.FindResource("TextFillColorDisabledBrush");
+            foreach (var button in TitleBarControlsRoot.FindChildren().OfType<ToggleButton>().Where(b => b.IsChecked == true))
+            {
+                button.Background = background;
+                button.Foreground = foreground;
+            }
+            foreach (var button in TitleBarControlsRoot.FindChildren().OfType<Microsoft.UI.Xaml.Controls.ToggleSplitButton>().Where(b => b.IsChecked == true))
+            {
+                button.Background = background;
+                button.Foreground = foreground;
+            }
+        }
+        else
+        {
+            TitleTextBlock.Foreground = new SolidColorBrush(settings.UIElementColor(UIElementType.WindowText));
+            foreach (var button in TitleBarControlsRoot.FindChildren().OfType<ToggleButton>().Where(b => b.IsChecked == true))
+            {
+                button.ClearValue(BackgroundProperty);
+                button.ClearValue(ForegroundProperty);
+                button.IsChecked = false;
+                button.IsChecked = true;
+            }
+            foreach (var button in TitleBarControlsRoot.FindChildren().OfType<Microsoft.UI.Xaml.Controls.ToggleSplitButton>().Where(b => b.IsChecked == true))
+            {
+                button.ClearValue(BackgroundProperty);
+                button.ClearValue(ForegroundProperty);
+                button.IsChecked = false;
+                button.IsChecked = true;
+            }
+        }
+    }
+
     void IRecipient<FileChanged>.Receive(FileChanged message)
     {
-        ApplicationView.GetForCurrentView().Title = message.Value is null ? "" : Path.GetFileNameWithoutExtension(message.Value.Name);
+        TitleTextBlock.Text = $"{(message.Value is null ? "" : Path.GetFileNameWithoutExtension(message.Value.Name))} - cycloid";
     }
 
     void IRecipient<OnTrackAdded>.Receive(OnTrackAdded message)

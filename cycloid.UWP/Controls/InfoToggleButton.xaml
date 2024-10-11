@@ -9,11 +9,12 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <x:Double x:Key="SplitButtonSecondaryButtonSize">18</x:Double>
+            <Thickness x:Key="ButtonPadding">0</Thickness>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <mux:ToggleSplitButton
-        Height="32.8"
+        Height="28"
         IsChecked="{x:Bind Mode=TwoWay, Path=IsChecked}"
         IsEnabled="{x:Bind Mode=OneWay, Path=IsEnabled}">
         <mux:ToggleSplitButton.Flyout>
@@ -57,7 +58,7 @@
             <Grid>
                 <SymbolIcon Symbol="{x:Bind Mode=OneWay, Path=Symbol}" />
                 <mux:ProgressBar
-                    Margin="-8,-6,-8,-6"
+                    Margin="-8,0,-8,-4"
                     VerticalAlignment="Bottom"
                     Foreground="{ThemeResource AppBarToggleButtonForegroundChecked}"
                     IsIndeterminate="True"
