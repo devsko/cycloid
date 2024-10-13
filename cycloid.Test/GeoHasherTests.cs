@@ -5,7 +5,7 @@ namespace cycloid.Test;
 public class GeoHasherTests
 {
     [Theory]
-    [InlineData(47.76027170508629, 12.216676087056076, "u22xtyrztpvy")]
+    [InlineData(44.85027, 7.193301, "spvp5swpb03c")]
     [InlineData(40.71014375091961, -74.0132859349251, "dr5reg11v2vf")]
     [InlineData(1e-9, 1e-9, "s00000000000")]
     [InlineData(-1e-9, -1e-9, "7zzzzzzzzzzz")]
