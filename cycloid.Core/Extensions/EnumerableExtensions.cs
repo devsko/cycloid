@@ -1,12 +1,8 @@
 using System.Collections.Generic;
 
-#if !NETSTANDARD
 #pragma warning disable IDE0130 // Namespace does not match folder structure
-#endif
 namespace System.Linq;
-#if !NETSTANDARD
 #pragma warning restore IDE0130 // Namespace does not match folder structure
-#endif
 
 public static class EnumerableExtensions
 {
