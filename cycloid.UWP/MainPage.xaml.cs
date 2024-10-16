@@ -19,9 +19,7 @@ using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace cycloid;
@@ -252,9 +250,9 @@ public sealed partial class MainPage : Page,
 
     private void TitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
     {
-        LeftPaddingColumn.Width = new GridLength(sender.SystemOverlayLeftInset);
-        RightPaddingColumn.Width = new GridLength(sender.SystemOverlayRightInset);
-        TitleBarControlsRoot.Margin = new Thickness(228, 0, sender.SystemOverlayRightInset, 0);
+        var margin = TitleBarControlsRoot.Margin;
+        TitleBarControlsRoot.Margin = new Thickness(margin.Left + sender.SystemOverlayLeftInset, margin.Top, margin.Right + sender.SystemOverlayRightInset, margin.Bottom);
+        TitleColumn.Width = new GridLength(TitleColumn.Width.Value - sender.SystemOverlayLeftInset);
     }
 
     private void TitleBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)
@@ -264,42 +262,8 @@ public sealed partial class MainPage : Page,
 
     private void CoreWindow_Activated(CoreWindow sender, WindowActivatedEventArgs args)
     {
-        UISettings settings = new UISettings();
-        if (args.WindowActivationState == CoreWindowActivationState.Deactivated)
-        {
-            TitleTextBlock.Foreground = new SolidColorBrush(settings.UIElementColor(UIElementType.GrayText));
-            Brush background = (Brush)this.FindResource("AccentFillColorDisabledBrush");
-            Brush foreground = (Brush)this.FindResource("TextFillColorDisabledBrush");
-            foreach (var button in TitleBarControlsRoot.FindChildren().OfType<ToggleButton>().Where(b => b.IsChecked == true))
-            {
-                button.Background = background;
-                button.Foreground = foreground;
-            }
-            foreach (var button in TitleBarControlsRoot.FindChildren().OfType<Microsoft.UI.Xaml.Controls.ToggleSplitButton>().Where(b => b.IsChecked == true))
-            {
-                button.Background = background;
-                button.Foreground = foreground;
-            }
+        TitleBarControlsRoot.Opacity = args.WindowActivationState == CoreWindowActivationState.Deactivated ? .5 : 1;
         }
-        else
-        {
-            TitleTextBlock.Foreground = new SolidColorBrush(settings.UIElementColor(UIElementType.WindowText));
-            foreach (var button in TitleBarControlsRoot.FindChildren().OfType<ToggleButton>().Where(b => b.IsChecked == true))
-            {
-                button.ClearValue(BackgroundProperty);
-                button.ClearValue(ForegroundProperty);
-                button.IsChecked = false;
-                button.IsChecked = true;
-            }
-            foreach (var button in TitleBarControlsRoot.FindChildren().OfType<Microsoft.UI.Xaml.Controls.ToggleSplitButton>().Where(b => b.IsChecked == true))
-            {
-                button.ClearValue(BackgroundProperty);
-                button.ClearValue(ForegroundProperty);
-                button.IsChecked = false;
-                button.IsChecked = true;
-            }
-        }
-    }
 
     void IRecipient<FileChanged>.Receive(FileChanged message)
     {

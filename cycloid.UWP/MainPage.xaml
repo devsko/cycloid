@@ -102,35 +102,33 @@
         <!--  Title Bar  -->
 
         <Grid>
-            <Grid x:Name="TitleBar" Background="Transparent">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
-                    <ColumnDefinition Width="225" />
-                    <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
-                </Grid.ColumnDefinitions>
-                <TextBlock
-                    x:Name="TitleTextBlock"
-                    Grid.Column="1"
-                    Margin="8,0,0,0"
-                    VerticalAlignment="Center"
-                    Style="{StaticResource BodyTextBlockStyle}"
-                    Text="cycloid" />
-            </Grid>
+            <Grid
+                x:Name="TitleBar"
+                Height="48"
+                Background="Transparent" />
 
             <Grid
                 x:Name="TitleBarControlsRoot"
-                Margin="228,0,0,0"
-                Padding="3"
+                Margin="8,0,0,0"
                 ColumnSpacing="4">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="TitleColumn" Width="219" />
                     <ColumnDefinition Width="184" />
                     <ColumnDefinition Width="175" />
                     <ColumnDefinition />
                     <ColumnDefinition Width="2*" MaxWidth="350" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel
+                <TextBlock
+                    x:Name="TitleTextBlock"
                     Grid.Column="0"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="False"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Text="cycloid" />
+
+                <StackPanel
+                    Grid.Column="1"
                     Orientation="Horizontal"
                     Spacing="4">
                     <ToggleButton Command="{x:Bind Mode=OneTime, Path=ViewModel.ToggleHeatmapVisibleCommand}" IsChecked="{x:Bind Mode=OneWay, Path=ViewModel.HeatmapVisible}">
@@ -184,15 +182,16 @@
                 </StackPanel>
 
                 <ComboBox
-                    Grid.Column="1"
+                    Grid.Column="2"
                     Height="28"
                     HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
                     DisplayMemberPath="Name"
                     ItemsSource="{x:Bind Mode=OneTime, Path=cycloid:ViewModel.MapStyleAndColors}"
                     SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.MapStyleAndColor}" />
 
                 <AutoSuggestBox
-                    Grid.Column="3"
+                    Grid.Column="4"
                     Height="28"
                     HorizontalAlignment="Stretch"
                     DisplayMemberPath="DisplayName"
