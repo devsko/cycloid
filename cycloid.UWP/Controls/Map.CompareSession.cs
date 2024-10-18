@@ -51,6 +51,7 @@ partial class Map :
                 }
                 break;
             case NotifyCollectionChangedAction.Replace:
+                GetDifferenceLine((TrackDifference)e.OldItems[0]).Tag = e.NewItems[0];
                 break;
             case NotifyCollectionChangedAction.Reset:
                 _differenceLayer.MapElements.Clear();

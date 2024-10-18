@@ -10,6 +10,8 @@ namespace cycloid;
 partial class ViewModel :
     IRecipient<CompareSessionChanged>
 {
+    private TrackDifference _currentDifference;
+    private TrackDifference _previousDifference;
     private int _downhillCost;
     private float _downhillCutoff;
     private int _uphillCost;
@@ -18,6 +20,21 @@ partial class ViewModel :
     private bool _trackIsRecalculating;
 
     public bool HasCompareSession => Track?.CompareSession is not null;
+
+    public TrackDifference CurrentDifference
+    {
+        get => _currentDifference;
+        set
+        {
+            _previousDifference = value is null ? _currentDifference : null;
+
+            if (SetProperty(ref _currentDifference, value))
+            {
+
+
+            }
+        }
+    }
 
     public int DownhillCost
     {
@@ -190,9 +207,15 @@ partial class ViewModel :
         return HasCompareSession;
     }
 
-    private void CompareSessionDifferences_CollectionChanged(object _1, NotifyCollectionChangedEventArgs _2)
+    private void CompareSessionDifferences_CollectionChanged(object _, NotifyCollectionChangedEventArgs e)
     {
         OnPropertyChanged(nameof(CompareSessionState));
+
+        if (e.Action == NotifyCollectionChangedAction.Replace && CurrentDifference is null && (TrackDifference)e.OldItems[0] == _previousDifference)
+        {
+            CurrentDifference = (TrackDifference)e.NewItems[0];
+            _previousDifference = null;
+        }
     }
 
     void IRecipient<CompareSessionChanged>.Receive(CompareSessionChanged message)

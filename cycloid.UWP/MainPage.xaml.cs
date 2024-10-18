@@ -27,6 +27,7 @@ namespace cycloid;
 public sealed partial class MainPage : Page,
     IRecipient<FileChanged>,
     IRecipient<OnTrackAdded>,
+    IRecipient<RemovingDifference>,
     IRecipient<RequestPasteSelectionDetails>,
     IRecipient<RequestDeleteSelectionDetails>,
     IRecipient<RequestExportDetails>
@@ -66,6 +67,7 @@ public sealed partial class MainPage : Page,
 
         StrongReferenceMessenger.Default.Register<FileChanged>(this);
         StrongReferenceMessenger.Default.Register<OnTrackAdded>(this);
+        StrongReferenceMessenger.Default.Register<RemovingDifference>(this);
         StrongReferenceMessenger.Default.Register<RequestPasteSelectionDetails>(this);
         StrongReferenceMessenger.Default.Register<RequestDeleteSelectionDetails>(this);
         StrongReferenceMessenger.Default.Register<RequestExportDetails>(this);
@@ -263,7 +265,7 @@ public sealed partial class MainPage : Page,
     private void CoreWindow_Activated(CoreWindow sender, WindowActivatedEventArgs args)
     {
         TitleBarControlsRoot.Opacity = args.WindowActivationState == CoreWindowActivationState.Deactivated ? .5 : 1;
-        }
+    }
 
     void IRecipient<FileChanged>.Receive(FileChanged message)
     {
@@ -273,6 +275,17 @@ public sealed partial class MainPage : Page,
     void IRecipient<OnTrackAdded>.Receive(OnTrackAdded message)
     {
         _lastAddedOnTrack = message.Value;
+    }
+
+    void IRecipient<RemovingDifference>.Receive(RemovingDifference message)
+    {
+        // -> ViewModel.CompareSessionDifferences_CollectionChanged
+        // RemovingDifference wieder weg
+
+        if (Differences.SelectedIndex == message.Value.Index && ViewModel.Track.CompareSession.Differences.Count > 1)
+        {
+            Differences.SelectedIndex = Differences.SelectedIndex == 0 ? 1 : Differences.SelectedIndex - 1;
+        }
     }
 
     void IRecipient<RequestPasteSelectionDetails>.Receive(RequestPasteSelectionDetails message)
