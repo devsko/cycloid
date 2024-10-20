@@ -53,7 +53,7 @@ public partial class PointValuesControl<T> : PointControl<T> where T : struct, I
     }
 }
 
-public class TrackPointValuesControl : PointValuesControl<TrackPoint>
+public partial class TrackPointValuesControl : PointValuesControl<TrackPoint>
 {
     protected string FilePosition(TrackPoint point) => Track?.FilePosition(point.Distance);
 
@@ -66,5 +66,5 @@ public class TrackPointValuesControl : PointValuesControl<TrackPoint>
     protected string TimeToEnd(TrackPoint point) => Format.Duration(Track?.TimeToEnd(point.Time));
 }
 
-public class SelectionValuesControl : PointValuesControl<Selection>
+public partial class SelectionValuesControl : PointValuesControl<Selection>
 { }

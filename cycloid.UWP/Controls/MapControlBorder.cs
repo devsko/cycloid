@@ -2,7 +2,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace cycloid.Controls;
 
-public class MapControlBorder : ContentControl
+public partial class MapControlBorder : ContentControl
 {
     public MapControlBorder()
     {

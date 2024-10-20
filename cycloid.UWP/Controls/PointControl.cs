@@ -3,7 +3,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace cycloid.Controls;
 
-public class PointControl<T> : UserControl where T : struct, ICanBeInvalid<T>
+public partial class PointControl<T> : UserControl where T : struct, ICanBeInvalid<T>
 {
     public T Point
     {
@@ -18,5 +18,5 @@ public class PointControl<T> : UserControl where T : struct, ICanBeInvalid<T>
     { }
 }
 
-public class TrackPointControl : PointControl<TrackPoint>
+public partial class TrackPointControl : PointControl<TrackPoint>
 { }

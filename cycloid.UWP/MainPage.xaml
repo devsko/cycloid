@@ -10,7 +10,9 @@
     Loaded="Page_Loaded">
 
     <Page.Resources>
-        <ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml">
+        <!-- TODO Modern UWP -->
+        <!--<ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml">-->
+        <ResourceDictionary>
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>

@@ -1,23 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-         xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
-         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-         xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
-         xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-         xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
-         xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
-         xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
-         xmlns:iot="http://schemas.microsoft.com/appx/manifest/iot/windows10"
-         IgnorableNamespaces="uap uap5 mp rescap desktop4 desktop iot">
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  IgnorableNamespaces="uap mp desktop4">
 
   <Identity
-    Name="devsko.cycloid"
+    Name="1b87fdfa-51f1-48fd-847e-7eb2d3e39d90"
     Publisher="CN=devsko"
-    Version="0.3.0.0" />
+    Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="7cf7ab7a-a1ed-48a6-84d3-fb74312867cc" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="1b87fdfa-51f1-48fd-847e-7eb2d3e39d90" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>cycloid</DisplayName>

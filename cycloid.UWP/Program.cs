@@ -1,7 +1,9 @@
 using System.Linq;
+using System.Threading;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
+using Windows.System;
 using Windows.UI.Xaml;
 
 namespace cycloid;
@@ -19,7 +21,11 @@ public static class Program
             {
                 if (RegisterForFile(file, out AppInstance instance))
                 {
-                    Application.Start((p) => new App());
+                    Application.Start(_ =>
+                    {
+                        SynchronizationContext.SetSynchronizationContext(new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread()));
+                        new App();
+                    });
                 }
                 else
                 {
@@ -35,7 +41,11 @@ public static class Program
             }
             else
             {
-                Application.Start((p) => new App());
+                Application.Start(_ =>
+                {
+                    SynchronizationContext.SetSynchronizationContext(new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread()));
+                    new App();
+                });
             }
         }
     }

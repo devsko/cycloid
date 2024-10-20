@@ -19,11 +19,11 @@ partial class ViewModel
 {
     public static readonly MapStyleAndColor[] MapStyleAndColors =
     [
-        new("Aerial", MapStyleSheet.Combine([MapStyleSheet.Aerial(), StyleSheet.Extension])),
-        new("Aerial with roads", MapStyleSheet.Combine([MapStyleSheet.AerialWithOverlay(), StyleSheet.Extension])),
-        new("OSM", MapStyleSheet.Combine([MapStyleSheet.RoadLight(), StyleSheet.Empty, StyleSheet.Extension]), Osm: true),
-        new("Road (Dark)", MapStyleSheet.Combine([MapStyleSheet.RoadDark(), StyleSheet.Extension])),
-        new("Road (Light)", MapStyleSheet.Combine([MapStyleSheet.RoadLight(), StyleSheet.Extension])),
+        // TODO Modern UWP new("OSM", MapStyleSheet.Combine([MapStyleSheet.RoadLight(), StyleSheet.Empty, StyleSheet.Extension]), Osm: true),
+        new("Road (Dark)", MapStyleSheet.RoadDark() /* TODO Modern UWP MapStyleSheet.Combine([MapStyleSheet.RoadDark(), StyleSheet.Extension]) */),
+        new("Aerial", MapStyleSheet.Aerial() /* TODO Modern UWP MapStyleSheet.Combine([MapStyleSheet.Aerial(), StyleSheet.Extension]) */),
+        new("Aerial with roads", MapStyleSheet.AerialWithOverlay() /* TODO Modern UWP MapStyleSheet.Combine([MapStyleSheet.AerialWithOverlay(), StyleSheet.Extension]) */),
+        new("Road (Light)", MapStyleSheet.RoadLight() /* TODO Modern UWP MapStyleSheet.Combine([MapStyleSheet.RoadLight(), StyleSheet.Extension]) */),
     ];
 
     public const double MinInfoZoomLevel = 13;

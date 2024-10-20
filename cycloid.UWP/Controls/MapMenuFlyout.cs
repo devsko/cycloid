@@ -8,7 +8,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 
 namespace cycloid.Controls;
 
-public class MapMenuFlyout : MenuFlyout
+public partial class MapMenuFlyout : MenuFlyout
 {
     private readonly MenuFlyoutItem _coordinates = new();
     private readonly MenuFlyoutItem _address = new();

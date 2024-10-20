@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Media;
 
 namespace cycloid.Controls;
 
-public class PointerPanel : Panel
+public partial class PointerPanel : Panel
 {
     public PointerPanel()
     {

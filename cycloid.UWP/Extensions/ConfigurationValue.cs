@@ -2,7 +2,7 @@ using Windows.UI.Xaml.Markup;
 
 namespace cycloid;
 
-public class ConfigurationValue : MarkupExtension
+public partial class ConfigurationValue : MarkupExtension
 {
     public string Key { get; set; }
 
