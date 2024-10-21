@@ -36,6 +36,7 @@ sealed partial class App : Application,
 
         RouteBuilder.ExceptionHandler = Current.ShowExceptionAsync;
 
+        Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider.Initialize();
         this.UseSegoeMetrics();
         
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);

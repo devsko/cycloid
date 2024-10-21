@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using cycloid.Info;
 using Windows.UI.Xaml.Controls.Maps;
+using WinRT;
 
 namespace cycloid;
 
@@ -13,17 +14,24 @@ public class PoisVisibleChanged(bool value) : ValueChangedMessage<bool>(value);
 
 public class InfoVisibleChanged(bool value) : ValueChangedMessage<bool>(value);
 
-public readonly record struct MapStyleAndColor(string Name, MapStyleSheet StyleSheet, bool Osm = false);
+[GeneratedBindableCustomProperty([nameof(Name)], [])]
+public partial record MapStyleAndColor(string name, MapStyleSheet styleSheet, bool osm = false)
+{
+    public string Name => name;
+    public MapStyleSheet StyleSheet => styleSheet;
+    public bool Osm => osm;
+}
 
 partial class ViewModel
 {
     public static readonly MapStyleAndColor[] MapStyleAndColors =
     [
-        // TODO Modern UWP new("OSM", MapStyleSheet.Combine([MapStyleSheet.RoadLight(), StyleSheet.Empty, StyleSheet.Extension]), Osm: true),
-        new("Road (Dark)", MapStyleSheet.RoadDark() /* TODO Modern UWP MapStyleSheet.Combine([MapStyleSheet.RoadDark(), StyleSheet.Extension]) */),
-        new("Aerial", MapStyleSheet.Aerial() /* TODO Modern UWP MapStyleSheet.Combine([MapStyleSheet.Aerial(), StyleSheet.Extension]) */),
-        new("Aerial with roads", MapStyleSheet.AerialWithOverlay() /* TODO Modern UWP MapStyleSheet.Combine([MapStyleSheet.AerialWithOverlay(), StyleSheet.Extension]) */),
-        new("Road (Light)", MapStyleSheet.RoadLight() /* TODO Modern UWP MapStyleSheet.Combine([MapStyleSheet.RoadLight(), StyleSheet.Extension]) */),
+        // TODO Modern UWP -> Collection literal
+        new("Aerial", MapStyleSheet.Combine(new MapStyleSheet[] { MapStyleSheet.Aerial(), StyleSheet.Extension })),
+        new("Aerial with roads", MapStyleSheet.Combine(new MapStyleSheet[] { MapStyleSheet.AerialWithOverlay(), StyleSheet.Extension })),
+        new("OSM", MapStyleSheet.Combine(new MapStyleSheet[] { MapStyleSheet.RoadLight(), StyleSheet.Empty, StyleSheet.Extension }), osm: true),
+        new("Road (Dark)", MapStyleSheet.Combine(new MapStyleSheet[] { MapStyleSheet.RoadDark(), StyleSheet.Extension })),
+        new("Road (Light)", MapStyleSheet.Combine(new MapStyleSheet[] { MapStyleSheet.RoadLight(), StyleSheet.Extension })),
     ];
 
     public const double MinInfoZoomLevel = 13;
