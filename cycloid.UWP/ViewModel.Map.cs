@@ -15,7 +15,7 @@ public class PoisVisibleChanged(bool value) : ValueChangedMessage<bool>(value);
 public class InfoVisibleChanged(bool value) : ValueChangedMessage<bool>(value);
 
 [GeneratedBindableCustomProperty([nameof(Name)], [])]
-public partial record MapStyleAndColor(string name, MapStyleSheet styleSheet, bool osm = false)
+public partial class MapStyleAndColor(string name, MapStyleSheet styleSheet, bool osm = false)
 {
     public string Name => name;
     public MapStyleSheet StyleSheet => styleSheet;
