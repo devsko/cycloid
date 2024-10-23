@@ -42,15 +42,14 @@ public sealed partial class MainPage : Page,
     {
         InitializeComponent();
 
+        ApplicationView.GetForCurrentView().TitleBar.ButtonBackgroundColor = Colors.Transparent;
+        
         CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
         titleBar.ExtendViewIntoTitleBar = true;
-
-        ApplicationView.GetForCurrentView().TitleBar.ButtonBackgroundColor = Colors.Transparent;
-
-        Window.Current.SetTitleBar(TitleBar);
-
         titleBar.LayoutMetricsChanged += TitleBar_LayoutMetricsChanged;
         titleBar.IsVisibleChanged += TitleBar_IsVisibleChanged;
+
+        Window.Current.SetTitleBar(TitleBar);
         Window.Current.CoreWindow.Activated += CoreWindow_Activated;
 
         // Workaround: Cannot create IncrementNumberRounder as XAML resource

@@ -30,6 +30,12 @@
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <NoWarn>$(NoWarn);NU1702</NoWarn>
     <EntryPointProjectUniqueName>..\cycloid.UWP\cycloid.UWP.csproj</EntryPointProjectUniqueName>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <PackageCertificateKeyFile>cycloid_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <AppxBundle>Never</AppxBundle>
   </PropertyGroup>
   <ItemGroup>
@@ -38,6 +44,16 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Bakery.png" />
+    <Content Include="Assets\Bar.png" />
+    <Content Include="Assets\CanvasGray.mssjson" />
+    <Content Include="Assets\cycle.3mf" />
+    <Content Include="Assets\FastFood.png" />
+    <Content Include="Assets\FuelStation.png" />
+    <Content Include="Assets\Restaurant.png" />
+    <Content Include="Assets\Supermarket.png" />
+    <Content Include="Assets\Toilet.png" />
+    <Content Include="Assets\Water.png" />
     <Content Include="Images\SplashScreen.scale-200.png" />
     <Content Include="Images\LockScreenLogo.scale-200.png" />
     <Content Include="Images\Square150x150Logo.scale-200.png" />
@@ -45,6 +61,9 @@
     <Content Include="Images\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Images\StoreLogo.png" />
     <Content Include="Images\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cycloid_TemporaryKey.pfx" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>

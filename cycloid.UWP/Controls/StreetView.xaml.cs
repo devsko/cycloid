@@ -44,7 +44,7 @@ public sealed partial class StreetView : TrackPointControl
         WebView.NavigationCompleted += WebView_NavigationCompleted;
         WebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
 
-        StorageFile templateFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Controls/StreetView.html"));
+        StorageFile templateFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///cycloid.UWP/Controls/StreetView.html"));
         string htmlTemplate = await FileIO.ReadTextAsync(templateFile);
         StorageFile htmlFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("StreetView.html", CreationCollisionOption.ReplaceExisting);
         await FileIO.WriteTextAsync(htmlFile, htmlTemplate.Replace("{{GoogleApiKey}}", GoogleApiKey));

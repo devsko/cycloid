@@ -1,19 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-         xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
-         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-         xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
-         xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-         IgnorableNamespaces="uap mp rescap desktop4 desktop">
+<Package 
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  IgnorableNamespaces="uap mp desktop4">
 
 	<Identity
 	  Name="devsko.cycloid"
 	  Publisher="CN=devsko"
-	  Version="0.3.4.0" />
+	  Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="126ade78-eeff-4c4e-9d39-cf8f1e25d25d" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="1b87fdfa-51f1-48fd-847e-7eb2d3e39d90" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
 		<DisplayName>cycloid</DisplayName>
@@ -32,7 +31,7 @@
 	<Applications>
 		<Application Id="App"
 			Executable="$targetnametoken$.exe"
-    		EntryPoint="$targetentrypoint$"
+  		EntryPoint="$targetentrypoint$"
 			desktop4:SupportsMultipleInstances="true">
 			<uap:VisualElements
 			  DisplayName="cycloid"
@@ -40,8 +39,8 @@
 			  BackgroundColor="transparent"
 			  Square150x150Logo="Images\Square150x150Logo.png"
 			  Square44x44Logo="Images\Square44x44Logo.png">
-              <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
-              <uap:SplashScreen Image="Images\SplashScreen.png" />
+        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Images\SplashScreen.png" />
 			</uap:VisualElements>
 			<Extensions>
 				<uap:Extension Category="windows.fileTypeAssociation">
@@ -53,13 +52,13 @@
 						<uap:EditFlags OpenIsSafe="true"/>
 					</uap:FileTypeAssociation>
 				</uap:Extension>
-				<desktop:Extension Category="windows.fullTrustProcess" Executable="cycloid.Wahoo\cycloid.Wahoo.exe" />
+				<!--<desktop:Extension Category="windows.fullTrustProcess" Executable="cycloid.Wahoo\cycloid.Wahoo.exe" />-->
 			</Extensions>
 		</Application>
 	</Applications>
 
 	<Capabilities>
 		<Capability Name="internetClient" />
-		<rescap:Capability Name="runFullTrust" />
+		<!--<rescap:Capability Name="runFullTrust" />-->
 	</Capabilities>
 </Package>
