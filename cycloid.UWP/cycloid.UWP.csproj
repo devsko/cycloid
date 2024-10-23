@@ -12,8 +12,10 @@
     <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
     <EnableMsixTooling>true</EnableMsixTooling>
     <LangVersion>preview</LangVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION;DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Workaround https://github.com/microsoft/CsWinRT/issues/1839 -->
+    <DynamicCodeSupport>true</DynamicCodeSupport>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,9 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="secrets.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Content Include="Controls\StreetView.html" />
+    <Content Include="secrets.json" />
   </ItemGroup>
 
 </Project>

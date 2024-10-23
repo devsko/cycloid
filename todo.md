@@ -1,24 +1,5 @@
 # TODO cycloid
 
-## Modern UWP
-
-I am currently trying to upgrade a pretty large project to modern UWP. It’s a bit tedious because many UWP packages can’t be used as they are and need to be adjusted locally. Right now i need local builds amongst others of
-- Microsoft.UI.Xaml
-- Microsoft.Xaml.Behaviors.Uwp.Managed
-- CommunityToolkit Windows and Labs-Windows
-
-So far i recognized several issues (in no particular order)
-- a reference to Microsoft.VisualStudio.Threading pulls in WPF and WinForms (it does this also under WinUI but without errors). In modern UWP this results in XamlCompiler error WMC1006: Cannot resolve Assembly or Windows Metadata file 'Type universe cannot resolve assembly: System.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089.'
-- Several IL2059 warnings for nullable enums (i.e. here typeof(global::System.Nullable<global::CommunityToolkit.WinUI.Animations.EasingType>)
-- InvalidCastExceptions when passing IEnumerables of WinRT types to WinRT
-  - using Windows.Devices.Geolocation;
-  Geopath path = new([new BasicGeoposition(0, 0, 0)]);
-  - using Windows.UI.Xaml.Controls.Maps;
-  MapStyleSheet.Combine([
-    MapStyleSheet.Aerial(), 
-    MapStyleSheet.ParseFromJson("{\"version\": \"1.*\"}")]);
-
-
 ## Dependencies
 - BehaviorsSDKManaged.sln
   - Release|AnyCPU Build

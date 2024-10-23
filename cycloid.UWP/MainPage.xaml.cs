@@ -21,6 +21,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
+using WinRT;
 
 namespace cycloid;
 
@@ -119,6 +120,13 @@ public sealed partial class MainPage : Page,
         }
     }
 
+    [GeneratedBindableCustomProperty([nameof(DisplayName)], [])]
+    public partial class MapLocationWrapper(MapLocation location)
+    {
+        public string DisplayName => location.DisplayName;
+        public MapLocation Location => location;
+    }
+
     private async void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
         if (_ignoreTextChange)
@@ -132,7 +140,7 @@ public sealed partial class MainPage : Page,
             MapLocationFinderResult result = await MapLocationFinder.FindLocationsAsync(sender.Text, Map.Center);
             if (result.Status == MapLocationFinderStatus.Success)
             {
-                sender.ItemsSource = result.Locations;
+                sender.ItemsSource = result.Locations.Select(location => new MapLocationWrapper(location)).ToList();
             }
         }
     }
@@ -140,19 +148,19 @@ public sealed partial class MainPage : Page,
     private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
     {
         _ignoreTextChange = true;
-        sender.Text = ((MapLocation)args.SelectedItem).DisplayName;
+        sender.Text = ((MapLocationWrapper)args.SelectedItem).DisplayName;
     }
 
     private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
         Geopoint point;
-        if (args.ChosenSuggestion is MapLocation location)
+        if (args.ChosenSuggestion is MapLocationWrapper location)
         {
-            point = location.Point;
+            point = location.Location.Point;
         }
-        else if (sender.ItemsSource is IReadOnlyList<MapLocation> list && list is [MapLocation first, ..])
+        else if (sender.ItemsSource is IReadOnlyList<MapLocationWrapper> list && list is [MapLocationWrapper first, ..])
         {
-            point = first.Point;
+            point = first.Location.Point;
         }
         else
         {
