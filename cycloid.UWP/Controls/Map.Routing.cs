@@ -176,9 +176,19 @@ partial class Map :
 
     private MapPolyline GetSectionLine(RouteSection section) => _routingLayer.MapElements.OfType<MapPolyline>().FirstOrDefault(line => (RouteSection)line.Tag == section);
 
-    private Visibility VisibleIfNotIsFileSplit(WayPoint wayPoint) => wayPoint?.IsFileSplit == false ? Visibility.Visible : Visibility.Collapsed;
+    private Visibility VisibleIfNotIsFileSplit(WayPoint wayPoint)
+    {
+        _ = this;
 
-    private Visibility VisibleIfNotIsDirectRoute(RouteSection section) => section?.IsDirectRoute == false ? Visibility.Visible : Visibility.Collapsed;
+        return wayPoint?.IsFileSplit == false ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private Visibility VisibleIfNotIsDirectRoute(RouteSection section)
+    {
+        _ = this;
+
+        return section?.IsDirectRoute == false ? Visibility.Visible : Visibility.Collapsed;
+    }
 
     private void RoutingLayer_MapElementPointerEntered(MapElementsLayer _, MapElementsLayerPointerEnteredEventArgs args)
     {

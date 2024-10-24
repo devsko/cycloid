@@ -29,7 +29,7 @@ public partial class PointValuesControl<T> : PointControl<T> where T : struct, I
         set => SetValue(EnabledProperty, value);
     }
 
-    public static DependencyProperty EnabledProperty =
+    public static readonly DependencyProperty EnabledProperty =
         DependencyProperty.Register(nameof(Enabled), typeof(bool), typeof(PointValuesControl<T>), new PropertyMetadata(false, (sender, _) => ((PointValuesControl<T>)sender).EnabledChanged()));
 
     public bool IsVisible => Enabled && Point.IsValid;
@@ -57,9 +57,9 @@ public partial class TrackPointValuesControl : PointValuesControl<TrackPoint>
 {
     protected string FilePosition(TrackPoint point) => Track?.FilePosition(point.Distance);
 
-    protected string DistanceFromStart(TrackPoint point) => Format.Distance(point.Distance);
+    protected string DistanceFromStart(TrackPoint point) => Format.Distance(Track?.DistanceFromStart(point.Distance));
 
-    protected string TimeFromStart(TrackPoint point) => Format.Duration(point.Time);
+    protected string TimeFromStart(TrackPoint point) => Format.Duration(Track?.TimeFromStart(point.Time));
 
     protected string DistanceToEnd(TrackPoint point) => Format.Distance(Track?.DistanceToEnd(point.Distance));
 

@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    
     <TargetFrameworks>net9.0</TargetFrameworks>
     <Nullable>enable</Nullable>
 

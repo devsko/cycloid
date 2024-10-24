@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using cycloid.Info;
 
@@ -7,16 +5,15 @@ namespace cycloid;
 
 public partial class PointOfInterest : ObservableObject
 {
-    private string _name;
     public string Name
     {
-        get => _name;
-        set => SetProperty(ref _name, value);
-    }
+        get => field;
+        set => SetProperty(ref field, value);
+    } = null!; // 'required' not possible because created from Xaml
 
     public InfoType Type { get; set; }
 
-    public InfoCategory Category { get; set; }
+    public InfoCategory Category { get; set; } = null!; // 'required' not possible because created from Xaml
 
     public DateTime Created { get; set; }
 
@@ -54,7 +51,7 @@ public partial class PointOfInterest : ObservableObject
 
     public bool IsTrackMaskZero() => TrackMask == 0;
 
-    private byte GetMask(int position, bool invert)
+    private static byte GetMask(int position, bool invert)
     {
         byte mask = 1;
         mask <<= position;

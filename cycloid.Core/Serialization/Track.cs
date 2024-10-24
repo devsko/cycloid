@@ -1,4 +1,3 @@
-using System;
 using cycloid.Info;
 
 namespace cycloid.Serialization;

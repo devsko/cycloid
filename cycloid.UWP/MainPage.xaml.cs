@@ -152,21 +152,23 @@ public sealed partial class MainPage : Page,
 
     private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
-        Geopoint point;
-        if (args.ChosenSuggestion is MapLocationWrapper location)
+        _ = this;
+
+        MapLocation location;
+        if (args.ChosenSuggestion is MapLocationWrapper wrapper)
         {
-            point = location.Location.Point;
+            location = wrapper.Location;
         }
         else if (sender.ItemsSource is IReadOnlyList<MapLocationWrapper> list && list is [MapLocationWrapper first, ..])
         {
-            point = first.Location.Point;
+            location = first.Location;
         }
         else
         {
             return;
         }
 
-        StrongReferenceMessenger.Default.Send(new BringLocationIntoViewMessage(point.Position.ToMapPoint()));
+        StrongReferenceMessenger.Default.Send(new BringLocationIntoViewMessage(location.Point.Position.ToMapPoint()));
     }
 
     private void PoisButton_CategoryChanged(InfoCategory category, bool value)
@@ -250,6 +252,8 @@ public sealed partial class MainPage : Page,
 
     private void TextBox_CharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs args)
     {
+        _ = this;
+
         if (args.Character is '\r')
         {
             sender.FindAscendant<ListView>().Focus(FocusState.Programmatic);

@@ -31,7 +31,7 @@ public sealed partial class Compass : TrackPointControl
 
     private double HeadingToNeedleAngle(float heading) => HeadingToAngle(heading, _needleVisual, ref _needleRounds);
 
-    private double HeadingToAngle(float rotation, Visual visual, ref int rounds)
+    private static double HeadingToAngle(float rotation, Visual visual, ref int rounds)
     {
         if (rotation < 0)
         {

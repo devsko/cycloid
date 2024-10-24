@@ -4,23 +4,18 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CliWrap" Version="3.6.6" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
-  </ItemGroup>
+    <PackageReference Include="CliWrap" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
 
-  <ItemGroup>
     <ProjectReference Include="..\cycloid.Core\cycloid.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="adb\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Content Include="adb\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

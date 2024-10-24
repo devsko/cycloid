@@ -6,12 +6,12 @@
     <WindowsSdkPackageVersion>10.0.26100.54</WindowsSdkPackageVersion>
     <Platforms>x64</Platforms>
     <UseUwp>true</UseUwp>
+    <RootNamespace>cycloid</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <PublishAot>true</PublishAot>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
     <EnableMsixTooling>true</EnableMsixTooling>
-    <LangVersion>preview</LangVersion>
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION;DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Workaround https://github.com/microsoft/CsWinRT/issues/1839 -->
@@ -19,16 +19,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
-    <PackageReference Include="CommunityToolkit.Labs.Uwp.TransitionHelper" Version="0.1.241018-local" />
-    <PackageReference Include="CommunityToolkit.Uwp.Animations" Version="8.2.241018-local" />
-    <PackageReference Include="CommunityToolkit.Uwp.Extensions" Version="8.2.241018-local" />
-    <PackageReference Include="CommunityToolkit.Uwp.Media" Version="8.2.241018-local" />
-    <PackageReference Include="FluentIcons.Uwp" Version="1.1.261-local" />
-    <PackageReference Include="GeoJSON.Text" Version="1.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed" Version="3.0.241018-local" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0-rtm.24516.5" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="CommunityToolkit.Labs.Uwp.TransitionHelper" />
+    <PackageReference Include="CommunityToolkit.Uwp.Animations" />
+    <PackageReference Include="CommunityToolkit.Uwp.Extensions" />
+    <PackageReference Include="CommunityToolkit.Uwp.Media" />
+    <PackageReference Include="FluentIcons.Uwp" />
+    <PackageReference Include="GeoJSON.Text" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed" />
     
     <ProjectReference Include="..\cycloid.Core\cycloid.Core.csproj" />
 

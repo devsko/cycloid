@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace cycloid;
@@ -35,11 +33,7 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
             latitude,
             longitude,
             previous.Altitude + fraction * (next.Altitude - previous.Altitude),
-#if NETSTANDARD
-            previous.Time + TimeSpan.FromTicks((long)(fraction * (next.Time - previous.Time).Ticks)),
-#else
             previous.Time + fraction * (next.Time - previous.Time),
-#endif
             previous.Distance + distance,
             previous.Heading,
             previous.Gradient,
@@ -93,12 +87,7 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
     public override bool Equals([NotNullWhen(true)] object obj) => 
         obj is TrackPoint other && Equals(other);
 
-    public override int GetHashCode() =>
-#if NETSTANDARD
-        _latitude.GetHashCode() ^ _longitude.GetHashCode();
-#else
-        HashCode.Combine(_latitude, _longitude);
-#endif
+    public override int GetHashCode() => HashCode.Combine(_latitude, _longitude);
 
     public static bool operator ==(TrackPoint left, TrackPoint right) => 
         left.Equals(right);

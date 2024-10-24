@@ -1,5 +1,3 @@
-using System;
-
 namespace cycloid;
 
 public readonly record struct Selection(TrackPoint Start, TrackPoint End) : ICanBeInvalid<Selection>

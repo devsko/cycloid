@@ -231,7 +231,7 @@ partial class ViewModel
         }
     }
 
-    private async Task ShowFileAlreadyOpenAsync(IStorageFile file)
+    private static async Task ShowFileAlreadyOpenAsync(IStorageFile file)
     {
         await new ContentDialog
         {

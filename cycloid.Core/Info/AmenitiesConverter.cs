@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -14,22 +12,12 @@ public class OverpassEnumConverter<T> : JsonConverter<T> where T: struct, Enum
     {
         Dictionary<string, T> knownValues = [];
 
-        string[] names =
-#if NETSTANDARD
-            Enum.GetNames(typeof(T));
-#else
-            Enum.GetNames<T>();
-#endif
-        Array values =
-#if NETSTANDARD
-            Enum.GetValues(typeof(T));
-#else
-            Enum.GetValues<T>();
-#endif
+        string[] names = Enum.GetNames<T>();
+        T[] values = Enum.GetValues<T>();
 
         for (int i = 0; i < names.Length; i++)
         {
-            knownValues.Add(names[i], (T)values.GetValue(i));
+            knownValues.Add(names[i], values[i]);
         }
 
         return knownValues;
@@ -37,7 +25,7 @@ public class OverpassEnumConverter<T> : JsonConverter<T> where T: struct, Enum
 
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (_knownValues.TryGetValue(reader.GetString(), out T value))
+        if (_knownValues.TryGetValue(reader.GetString() ?? string.Empty, out T value))
         {
             return value;
         }

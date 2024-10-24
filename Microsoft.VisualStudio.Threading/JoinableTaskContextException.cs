@@ -38,14 +38,4 @@ public class JoinableTaskContextException : Exception
         : base(message, inner)
     {
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="JoinableTaskContextException"/> class.
-    /// </summary>
-    protected JoinableTaskContextException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context)
-        : base(info, context)
-    {
-    }
 }

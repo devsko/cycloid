@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.VisualStudio.Threading;
 
@@ -106,7 +101,7 @@ public partial class RouteBuilder
         StartCalculation(section);
     }
 
-    public void SetFileSplit(WayPoint wayPoint, bool value)
+    public static void SetFileSplit(WayPoint wayPoint, bool value)
     {
         wayPoint.IsFileSplit = value;
 
@@ -383,21 +378,11 @@ public partial class RouteBuilder
     private void RemoveSection(int startIndex, WayPoint startPoint = null)
     {
         WayPoint point = startPoint ?? Points[startIndex];
-#if NETSTANDARD
-        if (_sections.TryGetValue(point, out RouteSection section))
-        {
-            _sections.Remove(point);
-        }
-        else
-        {
-            throw new InvalidOperationException();
-        }
-#else
         if (!_sections.Remove(point, out RouteSection section))
         {
             throw new InvalidOperationException();
         }
-#endif
+
         section.Cancel();
 
         StrongReferenceMessenger.Default.Send(new SectionRemoved(section, startIndex));

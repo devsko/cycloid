@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace cycloid.Routing;
+﻿namespace cycloid.Routing;
 
 public readonly record struct RoutePoint(float Latitude, float Longitude, float? Altitude, TimeSpan Time, Surface Surface) : IMapPoint
 {

@@ -182,7 +182,7 @@ partial class ViewModel
             using (await Track.RouteBuilder.ChangeLock.EnterAsync(default))
             {
                 TrackPoint lastTrackPoint = Track.Points.Last();
-                new OnTrack(
+                _ = new OnTrack(
                     Sections, 
                     lastTrackPoint, 
                     Track.PointsOfInterest.Single(poi => poi.Type == InfoType.Goal), 

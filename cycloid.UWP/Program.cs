@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -16,15 +15,14 @@ public static class Program
 
         if (activatedArgs is FileActivatedEventArgs fileArgs)
         {
-            IStorageFile file = (IStorageFile)fileArgs.Files.FirstOrDefault();
-            if (file != null)
+            if (fileArgs.Files is [IStorageFile file, ..])
             {
                 if (RegisterForFile(file, out AppInstance instance))
                 {
-                    Application.Start(_ =>
+                    Application.Start(static p =>
                     {
                         SynchronizationContext.SetSynchronizationContext(new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread()));
-                        new App();
+                        _ = new App();
                     });
                 }
                 else
@@ -41,10 +39,10 @@ public static class Program
             }
             else
             {
-                Application.Start(_ =>
+                Application.Start(p =>
                 {
                     SynchronizationContext.SetSynchronizationContext(new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread()));
-                    new App();
+                    _ = new App();
                 });
             }
         }

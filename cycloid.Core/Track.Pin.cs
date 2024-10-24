@@ -1,5 +1,3 @@
-using System;
-
 namespace cycloid;
 
 partial class Track

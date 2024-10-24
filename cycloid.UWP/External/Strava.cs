@@ -1,10 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using cycloid.Controls;
 using Windows.Web.Http;
 using Windows.Web.Http.Filters;
+
+using HttpClient = Windows.Web.Http.HttpClient;
+using HttpMethod = Windows.Web.Http.HttpMethod;
+using HttpRequestMessage = Windows.Web.Http.HttpRequestMessage;
 
 namespace cycloid.External;
 
@@ -24,7 +24,7 @@ public class Strava
         HeatmapTilesUri = new Uri(BaseUri, "/tiles-auth/ride/hot/{zoomlevel}/{x}/{y}.png").ToString();
     }
 
-    public async Task<HttpCookie[]> LoginAsync()
+    public static async Task<HttpCookie[]> LoginAsync()
     {
         using PopupBrowser browser = new();
 
@@ -77,7 +77,7 @@ public class Strava
         }
     }
 
-    private async Task<(bool Success, IEnumerable<HttpCookie> Cookies)> LoginAsync(PopupBrowser browser)
+    private static async Task<(bool Success, IEnumerable<HttpCookie> Cookies)> LoginAsync(PopupBrowser browser)
     {
         var success = false;
 

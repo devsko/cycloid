@@ -13,7 +13,7 @@ using Windows.Web.Http;
 
 namespace cycloid.Controls;
 
-public partial class PopupBrowser : Control, IDisposable
+public sealed partial class PopupBrowser : Control, IDisposable
 {
     private readonly TaskCompletionSource<bool> _constructionTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Popup _popup;

@@ -212,7 +212,7 @@ partial class ViewModel :
     {
         if (IsEditMode && Track is not null && HoveredWayPoint is not null)
         {
-            Track.RouteBuilder.SetFileSplit(HoveredWayPoint, !HoveredWayPoint.IsFileSplit);
+            RouteBuilder.SetFileSplit(HoveredWayPoint, !HoveredWayPoint.IsFileSplit);
         }
     }
 

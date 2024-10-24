@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 
@@ -84,17 +79,29 @@ public partial class InfoCache : ObservableObject
         if (!_buckets.TryGetValue(point, out InfoBucket bucket))
         {
             bucket = await LoadAsync(point);
-            _buckets.Add(point, bucket);
-            CachedCount += bucket.Infos.Length;
+            if (bucket.Infos is not null)
+            {
+                _buckets.Add(point, bucket);
+                CachedCount += bucket.Infos.Length;
+            }
         }
 
         cancellationToken.ThrowIfCancellationRequested();
 
         _activated.Add(bucket);
 
-        StrongReferenceMessenger.Default.Send(new InfosActivated(bucket.Infos));
+        InfoPoint[] infos = bucket.Infos ?? [];
 
-        ActivatedCount += bucket.Infos.Length;
+        StrongReferenceMessenger.Default.Send(new InfosActivated(infos));
+        ActivatedCount += infos.Length;
+        
+        async Task<InfoBucket> LoadAsync(BucketPoint point)
+        {
+            OverpassPoint[] overpassPoints = await _client.GetPointsAsync(new MapPoint((float)point.Bottom * BucketWidth, (float)point.Left * BucketWidth), BucketSize, default).ConfigureAwait(false);
+            InfoPoint[] infos = overpassPoints.Select(InfoPoint.FromOverpassPoint).ToArray();
+
+            return new InfoBucket { Point = point, Infos = infos };
+        }
     }
 
     private void Deactivate(InfoBucket bucket)
@@ -110,17 +117,5 @@ public partial class InfoCache : ObservableObject
         StrongReferenceMessenger.Default.Send(new InfosDeactivated(startIndex, bucket.Infos.Length));
 
         ActivatedCount -= bucket.Infos.Length;
-    }
-
-    private async Task<InfoBucket> LoadAsync(BucketPoint point)
-    {
-        OverpassPoint[] overpassPoints = await _client.GetPointsAsync(new MapPoint((float)point.Bottom * BucketWidth, (float)point.Left * BucketWidth), BucketSize, default).ConfigureAwait(false);
-        InfoPoint[] infos = new InfoPoint[overpassPoints.Length];
-        for (int i = 0; i < overpassPoints.Length; i++)
-        {
-            infos[i] = InfoPoint.FromOverpassPoint(overpassPoints[i]);
-        }
-
-        return new InfoBucket { Point = point, Infos = infos };
     }
 }

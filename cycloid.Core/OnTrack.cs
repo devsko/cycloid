@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace cycloid;
@@ -29,7 +26,7 @@ public partial class OnTrack : ObservableObject
 
         int? index = null;
         TrackPoint.CommonValues previousValues = default;
-        OnTrack next = null;
+        OnTrack? next = null;
         for (int i = 0; i < _onTracks.Count; i++)
         {
             OnTrack onTrack = _onTracks[i];
@@ -108,7 +105,7 @@ public partial class OnTrack : ObservableObject
         }
     }
 
-    public OnTrack GetPrevious()
+    public OnTrack? GetPrevious()
     {
         int index = _onTracks.IndexOf(this);
 
@@ -135,12 +132,12 @@ public partial class OnTrack : ObservableObject
         }
     }
 
-    public OnTrack Remove()
+    public OnTrack? Remove()
     {
         int index = _onTracks.IndexOf(this);
         _onTracks.RemoveAt(index);
 
-        OnTrack next = _onTracks
+        OnTrack? next = _onTracks
             .Skip(index)
             .FirstOrDefault(onTrack =>
                 !onTrack.IsOffTrack &&

@@ -99,8 +99,7 @@ sealed partial class App : Application,
             Window.Current.Content = rootFrame;
         }
 
-        StorageFile file = args.Files.FirstOrDefault() as StorageFile;
-        if (rootFrame.Content == null)
+        if (rootFrame.Content == null && args.Files is [StorageFile file, ..])
         {
             rootFrame.Navigate(typeof(MainPage), file);
         }
@@ -114,9 +113,7 @@ sealed partial class App : Application,
         try
         {
             Debug.WriteLine(message);
-#pragma warning disable VSTHRD101 // Avoid unsupported async delegates
             await _dispatcher.RunAsync(CoreDispatcherPriority.High, async () =>
-#pragma warning restore VSTHRD101 // Avoid unsupported async delegates
             {
                 try
                 {

@@ -1,15 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net9.0</TargetFrameworks>
+    <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>cycloid</RootNamespace>
-    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
-		<PackageReference Include="GeoJSON.Text" Version="1.0.2" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0-rtm.24516.5" />
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="GeoJSON.Text" />
 
     <ProjectReference Name="Microsoft.VisualStudio.Threading" Include="..\Microsoft.VisualStudio.Threading\Microsoft.VisualStudio.Threading.csproj" />
   </ItemGroup>

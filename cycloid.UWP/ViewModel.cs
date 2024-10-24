@@ -248,7 +248,7 @@ public partial class ViewModel : ObservableObject,
     public bool CanEditProfile => Track is not null && (Track.Points.IsEmpty || Track.CompareSession is not null);
 
     [RelayCommand]
-    public Task OpenLocationAsync(MapPoint location)
+    public static Task OpenLocationAsync(MapPoint location)
     {
         DataPackage data = new();
         data.SetText(FormattableString.Invariant($"{location.Latitude},{location.Longitude}"));

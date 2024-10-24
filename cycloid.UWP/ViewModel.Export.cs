@@ -22,7 +22,7 @@ public class RequestExportDetails : AsyncRequestMessage<ExportDetails>
     public IStorageFile TrackFile { get; init; }
 }
 
-public class ExportDetails : INotifyPropertyChanged
+public partial class ExportDetails : INotifyPropertyChanged
 {
     private static readonly PropertyChangedEventArgs _sectionsFileChangedEventArgs = new(nameof(SectionsFile));
     private static readonly PropertyChangedEventArgs _waterFileChangedEventArgs = new(nameof(WaterFile));
@@ -39,7 +39,7 @@ public class ExportDetails : INotifyPropertyChanged
             "Water.csv" => WaterFile,
             "POIs.csv" => PoisFile,
             "Tracks.zip" => TracksFile,
-            _ => throw new ArgumentException(),
+            _ => throw new ArgumentException(string.Empty, nameof(name)),
         };
         set
         {
@@ -184,7 +184,7 @@ partial class ViewModel
         }
     }
 
-    private async Task<StreamWriter> GetCsvWriterAsync(IStorageFile file)
+    private static async Task<StreamWriter> GetCsvWriterAsync(IStorageFile file)
     {
         IRandomAccessStream winRtStream = await file.OpenAsync(FileAccessMode.ReadWrite);
         winRtStream.Size = 0;

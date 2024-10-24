@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
+
+using Path = Windows.UI.Xaml.Shapes.Path;
 
 namespace cycloid.Controls;
 
@@ -146,7 +144,7 @@ partial class Profile
                 }
             });
             points.Insert(0, new Point(points[0].X, 0));
-            points.Add(new Point(points[points.Count - 1].X, 0));
+            points.Add(new Point(points[^1].X, 0));
             currentStartDistance = startDistance;
             currentEndDistance = endDistance;
         }

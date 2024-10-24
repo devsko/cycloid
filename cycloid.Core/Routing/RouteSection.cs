@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace cycloid.Routing;
+﻿namespace cycloid.Routing;
 
 public class RouteSection(WayPoint start, WayPoint end)
 {

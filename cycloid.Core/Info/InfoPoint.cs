@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace cycloid.Info;
 
 public record InfoPoint(MapPoint Location, string Name, InfoCategory Category, InfoType Type)
 {
-    public static readonly InfoPoint Invalid = new(MapPoint.Invalid, default, default, default);
+    public static readonly InfoPoint Invalid = new(MapPoint.Invalid, null!, null!, default);
 
     public static InfoPoint FromOverpassPoint(OverpassPoint overpass)
     {
@@ -66,8 +62,8 @@ public class InfoCategory
     public static InfoCategory Get(InfoType type) => All.First(category => category.Types.Contains(type));
 
     public bool Hide { get; init; }
-    public string Name { get; init; }
-    public InfoType[] Types { get; init; }
+    public required string Name { get; init; }
+    public required InfoType[] Types { get; init; }
     
     private InfoCategory()
     { }

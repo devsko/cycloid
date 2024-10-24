@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using cycloid.Routing;
 
 namespace cycloid;
@@ -80,7 +79,7 @@ public static class TrackPointConverter
         return Convert([start, end], 2, null);
     }
 
-    public static RouteResult Convert(IEnumerable<RoutePoint> points, int count, IEnumerable<SurfacePart> surfaces)
+    public static RouteResult Convert(IEnumerable<RoutePoint> points, int count, IEnumerable<SurfacePart>? surfaces)
     {
         TrackPoint[] trackPoints = new TrackPoint[count];
         float minAltitude = float.MaxValue;
@@ -93,11 +92,11 @@ public static class TrackPointConverter
 
         return new RouteResult(trackPoints, minAltitude, maxAltitude);
 
-        IEnumerable<TrackPoint> Convert(IEnumerable<RoutePoint> points, IEnumerable<SurfacePart> surfaces)
+        IEnumerable<TrackPoint> Convert(IEnumerable<RoutePoint> points, IEnumerable<SurfacePart>? surfaces)
         {
-            IEnumerator<SurfacePart> surfaceEnumerator = surfaces?.GetEnumerator();
+            IEnumerator<SurfacePart>? surfaceEnumerator = surfaces?.GetEnumerator();
             surfaceEnumerator?.MoveNext();
-            SurfacePart currentSurface = surfaces is null ? default : surfaceEnumerator.Current;
+            SurfacePart currentSurface = surfaceEnumerator?.Current ?? default;
             float surfaceDistance = surfaces is null ? float.PositiveInfinity : currentSurface.Distance;
 
             IEnumerator<RoutePoint> enumerator = points.GetEnumerator();
@@ -126,6 +125,8 @@ public static class TrackPointConverter
                 // use the last part for now
                 while (Math.Floor(runningDistance) >= surfaceDistance )
                 {
+                    Debug.Assert(surfaceEnumerator is not null);
+
                     if (!surfaceEnumerator.MoveNext())
                     {
                         break;

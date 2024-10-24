@@ -1,16 +1,9 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using GeoJSON.Text.Feature;
 using GeoJSON.Text.Geometry;
 
@@ -51,13 +44,7 @@ public partial class BrouterClient
     {
         string profileId = await GetProfileIdAsync(profile).ConfigureAwait(false);
 
-        string noGos = string.Join(
-#if NETSTANDARD
-            "|"
-#else
-            '|'
-#endif
-            , noGoAreas.Select(noGo => FormattableString.Invariant($"{noGo.Center.Longitude},{noGo.Center.Latitude},{noGo.Radius}")));
+        string noGos = string.Join('|', noGoAreas.Select(noGo => FormattableString.Invariant($"{noGo.Center.Longitude},{noGo.Center.Latitude},{noGo.Radius}")));
         string query = FormattableString.Invariant($"?lonlats={from.Longitude},{from.Latitude}|{to.Longitude},{to.Latitude}&nogos={noGos}&profile={profileId}&alternativeidx=0&format=geojson");
 
         int retryCount = 0;
@@ -66,13 +53,7 @@ public partial class BrouterClient
             using HttpResponseMessage response = await _http.GetAsync(query, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-                using Stream contentStream = await response.Content.
-#if NETSTANDARD
-                    ReadAsStreamAsync()
-#else
-                    ReadAsStreamAsync(cancellationToken)
-#endif
-                    .ConfigureAwait(false);
+                using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 FeatureCollection result = await JsonSerializer.DeserializeAsync<FeatureCollection>(contentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 Feature feature = result?.Features.FirstOrDefault();
@@ -180,13 +161,7 @@ public partial class BrouterClient
             using HttpResponseMessage response = await _http.GetAsync(query, cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-                using Stream contentStream = await response.Content.
-#if NETSTANDARD
-                    ReadAsStreamAsync()
-#else
-                    ReadAsStreamAsync(cancellationToken)
-#endif
-                    .ConfigureAwait(false);
+                using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 FeatureCollection result = await JsonSerializer.DeserializeAsync<FeatureCollection>(contentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 Feature feature = result?.Features.FirstOrDefault();

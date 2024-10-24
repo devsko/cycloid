@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using cycloid.Routing;
 
 namespace cycloid;
@@ -131,7 +129,7 @@ partial class Track
             }
         }
 
-        private bool LinkSegments(Segment segment, Segment previous)
+        private static bool LinkSegments(Segment segment, Segment previous)
         {
             if (previous.Points is null || !previous.Linked)
             {

@@ -1,12 +1,7 @@
-using System;
-using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace cycloid.Info;
 
@@ -19,21 +14,11 @@ public class OsmClient
     {
         StringBuilder query = new();
         AddFilter("mountain_pass=yes");
-        foreach (string amenity in
-#if NETSTANDARD
-            Enum.GetNames(typeof(OverpassAmenities)))
-#else
-            Enum.GetNames<OverpassAmenities>())
-#endif
+        foreach (string amenity in Enum.GetNames<OverpassAmenities>())
         {
             AddFilter($"amenity={amenity}");
         }
-        foreach (string shop in
-#if NETSTANDARD
-            Enum.GetNames(typeof(OverpassShops)))
-#else
-            Enum.GetNames<OverpassShops>())
-#endif
+        foreach (string shop in Enum.GetNames<OverpassShops>())
         {
             AddFilter($"shop={shop}");
         }
@@ -64,13 +49,7 @@ public class OsmClient
             using HttpResponseMessage response = await _http.PostAsync("", new StringContent(content), cancellationToken).ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-                using Stream stream = await response.Content.
-#if NETSTANDARD
-                    ReadAsStreamAsync()
-#else
-                    ReadAsStreamAsync(cancellationToken)
-#endif
-                    .ConfigureAwait(false);
+                using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
                 OverpassResponse overpass = await JsonSerializer.DeserializeAsync(stream, OsmContext.Default.OverpassResponse, cancellationToken).ConfigureAwait(false);
 
@@ -78,7 +57,7 @@ public class OsmClient
             }
             else if (++retryCount > 3 || response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
-                return null;
+                response.EnsureSuccessStatusCode();
             }
 
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);

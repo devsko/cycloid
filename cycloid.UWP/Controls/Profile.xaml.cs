@@ -158,7 +158,7 @@ public sealed partial class Profile : ViewModelControl,
                     ResetSection();
                     ResetHorizontalRuler();
 
-                    RelocateTrackPois();
+                    //RelocateTrackPois();
 
                     change |= Change.HorizontalSize;
 
@@ -250,11 +250,11 @@ public sealed partial class Profile : ViewModelControl,
         }
     }
 
-    private void RelocateTrackPois()
-    {
-        //for (int i = 0; i < TrackPois.Children.Count; i++)
-        //    Canvas.SetLeft(TrackPois.Children[i], _trackPois[i].Point.Distance * _horizontalScale);
-    }
+    //private void RelocateTrackPois()
+    //{
+    //    for (int i = 0; i < TrackPois.Children.Count; i++)
+    //        Canvas.SetLeft(TrackPois.Children[i], _trackPois[i].Point.Distance * _horizontalScale);
+    //}
 
     private void UpdateMarker(TrackPoint point, LineGeometry line1, LineGeometry line2, EllipseGeometry circle)
     {

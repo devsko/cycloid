@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Info;
 using cycloid.Routing;
@@ -55,6 +53,20 @@ public partial class Track : ObservableObject
         (int fileId, float fileDistance) = Points.FilePosition(distance);
 
         return $"{fileId} / {fileDistance / 1_000:N1}";
+    }
+
+    public float DistanceFromStart(float distance)
+    {
+        _ = this;
+
+        return distance;
+    }
+
+    public TimeSpan TimeFromStart(TimeSpan time)
+    {
+        _ = this;
+
+        return time;
     }
 
     public float DistanceToEnd(float distance) => Points.Total.Distance - distance;
