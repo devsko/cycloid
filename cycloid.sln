@@ -22,7 +22,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cycloid.Core", "cycloid.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cycloid.Test", "cycloid.Test\cycloid.Test.csproj", "{9873B05A-BBBF-44F4-B6D7-34C4D71A9CA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cycloid.UWP", "cycloid.UWP\cycloid.UWP.csproj", "{8D85E6E8-52A9-4094-B0A3-9856C4B29240}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cycloid", "cycloid\cycloid.csproj", "{8D85E6E8-52A9-4094-B0A3-9856C4B29240}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.UI.Xaml.Projection", "Microsoft.UI.Xaml.Projection\Microsoft.UI.Xaml.Projection.csproj", "{56E17F12-AC15-414F-BCBB-56DEE408882B}"
 EndProject

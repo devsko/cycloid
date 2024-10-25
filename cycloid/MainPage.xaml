@@ -129,6 +129,12 @@
                     Style="{StaticResource BodyTextBlockStyle}"
                     Text="cycloid" />
 
+                <Image Width="16" Height="16">
+                    <Image.Source>
+                        <BitmapImage UriSource="ms-appx:///Assets/Bakery.png" />
+                    </Image.Source>
+                </Image>
+
                 <StackPanel
                     Grid.Column="1"
                     Orientation="Horizontal"
