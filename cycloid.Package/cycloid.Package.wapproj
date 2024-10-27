@@ -44,16 +44,6 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Bakery.png" />
-    <Content Include="Assets\Bar.png" />
-    <Content Include="Assets\CanvasGray.mssjson" />
-    <Content Include="Assets\cycle.3mf" />
-    <Content Include="Assets\FastFood.png" />
-    <Content Include="Assets\FuelStation.png" />
-    <Content Include="Assets\Restaurant.png" />
-    <Content Include="Assets\Supermarket.png" />
-    <Content Include="Assets\Toilet.png" />
-    <Content Include="Assets\Water.png" />
     <Content Include="Images\SplashScreen.scale-200.png" />
     <Content Include="Images\LockScreenLogo.scale-200.png" />
     <Content Include="Images\Square150x150Logo.scale-200.png" />

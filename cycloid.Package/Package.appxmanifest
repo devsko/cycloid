@@ -31,7 +31,7 @@
 	<Applications>
 		<Application Id="App"
 			Executable="$targetnametoken$.exe"
-  		EntryPoint="$targetentrypoint$"
+  		EntryPoint="cycloid.Package.App"
 			desktop4:SupportsMultipleInstances="true">
 			<uap:VisualElements
 			  DisplayName="cycloid"

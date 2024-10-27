@@ -11,7 +11,7 @@
     <PublishAot>true</PublishAot>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
-    <EnableMsixTooling>true</EnableMsixTooling>
+    <EnableMsixTooling>false</EnableMsixTooling>
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION;DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Workaround https://github.com/microsoft/CsWinRT/issues/1839 -->
@@ -28,6 +28,9 @@
     <PackageReference Include="GeoJSON.Text" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed" />
+
+    <!-- Workaround resource issue -->
+    <PackageReference Include="Microsoft.WindowsAppSDK" IncludeAssets="build" PrivateAssets="all" />
     
     <ProjectReference Include="..\cycloid.Core\cycloid.Core.csproj" />
 
@@ -36,6 +39,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Assets\Bakery.png" />
+    <Content Include="Assets\Bar.png" />
+    <Content Include="Assets\CanvasGray.mssjson" />
+    <Content Include="Assets\cycle.3mf" />
+    <Content Include="Assets\FastFood.png" />
+    <Content Include="Assets\FuelStation.png" />
+    <Content Include="Assets\Restaurant.png" />
+    <Content Include="Assets\Supermarket.png" />
+    <Content Include="Assets\Toilet.png" />
+    <Content Include="Assets\Water.png" />
+
     <Content Include="Controls\StreetView.html" />
     <Content Include="secrets.json" />
   </ItemGroup>

@@ -12,9 +12,9 @@
                 <ControlTemplate TargetType="controls:PopupBrowser">
                     <Border x:Name="Border" Background="{ThemeResource SystemControlTransientBackgroundBrush}">
                         <Border>
-                            <ui:Effects.Shadow>
+                            <!--<ui:Effects.Shadow>
                                 <media:AttachedCardShadow Offset="2,8" Color="#60000000" />
-                            </ui:Effects.Shadow>
+                            </ui:Effects.Shadow>-->
 
                             <Border
                                 Padding="15"
@@ -60,9 +60,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="controls:MapControlBorder">
                     <Border>
-                        <ui:Effects.Shadow>
+                        <!--<ui:Effects.Shadow>
                             <media:AttachedCardShadow Offset="2,8" Color="#60000000" />
-                        </ui:Effects.Shadow>
+                        </ui:Effects.Shadow>-->
 
                         <Border
                             Padding="5"

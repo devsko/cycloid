@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using cycloid.Controls;
 using cycloid.Info;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.Core;
-using Windows.Devices.Geolocation;
 using Windows.Globalization.NumberFormatting;
 using Windows.Services.Maps;
 using Windows.Storage;

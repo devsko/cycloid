@@ -10,13 +10,14 @@
     <PackageVersion Include="Microsoft.UI.Xaml" Version="2.8.6" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2849.39" />
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.1.6" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.6.240821007-preview2" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Uwp.Managed" Version="3.0.241018-local" />
     <PackageVersion Include="CommunityToolkit.Labs.Uwp.TransitionHelper" Version="0.1.241018-local" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.2" />
     <PackageVersion Include="CommunityToolkit.Uwp.Animations" Version="8.2.241018-local" />
     <PackageVersion Include="CommunityToolkit.Uwp.Extensions" Version="8.2.241018-local" />
     <PackageVersion Include="CommunityToolkit.Uwp.Media" Version="8.2.241018-local" />
-    <PackageVersion Include="CliWrap" Version="3.6.6" />
+    <PackageVersion Include="CliWrap" Version="3.6.7" />
     <PackageVersion Include="GeoJSON.Text" Version="1.0.2" />
     <PackageVersion Include="FluentIcons.Uwp" Version="1.1.261.1-local" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
