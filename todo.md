@@ -1,7 +1,6 @@
 # TODO cycloid
 
 - Untersuchen was XamlCompiler in WinUI macht wenn eine Referencz UseWpf setzt
-- Resourcen in MS.UI.Xaml / CT
 - ProfileControl rewrite in Win2d
 
 dotnet build
