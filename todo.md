@@ -9,6 +9,7 @@ DesktopBridge setzt immer erstmal TargetPlatform UAP für den Restore
 - wenn ein referenziertes Package auch UAP unterstützt wird falsch restored
 - wenn nicht, kommt eine Warnung 
 
+- Review e928bfe
 
 ## Dependencies
 - BehaviorsSDKManaged.sln
