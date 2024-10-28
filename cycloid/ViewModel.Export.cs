@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.IO;
 using System.IO.Compression;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -74,7 +70,7 @@ public partial class ExportDetails : INotifyPropertyChanged
     public bool Tracks { get; set; }
     public bool Wahoo { get; set; }
 
-    event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+    public event PropertyChangedEventHandler PropertyChanged
     {
         add => _propertyChanged += value;
         remove => _propertyChanged -= value;
@@ -165,7 +161,7 @@ partial class ViewModel
         {
             if (!onTrack.IsOffTrack && onTrack.PointOfInterest.Category != Info.InfoCategory.Water)
             {
-                string type = onTrack.PointOfInterest.Type switch 
+                string type = onTrack.PointOfInterest.Type switch
                 {
                     Info.InfoType.Restaurant => "R",
                     Info.InfoType.FastFood => "F",
@@ -176,7 +172,7 @@ partial class ViewModel
                     Info.InfoType.Bed => "H",
                     Info.InfoType.Outdoor => "W",
                     Info.InfoType.Roof => "D",
-                    _ => throw new InvalidOperationException() 
+                    _ => throw new InvalidOperationException()
                 };
                 FormattableString str = $"\"{onTrack.TrackFilePosition}\";\"{type}\";\"{onTrack.Name}\"";
                 await writer.WriteLineAsync(str.ToString(_deCulture));
@@ -188,7 +184,7 @@ partial class ViewModel
     {
         IRandomAccessStream winRtStream = await file.OpenAsync(FileAccessMode.ReadWrite);
         winRtStream.Size = 0;
-        
+
         return new StreamWriter(winRtStream.AsStreamForWrite(), Encoding.GetEncoding(1252));
     }
 
@@ -198,7 +194,7 @@ partial class ViewModel
         winRtStream.Size = 0;
         using Stream zipStream = winRtStream.AsStreamForWrite();
         using ZipArchive archive = new(zipStream, ZipArchiveMode.Create);
-        
+
         await WriteEntryAsync($"{Track.Name} complete", Track.Points, DateTime.Now).ConfigureAwait(false);
 
         int i = 0;
@@ -210,7 +206,7 @@ partial class ViewModel
         async Task WriteEntryAsync(string name, IEnumerable<TrackPoint> points, DateTime start)
         {
             using Stream fileStream = archive.CreateEntry($"{name}.gpx").Open();
-            using var writer = XmlWriter.Create(fileStream, new XmlWriterSettings { Async = true, Indent = true });
+            using XmlWriter writer = XmlWriter.Create(fileStream, new XmlWriterSettings { Async = true, Indent = true });
 
             const string ns = "http://www.topografix.com/GPX/1/1";
             await writer.WriteStartDocumentAsync().ConfigureAwait(false);

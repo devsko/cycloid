@@ -169,7 +169,7 @@ partial class ViewModel
     {
         if (Track is not null)
         {
-            _saveTrackCts?.Cancel();
+            await _saveTrackCts?.CancelAsync();
             _saveTrackCts = new CancellationTokenSource();
             CancellationToken cancellationToken = _saveTrackCts.Token;
             try

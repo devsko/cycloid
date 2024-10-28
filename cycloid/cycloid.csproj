@@ -6,7 +6,6 @@
     <WindowsSdkPackageVersion>10.0.26100.54</WindowsSdkPackageVersion>
     <Platforms>x64</Platforms>
     <UseUwp>true</UseUwp>
-    <RootNamespace>cycloid</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <!--<PublishAot>true</PublishAot>-->
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
@@ -14,6 +13,8 @@
     <EnableMsixTooling>false</EnableMsixTooling>
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION;DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <NoWarn>NETSDK1219</NoWarn>
     <!-- Workaround https://github.com/microsoft/CsWinRT/issues/1839 -->
     <DynamicCodeSupport>true</DynamicCodeSupport>
   </PropertyGroup>
