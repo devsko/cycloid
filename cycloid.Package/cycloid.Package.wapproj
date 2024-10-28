@@ -58,6 +58,9 @@
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" PrivateAssets="all" />
+    <!-- Workaround https://github.com/microsoft/CsWinRT/issues/1850 -->
+    <SDKReference Include="Microsoft.VCLibs, Version=14.0" />
+    <SDKReference Condition="'$(Configuration)' == 'Debug'" Include="Microsoft.UniversalCRT.Debug, Version=$(TargetPlatformVersion)" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cycloid\cycloid.csproj">
