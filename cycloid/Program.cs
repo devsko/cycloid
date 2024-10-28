@@ -18,11 +18,7 @@ public static class Program
             {
                 if (RegisterForFile(file, out AppInstance instance))
                 {
-                    Application.Start(static p =>
-                    {
-                        SynchronizationContext.SetSynchronizationContext(new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread()));
-                        _ = new App();
-                    });
+                    StartApp();
                 }
                 else
                 {
@@ -38,13 +34,18 @@ public static class Program
             }
             else
             {
-                Application.Start(p =>
-                {
-                    SynchronizationContext.SetSynchronizationContext(new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread()));
-                    _ = new App();
-                });
+                StartApp();
             }
         }
+    }
+
+    private static void StartApp()
+    {
+        Application.Start(p =>
+        {
+            SynchronizationContext.SetSynchronizationContext(new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread()));
+            _ = new App();
+        });
     }
 
     public static bool RegisterForFile(IStorageFile file, out AppInstance instance)

@@ -1,7 +1,0 @@
-{
-  "profiles": {
-    "cycloid.UWP": {
-      "commandName": "MsixPackage"
-    }
-  }
-}

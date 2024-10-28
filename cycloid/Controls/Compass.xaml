@@ -15,7 +15,7 @@
                 ui:VisualExtensions.CenterPoint="40,40,0"
                 ui:VisualExtensions.RotationAngleInDegrees="{x:Bind Mode=OneWay, Path=HeadingToRootAngle(Heading)}">
                 <animations:Implicit.Animations>
-                    <animations:RotationInDegreesAnimation Duration="0:0:0.5" EasingType="Linear" />
+                    <animations:RotationInDegreesAnimation EasingType="Linear" Duration="0:0:0.5" />
                 </animations:Implicit.Animations>
                 <Grid.Resources>
                     <Style TargetType="Ellipse">
@@ -49,22 +49,22 @@
 
                 <TextBlock Text="N">
                     <TextBlock.RenderTransform>
-                        <CompositeTransform Rotation="0" TranslateY="-32.5" />
+                        <CompositeTransform Rotation="0" TranslateY="-32" />
                     </TextBlock.RenderTransform>
                 </TextBlock>
                 <TextBlock Text="S">
                     <TextBlock.RenderTransform>
-                        <CompositeTransform Rotation="180" TranslateY="32.5" />
+                        <CompositeTransform Rotation="180" TranslateY="32" />
                     </TextBlock.RenderTransform>
                 </TextBlock>
                 <TextBlock Text="W">
                     <TextBlock.RenderTransform>
-                        <CompositeTransform Rotation="-90" TranslateX="-32.5" />
+                        <CompositeTransform Rotation="-90" TranslateX="-32" />
                     </TextBlock.RenderTransform>
                 </TextBlock>
                 <TextBlock Text="E">
                     <TextBlock.RenderTransform>
-                        <CompositeTransform Rotation="90" TranslateX="32.5" />
+                        <CompositeTransform Rotation="90" TranslateX="32" />
                     </TextBlock.RenderTransform>
                 </TextBlock>
 

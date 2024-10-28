@@ -1,12 +1,9 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using System.Diagnostics;
+using System.Text;
+using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Routing;
 using FluentIcons.Uwp;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
 using Windows.Services.Maps;
 using Windows.Storage;
@@ -15,7 +12,6 @@ using Windows.UI.Core;
 using Windows.UI.StartScreen;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 
 namespace cycloid;
 

@@ -200,7 +200,7 @@ public sealed partial class MainPage : Page,
         if (e.AddedItems is [ OnTrack onTrack, .. ])
         {
             ((ListView)sender).ScrollIntoView(onTrack);
-            if (!onTrack.PointOfInterest.IsSection)
+            if (!onTrack.PointOfInterest.IsSection && !onTrack.IsOffTrack)
             {
                 ViewModel.CurrentPoint = onTrack.TrackPoint;
             }

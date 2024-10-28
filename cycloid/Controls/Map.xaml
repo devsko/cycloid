@@ -161,11 +161,11 @@
 
         <controls:PointerPanel
             x:Name="PointerPanel"
-            PointerWheelChanged="PointerPanel_PointerWheelChanged"
             ContextRequested="PointerPanel_ContextRequested"
             PointerMoved="PointerPanel_PointerMoved"
             PointerPressed="PointerPanel_PointerPressed"
             PointerReleased="PointerPanel_PointerReleased"
+            PointerWheelChanged="PointerPanel_PointerWheelChanged"
             Tapped="PointerPanel_Tapped" />
 
         <!--  CurrentPoint  -->

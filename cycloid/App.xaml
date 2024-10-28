@@ -7,6 +7,7 @@
     <Application.Resources>
         <mux:XamlControlsResources ControlsResourcesVersion="Version2">
             <mux:XamlControlsResources.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx://Microsoft.UI.Xaml.2.8/Microsoft.UI.Xaml/DensityStyles/Compact.xaml" />
                 <ResourceDictionary>
                     <ResourceDictionary.ThemeDictionaries>
                         <ResourceDictionary x:Key="Dark">

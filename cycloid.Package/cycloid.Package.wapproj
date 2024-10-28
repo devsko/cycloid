@@ -19,7 +19,7 @@
   <PropertyGroup>
     <DebuggerFlavor>AppHostLocalDebugger</DebuggerFlavor>
     <RemoteDebugEnabled>False</RemoteDebugEnabled>
-    <DebuggerType>CoreClr</DebuggerType>
+    <DebuggerType>Mixed</DebuggerType>
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
   <PropertyGroup>
