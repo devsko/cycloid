@@ -15,8 +15,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <NoWarn>NETSDK1219</NoWarn>
+    
     <!-- Workaround https://github.com/microsoft/CsWinRT/issues/1839 -->
     <DynamicCodeSupport>true</DynamicCodeSupport>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,13 +32,14 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed" />
 
-    <!-- Workaround resource issue -->
+    <!-- Workaround Project resources missing in packaging project -->
     <PackageReference Include="Microsoft.WindowsAppSDK" IncludeAssets="build" PrivateAssets="all" />
-    
-    <ProjectReference Include="..\cycloid.Core\cycloid.Core.csproj" />
 
-    <ProjectReference Name="Microsoft.UI.Xaml.Projection" Include="..\Microsoft.UI.Xaml.Projection\Microsoft.UI.Xaml.Projection.csproj" />
-    <ProjectReference Name="Microsoft.VisualStudio.Threading" Include="..\Microsoft.VisualStudio.Threading\Microsoft.VisualStudio.Threading.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\cycloid.Core\cycloid.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.UI.Xaml.Projection\Microsoft.UI.Xaml.Projection.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,5 +57,12 @@
     <Content Include="Controls\StreetView.html" />
     <Content Include="secrets.json" />
   </ItemGroup>
+
+  <!-- Workaround Transitive Wpf/WinForms references crashing the XamlCompiler -->
+  <Target Name="RemoveWindowsDesktop" BeforeTargets="AfterResolveReferences">
+    <ItemGroup>
+      <ReferencePath Remove="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FrameworkReferenceName)').StartsWith('Microsoft.WindowsDesktop.App'))" />
+    </ItemGroup>
+  </Target>
 
 </Project>

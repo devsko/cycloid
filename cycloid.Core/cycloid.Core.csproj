@@ -9,8 +9,7 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="GeoJSON.Text" />
-
-    <ProjectReference Name="Microsoft.VisualStudio.Threading" Include="..\Microsoft.VisualStudio.Threading\Microsoft.VisualStudio.Threading.csproj" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" />
   </ItemGroup>
 
 </Project>

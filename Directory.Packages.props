@@ -8,6 +8,7 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.0-rc.2.24474.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0-rc.2.24473.5" />
     <PackageVersion Include="Microsoft.UI.Xaml" Version="2.8.6" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.11.20" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2849.39" />
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.1.6" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.6.240821007-preview2" />
@@ -19,7 +20,7 @@
     <PackageVersion Include="CommunityToolkit.Uwp.Media" Version="8.2.241018-local" />
     <PackageVersion Include="CliWrap" Version="3.6.7" />
     <PackageVersion Include="GeoJSON.Text" Version="1.0.2" />
-    <PackageVersion Include="FluentIcons.Uwp" Version="1.1.261.1-local" />
+    <PackageVersion Include="FluentIcons.Uwp" Version="1.1.263.3-local" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageVersion Include="xunit" Version="2.9.2" />
