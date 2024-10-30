@@ -224,7 +224,7 @@ partial class ViewModel
             SynchronizationContext ui = SynchronizationContext.Current;
             await TaskScheduler.Default;
 
-            Stream stream = await File.OpenStreamForReadAsync().ConfigureAwait(false);
+            using (Stream stream = await File.OpenStreamForReadAsync().ConfigureAwait(false))
             {
                 await Serializer.LoadAsync(stream, Track, ui).ConfigureAwait(false);
             }
