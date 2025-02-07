@@ -10,7 +10,7 @@
                 <ResourceDictionary Source="ms-appx://Microsoft.UI.Xaml.2.8/Microsoft.UI.Xaml/DensityStyles/Compact.xaml" />
                 <ResourceDictionary>
                     <ResourceDictionary.ThemeDictionaries>
-                        
+
                         <ResourceDictionary x:Key="Dark">
                             <StaticResource x:Key="TrackGraphOutline" ResourceKey="TextFillColorPrimary" />
                             <SolidColorBrush x:Key="TrackGraphOutlineBrush" Color="{ThemeResource ResourceKey=TrackGraphOutline}" />
@@ -56,7 +56,7 @@
                                 TintColor="#ffFFFFFF"
                                 TintOpacity="0.2" />
                         </ResourceDictionary>
-                        
+
                     </ResourceDictionary.ThemeDictionaries>
                 </ResourceDictionary>
             </mux:XamlControlsResources.MergedDictionaries>

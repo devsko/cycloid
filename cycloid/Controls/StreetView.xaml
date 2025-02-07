@@ -4,10 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:behaviors="using:cycloid.Behaviors"
     xmlns:controls="using:cycloid.Controls"
-    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:cycloid="using:cycloid"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:FluentIcons.Uwp"
-    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI">
@@ -18,9 +17,9 @@
         </labs:TransitionHelper>
     </controls:TrackPointControl.Resources>
 
-    <interactivity:Interaction.Behaviors>
+    <i:Interaction.Behaviors>
         <behaviors:DragableBehavior x:Name="DragableBehavior" IsEnabled="False" />
-    </interactivity:Interaction.Behaviors>
+    </i:Interaction.Behaviors>
 
     <Grid>
 
@@ -44,15 +43,15 @@
                         Background="#7F000000"
                         CornerRadius="4" />
                     <Button Content="{ic:SymbolIcon Symbol=ArrowMinimize}">
-                        <interactivity:Interaction.Behaviors>
-                            <core:EventTriggerBehavior EventName="Click">
+                        <i:Interaction.Behaviors>
+                            <i:EventTriggerBehavior EventName="Click">
                                 <labs:ReverseTransitionAction Transition="{StaticResource Transition}" />
-                                <core:ChangePropertyAction
+                                <i:ChangePropertyAction
                                     PropertyName="IsCollapsed"
                                     TargetObject="{x:Bind Mode=OneTime}"
                                     Value="True" />
-                            </core:EventTriggerBehavior>
-                        </interactivity:Interaction.Behaviors>
+                            </i:EventTriggerBehavior>
+                        </i:Interaction.Behaviors>
                     </Button>
                 </Grid>
             </Grid>
@@ -73,18 +72,18 @@
                     Background="#7F000000"
                     CornerRadius="4" />
                 <Button Content="{ic:SymbolIcon Symbol=Camera}">
-                    <interactivity:Interaction.Behaviors>
-                        <core:EventTriggerBehavior EventName="Click">
+                    <i:Interaction.Behaviors>
+                        <i:EventTriggerBehavior EventName="Click">
                             <labs:StartTransitionAction
                                 Source="{x:Bind Mode=OneTime, Path=Collapsed}"
                                 Target="{x:Bind Mode=OneTime, Path=Expanded}"
                                 Transition="{StaticResource Transition}" />
-                            <core:ChangePropertyAction
+                            <i:ChangePropertyAction
                                 PropertyName="IsCollapsed"
                                 TargetObject="{x:Bind Mode=OneTime}"
                                 Value="False" />
-                        </core:EventTriggerBehavior>
-                    </interactivity:Interaction.Behaviors>
+                        </i:EventTriggerBehavior>
+                    </i:Interaction.Behaviors>
                 </Button>
             </Grid>
         </controls:MapControlBorder>

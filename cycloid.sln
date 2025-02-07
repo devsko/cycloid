@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34407.89
@@ -16,15 +17,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cycloid.Wahoo", "cycloid.Wa
 EndProject
 Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "cycloid.Package", "cycloid.Package\cycloid.Package.wapproj", "{439902FD-2D44-43B5-A0B5-E6669EB38835}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{AC6568CC-B30B-4CEC-A994-DC164AA68E7F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cycloid.Core", "cycloid.Core\cycloid.Core.csproj", "{DCDB4EB9-AD80-495C-856C-AD1BA7335B9E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cycloid.Test", "cycloid.Test\cycloid.Test.csproj", "{9873B05A-BBBF-44F4-B6D7-34C4D71A9CA3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cycloid", "cycloid\cycloid.csproj", "{8D85E6E8-52A9-4094-B0A3-9856C4B29240}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.UI.Xaml.Projection", "Microsoft.UI.Xaml.Projection\Microsoft.UI.Xaml.Projection.csproj", "{56E17F12-AC15-414F-BCBB-56DEE408882B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,10 +39,6 @@ Global
 		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Release|Any CPU.ActiveCfg = Release|x64
 		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Release|Any CPU.Build.0 = Release|x64
 		{439902FD-2D44-43B5-A0B5-E6669EB38835}.Release|Any CPU.Deploy.0 = Release|x64
-		{AC6568CC-B30B-4CEC-A994-DC164AA68E7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC6568CC-B30B-4CEC-A994-DC164AA68E7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC6568CC-B30B-4CEC-A994-DC164AA68E7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC6568CC-B30B-4CEC-A994-DC164AA68E7F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DCDB4EB9-AD80-495C-856C-AD1BA7335B9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DCDB4EB9-AD80-495C-856C-AD1BA7335B9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCDB4EB9-AD80-495C-856C-AD1BA7335B9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -58,10 +51,6 @@ Global
 		{8D85E6E8-52A9-4094-B0A3-9856C4B29240}.Debug|Any CPU.Build.0 = Debug|x64
 		{8D85E6E8-52A9-4094-B0A3-9856C4B29240}.Release|Any CPU.ActiveCfg = Release|x64
 		{8D85E6E8-52A9-4094-B0A3-9856C4B29240}.Release|Any CPU.Build.0 = Release|x64
-		{56E17F12-AC15-414F-BCBB-56DEE408882B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{56E17F12-AC15-414F-BCBB-56DEE408882B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{56E17F12-AC15-414F-BCBB-56DEE408882B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{56E17F12-AC15-414F-BCBB-56DEE408882B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

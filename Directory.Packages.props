@@ -4,26 +4,25 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="System.Text.Json" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.UI.Xaml" Version="2.8.6" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.1" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.1" />
+    <PackageVersion Include="Microsoft.UI.Xaml" Version="2.8.7" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
-    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2849.39" />
-    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.6.240821007-preview2" />
-    <PackageVersion Include="Microsoft.Xaml.Behaviors.Uwp.Managed" Version="3.0.241018-local" />
-    <PackageVersion Include="CommunityToolkit.Labs.Uwp.TransitionHelper" Version="0.1.241018-local" />
-    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0-preview1" />
-    <PackageVersion Include="CommunityToolkit.Uwp.Animations" Version="8.2.241018-local" />
-    <PackageVersion Include="CommunityToolkit.Uwp.Extensions" Version="8.2.241018-local" />
-    <PackageVersion Include="CommunityToolkit.Uwp.Helpers" Version="8.2.241018-local" />
-    <PackageVersion Include="CommunityToolkit.Uwp.Media" Version="8.2.241018-local" />
-    <PackageVersion Include="CliWrap" Version="3.6.7" />
+    <PackageVersion Include="Microsoft.Xaml.Behaviors.Uwp.Managed" Version="3.0.0" />
+    <PackageVersion Include="CommunityToolkit.Labs.Uwp.TransitionHelper" Version="0.1.250206-pull-637.2036" />
+    <PackageVersion Include="CommunityToolkit.Common" Version="8.4.0" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageVersion Include="CommunityToolkit.Uwp.Animations" Version="8.2.250206-pull-620.1404" />
+    <PackageVersion Include="CommunityToolkit.Uwp.Behaviors" Version="8.2.250206-pull-620.1404" />
+    <PackageVersion Include="CommunityToolkit.Uwp.Extensions" Version="8.2.250206-pull-620.1404" />
+    <PackageVersion Include="CommunityToolkit.Uwp.Helpers" Version="8.2.250206-pull-620.1404" />
+    <PackageVersion Include="CommunityToolkit.Uwp.Media" Version="8.2.250206-pull-620.1404" />
+    <PackageVersion Include="CliWrap" Version="3.7.1" />
     <PackageVersion Include="GeoJSON.Text" Version="1.1.0" />
-    <PackageVersion Include="FluentIcons.Uwp" Version="1.1.263.3-local" />
+    <PackageVersion Include="FluentIcons.Uwp" Version="1.1.271" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageVersion Include="xunit.v3" Version="1.0.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.0" />
+    <PackageVersion Include="xunit.v3" Version="1.1.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.2" />
   </ItemGroup>
 </Project>

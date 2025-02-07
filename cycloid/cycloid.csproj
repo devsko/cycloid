@@ -3,18 +3,15 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
-    <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
     <Platforms>x64</Platforms>
     <UseUwp>true</UseUwp>
     <DefaultLanguage>en-US</DefaultLanguage>
     <!--<PublishAot>true</PublishAot>-->
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
-    <EnableMsixTooling>false</EnableMsixTooling>
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION;DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-    <NoWarn>NETSDK1219</NoWarn>
     
     <!-- Workaround https://github.com/microsoft/CsWinRT/issues/1839 -->
     <DynamicCodeSupport>true</DynamicCodeSupport>
@@ -22,9 +19,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="CommunityToolkit.Labs.Uwp.TransitionHelper" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="CommunityToolkit.Uwp.Animations" />
+    <PackageReference Include="CommunityToolkit.Uwp.Behaviors" />
     <PackageReference Include="CommunityToolkit.Uwp.Extensions" />
     <PackageReference Include="CommunityToolkit.Uwp.Helpers" />
     <PackageReference Include="CommunityToolkit.Uwp.Media" />
@@ -32,15 +30,10 @@
     <PackageReference Include="GeoJSON.Text" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed" />
-
-    <!-- Workaround Project resources missing in packaging project -->
-    <PackageReference Include="Microsoft.WindowsAppSDK" IncludeAssets="build" PrivateAssets="all" />
-
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\cycloid.Core\cycloid.Core.csproj" />
-    <ProjectReference Include="..\Microsoft.UI.Xaml.Projection\Microsoft.UI.Xaml.Projection.csproj" />
   </ItemGroup>
 
   <ItemGroup>
