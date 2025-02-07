@@ -1,6 +1,6 @@
-using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 
 namespace cycloid.Controls;
@@ -14,6 +14,8 @@ partial class Profile
         _horizontalRulerStartTick = int.MaxValue;
         _horizontalRulerEndTick = -1;
     }
+
+    private SolidColorBrush _lineStrokeBrush;
 
     private void EnsureHorizontalRuler()
     {
@@ -57,7 +59,7 @@ partial class Profile
                     X2 = left,
                     Y1 = 14,
                     Y2 = 24,
-                    Stroke = _trackGraphOutlineBrush,
+                    Stroke = _lineStrokeBrush,
                     StrokeThickness = .5,
                 });
                 TextBlock text = new()
@@ -75,21 +77,20 @@ partial class Profile
 
     private void DrawVerticalRuler()
     {
-        float minElevation = ViewModel.Track.Points.MinAltitude;
-        double sizeY = _elevationDiff * (1 + GraphBottomMarginRatio + GraphTopMarginRatio);
+        double sizeY = (_maxElevation - _minElevation) * (1 + GraphBottomMarginRatio + GraphTopMarginRatio);
         double scaleY = ActualHeight / sizeY;
         int gap = CalculateTickGap(sizeY, ActualHeight, VerticalRulerTickMinimumGap);
 
-        for (int tick = ((int)(minElevation / gap) + 1) * gap; tick < _maxElevation; tick += gap)
+        for (int tick = ((int)(_minElevation / gap) + 1) * gap; tick < _maxElevation; tick += gap)
         {
-            double top = (tick - minElevation) * -scaleY + ActualHeight * (1 - GraphBottomMarginRatio);
+            double top = (tick - _minElevation) * -scaleY + ActualHeight * (1 - GraphBottomMarginRatio);
             VerticalRuler.Children.Add(new Line
             {
                 X1 = 0,
                 X2 = ActualWidth,
                 Y1 = top,
                 Y2 = top,
-                Stroke = _trackGraphOutlineBrush,
+                Stroke = _lineStrokeBrush,
                 StrokeThickness = .5,
             });
             TextBlock text = new()

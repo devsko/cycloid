@@ -25,7 +25,7 @@ public class TrackComplete(bool isNew)
 partial class ViewModel
 {
     private readonly SemaphoreSlim _saveTrackSemaphore = new(1);
-    private CancellationTokenSource _saveTrackCts;
+    private CancellationTokenSource _saveTrackCts = new();
     private int _saveCounter;
 
     [RelayCommand]
@@ -169,7 +169,7 @@ partial class ViewModel
     {
         if (Track is not null)
         {
-            await _saveTrackCts?.CancelAsync();
+            await _saveTrackCts.CancelAsync();
             _saveTrackCts = new CancellationTokenSource();
             CancellationToken cancellationToken = _saveTrackCts.Token;
             try

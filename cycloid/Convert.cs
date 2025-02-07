@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using cycloid.Info;
 using Windows.Devices.Geolocation;
@@ -36,7 +33,6 @@ public static class Convert
 
     private static Dictionary<Surface, Brush> CreateSurfaceBrushes()
     {
-        Brush trackGraphOutlineBrush = (Brush)App.Current.Resources["TrackGraphOutline"];
         Brush orange = new SolidColorBrush(Colors.Orange);
         Brush red = new SolidColorBrush(Colors.Red);
 
@@ -46,11 +42,11 @@ public static class Convert
             { cycloid.Surface.UnknownLikelyPaved, new SolidColorBrush(Colors.Yellow) },
             { cycloid.Surface.UnknownLikelyUnpaved, red },
 
-            { cycloid.Surface.paved, trackGraphOutlineBrush },
-            { cycloid.Surface.asphalt, trackGraphOutlineBrush },
-            { cycloid.Surface.chipseal, trackGraphOutlineBrush },
-            { cycloid.Surface.concrete, trackGraphOutlineBrush },
-            { cycloid.Surface.paving_stones, trackGraphOutlineBrush },
+            { cycloid.Surface.paved, null },
+            { cycloid.Surface.asphalt, null },
+            { cycloid.Surface.chipseal, null },
+            { cycloid.Surface.concrete, null },
+            { cycloid.Surface.paving_stones, null },
             { cycloid.Surface.sett, orange },
             { cycloid.Surface.unhewn_cobblestone, orange },
             { cycloid.Surface.cobblestone, orange },

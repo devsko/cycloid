@@ -447,6 +447,12 @@ partial class Track
             Segment segment = _segments[segmentIndex];
             TrackPoint[] points = segment.Points;
 
+            if (points is null)
+            {
+                exactMatch = true;
+                return Index.Invalid;
+            }
+
             int pointIndex = Array.BinarySearch(points, new TrackPoint(0, 0, 0, distance: distance - segment.Start.Distance), TrackPoint.DistanceComparer.Instance);
             if (pointIndex >= 0)
             {
@@ -487,6 +493,11 @@ partial class Track
 
         private IEnumerable<(Segment Segment, TrackPoint Point, Index Index)> Enumerate(Index from = default, Index? to = null)
         {
+            if (!from.IsValid || to is { IsValid: false })
+            {
+                yield break;
+            }
+
             int endSegmentIndex = to is null ? _segments.Count - 1 : to.Value.SegmentIndex;
             int startPointIndex = from.PointIndex;
             for (int segmentIndex = from.SegmentIndex; segmentIndex <= endSegmentIndex; segmentIndex++)

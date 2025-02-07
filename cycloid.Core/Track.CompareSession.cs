@@ -407,7 +407,7 @@ public class CompareSession : ObservableObject,
     void IRecipient<SectionRemoved>.Receive(SectionRemoved message)
     {
         _newSegments.RemoveAt(message.Index);
-        // TODO Wenn der erste/letzte WayPoint entfernt wird, folgt keine Kalkulation aber die Diffs müssen trotzdem neu gefunden werden
+        // TODO Wenn der erste/letzte WayPoint entfernt wird, folgt keine Kalkulation aber die Diffs mï¿½ssen trotzdem neu gefunden werden
     }
 
     void IRecipient<CalculationStarting>.Receive(CalculationStarting message)

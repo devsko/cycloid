@@ -113,7 +113,7 @@ public sealed partial class MainPage : Page,
         }
     }
 
-    [GeneratedBindableCustomProperty([nameof(DisplayName)], [])]
+    [GeneratedBindableCustomProperty([nameof(DisplayName)], null)]
     public partial class MapLocationWrapper(MapLocation location)
     {
         public string DisplayName => location.DisplayName;

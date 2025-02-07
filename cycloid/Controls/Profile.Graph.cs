@@ -1,7 +1,10 @@
-using Windows.Foundation;
-using Windows.UI.Xaml.Media;
-
-using Path = Windows.UI.Xaml.Shapes.Path;
+using CommunityToolkit.WinUI.Helpers;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Geometry;
+using Windows.UI;
+using Windows.UI.Composition;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Hosting;
 
 namespace cycloid.Controls;
 
@@ -9,221 +12,223 @@ partial class Profile
 {
     private float _trackTotalDistance;
 
-    private float _trackStartDistance;
-    private float _trackEndDistance;
+    private ICanvasResourceCreator _resourceCreator;
+    private CompositionPathGeometry _trackGeometry;
+    private CompositionPathGeometry _sectionGeometry;
+    private CompositionPathGeometry _selectionGeometry;
+    private CompositionContainerShape _container;
+    private ShapeVisual _visual;
 
-    private float _selectionStartDistance;
-    private float _selectionEndDistance;
+    private Color _trackGraphOutlineColor;
+    private Color _trackGraphFillColor;
+    private double _trackGraphOpacity;
+    private Color _sectionGraphFillColor;
+    private double _sectionGraphOpacity;
+    private Color _selectionGraphFillColor;
+    private double _selectionGraphOpacity;
 
-    private float _sectionStartDistance;
-    private float _sectionEndDistance;
+    private readonly ThemeListener _themeListener = new();
 
-    private void ResetTrack()
+    private void UpdateTheme()
     {
-        Graph.Points.Clear();
-
-        _trackStartDistance = _trackEndDistance = -1;
+        _trackGraphOutlineColor = (Color)App.Current.Resources["TrackGraphOutline"];
+        _trackGraphFillColor = (Color)App.Current.Resources["TrackGraphFill"];
+        _trackGraphOpacity = (double)App.Current.Resources["TrackGraphOpacity"];
+        _sectionGraphFillColor = (Color)App.Current.Resources["SectionGraphFill"];
+        _sectionGraphOpacity = (double)App.Current.Resources["SectionGraphOpacity"];
+        _selectionGraphFillColor = (Color)App.Current.Resources["SelectionGraphFill"];
+        _selectionGraphOpacity = (double)App.Current.Resources["SelectionGraphOpacity"];
+        
+        ((CompositionSpriteShape)_container.Shapes[0]).StrokeBrush = Window.Current.Compositor.CreateColorBrush(_trackGraphOutlineColor);
+        ((CompositionSpriteShape)_container.Shapes[0]).FillBrush = Window.Current.Compositor.CreateColorBrush(Color.FromArgb((byte)(_trackGraphOpacity * 255), _trackGraphFillColor.R, _trackGraphFillColor.G, _trackGraphFillColor.B));
+        ((CompositionSpriteShape)_container.Shapes[1]).FillBrush = Window.Current.Compositor.CreateColorBrush(Color.FromArgb((byte)(_sectionGraphOpacity * 255), _sectionGraphFillColor.R, _sectionGraphFillColor.G, _sectionGraphFillColor.B));
+        ((CompositionSpriteShape)_container.Shapes[2]).FillBrush = Window.Current.Compositor.CreateColorBrush(Color.FromArgb((byte)(_selectionGraphOpacity * 255), _selectionGraphFillColor.R, _selectionGraphFillColor.G, _selectionGraphFillColor.B));
     }
 
-    private void ResetSelection()
+    private void InitializeVisual()
     {
-        SelectionGraph.Points.Clear();
+        _resourceCreator = new CanvasDevice();
 
-        _selectionStartDistance = _selectionEndDistance = -1;
+        Compositor compositor = Window.Current.Compositor;
+        _container = compositor.CreateContainerShape();
+
+        _trackGeometry = compositor.CreatePathGeometry();
+        CompositionSpriteShape shape = compositor.CreateSpriteShape(_trackGeometry);
+        shape.StrokeThickness = .2f;
+        shape.IsStrokeNonScaling = true;
+        _container.Shapes.Add(shape);
+
+        _sectionGeometry = compositor.CreatePathGeometry();
+        shape = compositor.CreateSpriteShape(_sectionGeometry);
+        _container.Shapes.Add(shape);
+
+        _selectionGeometry = compositor.CreatePathGeometry();
+        shape = compositor.CreateSpriteShape(_selectionGeometry);
+        _container.Shapes.Add(shape);
+
+        _visual = compositor.CreateShapeVisual();
+        _visual.IsPixelSnappingEnabled = true;
+        _visual.Shapes.Add(_container);
+
+        ElementCompositionPreview.SetElementChildVisual(Root, _visual);
+
+        UpdateTheme();
+
+        _themeListener.ThemeChanged += _ => UpdateTheme();
     }
 
-    private void ResetSection()
+    private (float MinElevation, float MaxElevation) EnsureTrack()
     {
-        SectionGraph.Points.Clear();
+        double margin = ActualWidth / 8;
 
-        _sectionStartDistance = _sectionEndDistance = -1;
+        return EnsureGraph(
+            XToDistance(Math.Max(0, _scrollerOffset - margin)), 
+            XToDistance(Math.Min(Root.ActualWidth, ActualWidth + _scrollerOffset + margin)));
     }
 
-    private void EnsureTrack()
+    private (float MinElevation, float MaxElevation) EnsureGraph(float startDistance, float endDistance)
     {
-        float startDistance = (float)(_scrollerOffset / _horizontalScale);
-        float endDistance = (float)((ActualWidth + _scrollerOffset) / _horizontalScale);
+        float sectionStart = ViewModel.CurrentSection is null ? -1 : ViewModel.CurrentSection.Start.Distance;
+        float sectionEnd = ViewModel.CurrentSection is null ? -1 : ViewModel.CurrentSection.End.Distance;
 
-        EnsureGraph(Graph, startDistance, endDistance, ref _trackStartDistance, ref _trackEndDistance, true);
+        float selectionStart = ViewModel.CurrentSelection.IsValid ? ViewModel.CurrentSelection.Start.Distance : -1;
+        float selectionEnd = ViewModel.CurrentSelection.IsValid ? ViewModel.CurrentSelection.End.Distance : -1;
 
-        GraphFigure.StartPoint = Graph.Points[0];
-    }
+        float minElevation = float.PositiveInfinity;
+        float maxElevation = float.NegativeInfinity;
 
-    private void EnsureSelection()
-    {
-        if (ViewModel.CurrentSelection.IsValid)
+        using (CanvasPathBuilder trackBuilder = new(_resourceCreator))
+        using (CanvasPathBuilder sectionBuilder = new(_resourceCreator))
+        using (CanvasPathBuilder selectionBuilder = new(_resourceCreator))
         {
-            float startDistance = Math.Max(ViewModel.CurrentSelection.Start.Distance, (float)(_scrollerOffset / _horizontalScale));
-            float endDistance = Math.Min(ViewModel.CurrentSelection.End.Distance, (float)((ActualWidth + _scrollerOffset) / _horizontalScale));
-
-            if (startDistance <= endDistance)
+            IEnumerator<(float Distance, float Altitude, Surface Surface)> enumerator = ViewModel.Track.Points.EnumerateByDistance(startDistance, endDistance, 1 / _horizontalScale).GetEnumerator();
+            if (enumerator.MoveNext())
             {
-                EnsureGraph(SelectionGraph, startDistance, endDistance, ref _selectionStartDistance, ref _selectionEndDistance);
+                trackBuilder.BeginFigure(0, -1000); // -1000 to ensure margin is filled
 
-                SelectionGraphFigure.StartPoint = SelectionGraph.Points[0];
-            }
-        }
-    }
-
-    private void EnsureSection()
-    {
-        if (ViewModel.CurrentSection is not null)
-        {
-            float startDistance = Math.Max(ViewModel.CurrentSection.Start.Distance, (float)(_scrollerOffset / _horizontalScale));
-            float endDistance = Math.Min(ViewModel.CurrentSection.End.Distance, (float)((ActualWidth + _scrollerOffset) / _horizontalScale));
-
-            if (startDistance <= endDistance)
-            {
-                EnsureGraph(SectionGraph, startDistance, endDistance, ref _sectionStartDistance, ref _sectionEndDistance);
-
-                SectionGraphFigure.StartPoint = SectionGraph.Points[0];
-            }
-        }
-    }
-
-    private static readonly Brush _trackGraphOutlineBrush = (Brush)App.Current.Resources["TrackGraphOutline"];
-    private readonly Dictionary<Brush, Path> _surfacePaths = [];
-    private Transform _graphTransform;
-    private Path _currentSurfacePath;
-    private PolyLineSegment _currentSurfaceLine;
-
-    private void EnsureGraph(PolyLineSegment graph, float startDistance, float endDistance, ref float currentStartDistance, ref float currentEndDistance, bool surfacePaths = false)
-    {
-        float minElevation = ViewModel.Track.Points.MinAltitude;
-        PointCollection points = graph.Points;
-
-        // TODO Really reset every time?
-        Reset(points, ref currentStartDistance, ref currentEndDistance, surfacePaths);
-
-        if (currentStartDistance >= 0)
-        {
-            float step = (float)(1 / (.5 * _horizontalScale));
-            if (startDistance < currentStartDistance)
-            {
-                if ((currentEndDistance - startDistance) / step > 2_500)
+                bool hasSection = sectionStart <= endDistance && sectionEnd >= startDistance;
+                if (hasSection)
                 {
-                    Reset(points, ref currentStartDistance, ref currentEndDistance, surfacePaths);
+                    sectionBuilder.BeginFigure(sectionStart, -1000);
                 }
-                else
+
+                bool hasSelection = selectionStart <= endDistance && selectionEnd >= startDistance;
+                if (hasSelection)
                 {
-                    points.RemoveAt(0);
-                    int i = 0;
-                    IterateTrack(startDistance, currentStartDistance, false, true, p =>
+                    selectionBuilder.BeginFigure(selectionStart, -1000);
+                }
+
+                (float distance, float altitude, _) = enumerator.Current;
+                trackBuilder.AddLine(0, altitude - TrackPoint.MinAltitudeValue);
+
+                while (true)
+                {
+                    minElevation = Math.Min(minElevation, altitude);
+                    maxElevation = Math.Max(maxElevation, altitude);
+                    trackBuilder.AddLine(distance, altitude - TrackPoint.MinAltitudeValue);
+                    
+                    if (hasSection && distance > sectionStart && distance < sectionEnd)
                     {
-                        points.Insert(i++, new Point(p.Distance, p.Altitude - minElevation));
-                    });
-                    points.Insert(0, new Point(graph.Points[0].X, 0));
-                    currentStartDistance = startDistance;
+                        sectionBuilder.AddLine(distance, altitude - TrackPoint.MinAltitudeValue);
+                    }
+                    if (hasSelection && distance > selectionStart && distance < selectionEnd)
+                    {
+                        selectionBuilder.AddLine(distance, altitude - TrackPoint.MinAltitudeValue);
+                    }
+                    if (!enumerator.MoveNext())
+                    {
+                        trackBuilder.AddLine(_trackTotalDistance, altitude - TrackPoint.MinAltitudeValue);
+                        break;
+                    }
+
+                    (distance, altitude, _) = enumerator.Current;
+                }
+
+                trackBuilder.AddLine(_trackTotalDistance, -1000);
+                trackBuilder.EndFigure(CanvasFigureLoop.Closed);
+
+                if (hasSection)
+                {
+                    sectionBuilder.AddLine(sectionEnd, -1000);
+                    sectionBuilder.EndFigure(CanvasFigureLoop.Closed);
+                }
+
+                if (hasSelection)
+                {
+                    selectionBuilder.AddLine(selectionEnd, -1000);
+                    selectionBuilder.EndFigure(CanvasFigureLoop.Closed);
                 }
             }
-            else if (endDistance > currentEndDistance)
-            {
-                if ((endDistance - currentStartDistance) / step > 2_500)
-                {
-                    Reset(points, ref currentStartDistance, ref currentEndDistance, surfacePaths);
-                }
-                else
-                {
-                    points.RemoveAt(points.Count - 1);
-                    IterateTrack(currentEndDistance, endDistance, true, false, p => points.Add(new Point(p.Distance, p.Altitude - minElevation)));
-                    points.Add(new Point(graph.Points[points.Count - 1].X, 0));
-                    currentEndDistance = endDistance;
-                }
-            }
+
+            _trackGeometry.Path = new CompositionPath(CanvasGeometry.CreatePath(trackBuilder));
+            _sectionGeometry.Path = new CompositionPath(CanvasGeometry.CreatePath(sectionBuilder));
+            _selectionGeometry.Path = new CompositionPath(CanvasGeometry.CreatePath(selectionBuilder));
         }
 
-
-        if (currentStartDistance < 0)
-        {
-            IterateTrack(startDistance, endDistance, false, false, p =>
-            {
-                points.Add(new Point(p.Distance, p.Altitude - minElevation));
-                if (surfacePaths)
-                {
-                    AddSurfacePathPoint(p.Surface, p.Distance, p.Altitude - minElevation);
-                }
-            });
-            points.Insert(0, new Point(points[0].X, 0));
-            points.Add(new Point(points[^1].X, 0));
-            currentStartDistance = startDistance;
-            currentEndDistance = endDistance;
-        }
-
-        void Reset(PointCollection points, ref float currentStartDistance, ref float currentEndDistance, bool surfacePaths)
-        {
-            points.Clear();
-            currentStartDistance = currentEndDistance = -1;
-            if (surfacePaths)
-            {
-                _currentSurfaceLine = null;
-                _currentSurfacePath = null;
-                foreach (Path path in _surfacePaths.Values)
-                {
-                    Root.Children.Remove(path);
-                }
-                _surfacePaths.Clear();
-            }
-        }
-
-
-        void AddSurfacePathPoint(Surface surface, float distance, float altitude)
-        {
-            Point point = new(distance, altitude);
-            Brush surfaceBrush = Convert.SurfaceBrush(surface);
-
-            if (!_surfacePaths.TryGetValue(surfaceBrush, out Path path))
-            {
-                path = new()
-                {
-                    Stroke = surfaceBrush,
-                    StrokeThickness = surfaceBrush == _trackGraphOutlineBrush
-                        ? .5 
-                        : surface == Surface.UnknownLikelyPaved
-                            ? .75
-                            : 3,
-                    Data = new PathGeometry { Transform = _graphTransform }
-                };
-                Root.Children.Add(path);
-                _surfacePaths.Add(surfaceBrush, path);
-            }
-            if (path == _currentSurfacePath)
-            {
-                _currentSurfaceLine.Points.Add(point);
-            }
-            else
-            {
-                if (_currentSurfacePath is not null)
-                {
-                    _currentSurfaceLine.Points.Add(point);
-                }
-                _currentSurfacePath = path;
-                _currentSurfaceLine = new PolyLineSegment { Points = { point } };
-                ((PathGeometry)path.Data).Figures.Add(new PathFigure 
-                { 
-                    Segments = { _currentSurfaceLine }, 
-                    StartPoint = point 
-                });
-            }
-        }
+        return (minElevation, maxElevation);
     }
 
-    private void IterateTrack(float startDistance, float endDistance, bool skipFirst, bool skipLast, Action<(float Distance, float Altitude, Surface Surface)> action)
-    {
-        IEnumerable<(float Distance, float Altitude, Surface Surface)> points = ViewModel.Track.Points.EnumerateByDistance(startDistance, endDistance, 1 / _horizontalScale);
+    //private readonly Dictionary<Brush, Path> _surfacePaths = [];
+    //private Path _currentSurfacePath;
+    //private PolyLineSegment _currentSurfaceLine;
 
-        if (skipFirst)
-        {
-            points = points.Skip(1);
-        }
+    //private void EnsureGraph(PolyLineSegment graph, float startDistance, float endDistance, ref float currentStartDistance, ref float currentEndDistance, bool surfacePaths = false)
+    //{
+    //    void Reset(PointCollection points, ref float currentStartDistance, ref float currentEndDistance, bool surfacePaths)
+    //    {
+    //        points.Clear();
+    //        currentStartDistance = currentEndDistance = -1;
+    //        if (surfacePaths)
+    //        {
+    //            _currentSurfaceLine = null;
+    //            _currentSurfacePath = null;
+    //            foreach (Path path in _surfacePaths.Values)
+    //            {
+    //                Root.Children.Remove(path);
+    //            }
+    //            _surfacePaths.Clear();
+    //        }
+    //    }
 
-        if (skipLast)
-        {
-            points = points.SkipLast(1);
-        }
 
-        foreach (var p in points)
-        {
-            action(p);
-        }
-    }
+    //    void AddSurfacePathPoint(Surface surface, float distance, float altitude)
+    //    {
+    //        Point point = new(distance, altitude);
+    //        Brush surfaceBrush = Convert.SurfaceBrush(surface);
+
+    //        if (!_surfacePaths.TryGetValue(surfaceBrush, out Path path))
+    //        {
+    //            path = new()
+    //            {
+    //                Stroke = surfaceBrush,
+    //                StrokeThickness = surfaceBrush == _trackGraphOutlineBrush
+    //                    ? .5 
+    //                    : surface == Surface.UnknownLikelyPaved
+    //                        ? .75
+    //                        : 3,
+    //                Data = new PathGeometry { Transform = _graphTransform }
+    //            };
+    //            Root.Children.Add(path);
+    //            _surfacePaths.Add(surfaceBrush, path);
+    //        }
+    //        if (path == _currentSurfacePath)
+    //        {
+    //            _currentSurfaceLine.Points.Add(point);
+    //        }
+    //        else
+    //        {
+    //            if (_currentSurfacePath is not null)
+    //            {
+    //                _currentSurfaceLine.Points.Add(point);
+    //            }
+    //            _currentSurfacePath = path;
+    //            _currentSurfaceLine = new PolyLineSegment { Points = { point } };
+    //            ((PathGeometry)path.Data).Figures.Add(new PathFigure 
+    //            { 
+    //                Segments = { _currentSurfaceLine }, 
+    //                StartPoint = point 
+    //            });
+    //        }
+    //    }
+    //}
 }

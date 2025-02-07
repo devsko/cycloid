@@ -10,20 +10,17 @@
                 <ResourceDictionary Source="ms-appx://Microsoft.UI.Xaml.2.8/Microsoft.UI.Xaml/DensityStyles/Compact.xaml" />
                 <ResourceDictionary>
                     <ResourceDictionary.ThemeDictionaries>
+                        
                         <ResourceDictionary x:Key="Dark">
-                            <StaticResource x:Key="TrackGraphOutline" ResourceKey="TextFillColorPrimaryBrush" />
-                            <SolidColorBrush
-                                x:Key="TrackGraphFill"
-                                Opacity="0.4"
-                                Color="{StaticResource TextFillColorSecondary}" />
-                            <SolidColorBrush
-                                x:Key="SectionGraphFill"
-                                Opacity="0.4"
-                                Color="{StaticResource TextFillColorTertiary}" />
-                            <SolidColorBrush
-                                x:Key="SelectionGraphFill"
-                                Opacity="0.3"
-                                Color="{StaticResource SystemAccentColorDark1}" />
+                            <StaticResource x:Key="TrackGraphOutline" ResourceKey="TextFillColorPrimary" />
+                            <SolidColorBrush x:Key="TrackGraphOutlineBrush" Color="{ThemeResource ResourceKey=TrackGraphOutline}" />
+                            <StaticResource x:Key="TrackGraphFill" ResourceKey="TextFillColorSecondary" />
+                            <x:Double x:Key="TrackGraphOpacity">.4</x:Double>
+                            <StaticResource x:Key="SectionGraphFill" ResourceKey="TextFillColorTertiary" />
+                            <x:Double x:Key="SectionGraphOpacity">.4</x:Double>
+                            <StaticResource x:Key="SelectionGraphFill" ResourceKey="SystemAccentColor" />
+                            <x:Double x:Key="SelectionGraphOpacity">.4</x:Double>
+
                             <StaticResource x:Key="TrackCurrentPointGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
                             <SolidColorBrush
                                 x:Key="TrackHoverPointGraphOutline"
@@ -36,20 +33,17 @@
                                 TintColor="#ff000000"
                                 TintOpacity="0.2" />
                         </ResourceDictionary>
+
                         <ResourceDictionary x:Key="Light">
-                            <StaticResource x:Key="TrackGraphOutline" ResourceKey="TextFillColorPrimaryBrush" />
-                            <SolidColorBrush
-                                x:Key="TrackGraphFill"
-                                Opacity="0.4"
-                                Color="{StaticResource TextFillColorSecondary}" />
-                            <SolidColorBrush
-                                x:Key="SelectionGraphFill"
-                                Opacity="0.3"
-                                Color="{StaticResource SystemAccentColorDark1}" />
-                            <SolidColorBrush
-                                x:Key="SectionGraphFill"
-                                Opacity="0.4"
-                                Color="{StaticResource TextFillColorTertiary}" />
+                            <StaticResource x:Key="TrackGraphOutline" ResourceKey="TextFillColorPrimary" />
+                            <SolidColorBrush x:Key="TrackGraphOutlineBrush" Color="{ThemeResource ResourceKey=TrackGraphOutline}" />
+                            <StaticResource x:Key="TrackGraphFill" ResourceKey="TextFillColorSecondary" />
+                            <x:Double x:Key="TrackGraphOpacity">.2</x:Double>
+                            <StaticResource x:Key="SectionGraphFill" ResourceKey="TextFillColorTertiary" />
+                            <x:Double x:Key="SectionGraphOpacity">.2</x:Double>
+                            <StaticResource x:Key="SelectionGraphFill" ResourceKey="SystemAccentColor" />
+                            <x:Double x:Key="SelectionGraphOpacity">.3</x:Double>
+
                             <StaticResource x:Key="TrackCurrentPointGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
                             <SolidColorBrush
                                 x:Key="TrackHoverPointGraphOutline"
@@ -62,6 +56,7 @@
                                 TintColor="#ffFFFFFF"
                                 TintOpacity="0.2" />
                         </ResourceDictionary>
+                        
                     </ResourceDictionary.ThemeDictionaries>
                 </ResourceDictionary>
             </mux:XamlControlsResources.MergedDictionaries>

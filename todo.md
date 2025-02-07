@@ -28,23 +28,28 @@ DesktopBridge setzt immer erstmal TargetPlatform UAP für den Restore
 
 - CT Tooling https://github.com/CommunityToolkit/Tooling-Windows-Submodule/tree/uwp-net8-windows
 - Build CT NuGet packages locally `.\tooling\Build-Toolkit-Components.ps1 -MultiTargets uwp -winui 2 -Components AppServices -PreviewVersion local -NupkgOutput ./some/output/path -Release`
+
+ProfileControl Surface
+CurrentItem in Liste der Diffs
+ProfileControl Zoom in, Tooltip beim Scrollen an der falschen Stelle
+
 ## Bugs
-- Surface verschoben (Holzbr cke in CH bei km 1402)
+- Surface verschoben (Holzbrücke in CH bei km 1402)
 - Profile zeichnet nach oben bis in die Karte beim Zeichnen der Route
-- Fehler auf Profile wenn Kalkulation l uft (war nach L schen von Selection)
+- Fehler auf Profile wenn Kalkulation läuft (war nach Löschen von Selection)
 ## Perf
 - Profile MaxElevation in EnsureTrack oder aus den MaxAltitudes der Segments in PointColection - auf jeden Fall nicht nochmal Enumerate()
 ## Feature
 - StreetView
 - Train Mode
-- Start-Screen (ersetzt  ffnen/Neu AppButton)
+- Start-Screen (ersetzt Öffnen/Neu AppButton)
   - Checkbox "in neuem Fenster"
   - Neu
-  -  ffnen
+  - Öffnen
   - Zuletzt
-- (H henakkumulator zwischen Segmenten) Neuer WayPoint auf dadurch unver nderter Route -> warum  ndern sich die Total Values
+- (Höhenakkumulator zwischen Segmenten) Neuer WayPoint auf dadurch unveränderter Route -> warum ändern sich die Total Values
 - Serialisierte Points behalten wenn nicht ver ndert
-- WayPoints m ssen eindeutig sein?
+- WayPoints müssen eindeutig sein?
 - Undo (Historie auch speichern) https://github.com/Doraku/DefaultUnDo
 - Splash-Screen
 - Camera als ViewModel? oder in Map integriert

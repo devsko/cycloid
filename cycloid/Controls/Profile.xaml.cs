@@ -1,6 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Numerics;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using cycloid.Routing;
@@ -30,18 +29,17 @@ public sealed partial class Profile : ViewModelControl,
         _VerticalRuler = 8,
         _Marker = 16,
         _VerticalTranslation = 32,
-        _Bottom = 64,
 
         Zoom = _SetHorizontalSize,
-        Track = _SetHorizontalSize | _EnsureGraph | _VerticalRuler | _Marker | _Bottom,
+        Track = _SetHorizontalSize | _EnsureGraph | _VerticalRuler | _Marker,
         HorizontalSize = _EnsureGraph | _Marker,
         Scroll = _EnsureGraph,
         VerticalSize = _VerticalRuler | _Marker | _VerticalTranslation,
-        MaxElevation = _VerticalRuler | _Marker,
+        ElevationDiff = _VerticalRuler | _Marker,
     }
 
-    private const float GraphBottomMarginRatio = .08f;
-    private const float GraphTopMarginRatio = .1f;
+    private const float GraphBottomMarginRatio = .02f;
+    private const float GraphTopMarginRatio = .05f;
     private const float HorizontalRulerTickMinimumGap = 50;
     private const float VerticalRulerTickMinimumGap = 25;
 
@@ -63,10 +61,11 @@ public sealed partial class Profile : ViewModelControl,
         DependencyProperty.Register(nameof(HorizontalZoom), typeof(double), typeof(Profile), new PropertyMetadata(1d, (d, e) => ((Profile)d).HorizontalZoomChanged(e)));
 
     private float _maxElevation;
-    private float _elevationDiff;
+    private float _minElevation;
 
     private double _horizontalSize;
     private double _horizontalScale;
+    private double _verticalScale;
 
     private int _horizontalRulerStartTick;
     private int _horizontalRulerEndTick;
@@ -78,6 +77,9 @@ public sealed partial class Profile : ViewModelControl,
     public Profile()
     {
         InitializeComponent();
+        InitializeVisual();
+
+        _lineStrokeBrush = (SolidColorBrush)this.FindResource("TrackGraphOutlineBrush");
 
         StrongReferenceMessenger.Default.Register<TrackChanged>(this);
         StrongReferenceMessenger.Default.Register<HoverPointChanged>(this);
@@ -86,28 +88,6 @@ public sealed partial class Profile : ViewModelControl,
         StrongReferenceMessenger.Default.Register<CurrentSectionChanged>(this);
         StrongReferenceMessenger.Default.Register<BringTrackIntoViewMessage>(this);
     }
-
-    //public ObservableCollection<TrackPoi> TrackPois
-    //{
-    //    get => _trackPois;
-    //    set
-    //    {
-    //        if (!object.Equals(_sections, value))
-    //        {
-    //            _trackPois = value;
-    //            _trackPois.CollectionChanged += (_, args) =>
-    //            {
-    //                if (args.Action == NotifyCollectionChangedAction.Add)
-    //                {
-    //                    OnTrackPoiAdded((TrackPoi)args.NewItems[0]);
-    //                }
-    //            };
-    //        }
-    //    }
-    //}
-
-    // OnTrackPoiAdded
-    // OnCurrentPointChanged
 
     private void HorizontalZoomChanged(DependencyPropertyChangedEventArgs _)
     {
@@ -121,6 +101,8 @@ public sealed partial class Profile : ViewModelControl,
 
     private async Task ProcessChangeAsync(Change change)
     {
+        var w = ActualWidth;
+        Debug.WriteLine($"{nameof(ProcessChangeAsync)} {change} {ActualWidth}");
         while (change != 0)
         {
             if ((change & Change._SetHorizontalSize) != 0)
@@ -136,34 +118,37 @@ public sealed partial class Profile : ViewModelControl,
 
                     Root.Width = horizontalSize;
                     Scroller.UpdateLayout();
-                    _horizontalSize = Root.ActualWidth;
-
-                    double ratio = _horizontalSize / oldHorizontalSize - 1;
-                    if (!double.IsInfinity(ratio))
+                    if (Root.ActualWidth < ActualWidth)
                     {
-                        Scroller.ChangeView(Math.Clamp(fixPoint * ratio + oldScrollerOffset, 0, Math.Max(0, _horizontalSize - ActualWidth)), null, null, true);
+                        // WORKAROUND: Maximizing while HorizontalZoom = 1
+                        _isOuterSizeChange = true;
                     }
-
-                    _trackTotalDistance = ViewModel.Track.Points.Total.Distance;
-                    _horizontalScale = _horizontalSize / _trackTotalDistance;
-
-                    if (!double.IsInfinity(_horizontalScale))
+                    else
                     {
-                        GraphTransform.ScaleX = _horizontalScale;
-                        GraphBottomTransform.ScaleX = _horizontalScale;
+                        _horizontalSize = Root.ActualWidth;
+
+                        double ratio = _horizontalSize / oldHorizontalSize - 1;
+                        if (!double.IsInfinity(ratio))
+                        {
+                            // TODO
+                            Scroller.ChangeView(Math.Clamp(fixPoint * ratio + oldScrollerOffset, 0, Math.Max(0, _horizontalSize - ActualWidth)), null, null, true);
+                        }
+
+                        _trackTotalDistance = ViewModel.Track.Points.Total.Distance;
+                        _horizontalScale = _horizontalSize / _trackTotalDistance;
+
+                        if (!double.IsInfinity(_horizontalScale))
+                        {
+                            _container.Scale = new Vector2((float)_horizontalScale, _container.Scale.Y);
+                        }
+
+                        ResetHorizontalRuler();
+
+                        change |= Change.HorizontalSize;
                     }
-
-                    ResetTrack();
-                    ResetSelection();
-                    ResetSection();
-                    ResetHorizontalRuler();
-
-                    //RelocateTrackPois();
-
-                    change |= Change.HorizontalSize;
-
                     double GetFixPoint()
                     {
+                        // TODO current point nur wenn im sichtbaren Bereich
                         if (ViewModel.CurrentPoint.IsValid)
                         {
                             double point = ViewModel.CurrentPoint.Distance * _horizontalScale;
@@ -173,7 +158,8 @@ public sealed partial class Profile : ViewModelControl,
                             }
                         }
 
-                        return ActualWidth / 2 + _scrollerOffset;
+                        // TODO scroller in der 2. Hälfte, schnell größer/kleiner machen verschiebt den Scroller
+                        return _scrollerOffset;
                     }
                 }
             }
@@ -188,26 +174,20 @@ public sealed partial class Profile : ViewModelControl,
                         if (_maxElevation != 0)
                         {
                             _maxElevation = 0;
-                            _elevationDiff = 0;
-                            change |= Change.MaxElevation;
+                            _minElevation = 0;
+                            change |= Change.ElevationDiff;
                         }
                     }
                     else
                     {
-                        EnsureTrack();
-                        EnsureSelection();
-                        EnsureSection();
+                        (float minElevation, float maxElevation) = EnsureTrack();
                         EnsureHorizontalRuler();
 
-                        float maxElevation = ViewModel.Track.Points
-                            .Enumerate((float)(_scrollerOffset / _horizontalScale), (float)((ActualWidth + _scrollerOffset) / _horizontalScale))
-                            .Max(point => point.Altitude);
-
-                        if (_maxElevation != maxElevation)
+                        if (_maxElevation != maxElevation || _minElevation != minElevation)
                         {
                             _maxElevation = maxElevation;
-                            _elevationDiff = maxElevation - ViewModel.Track.Points.MinAltitude;
-                            change |= Change.MaxElevation;
+                            _minElevation = minElevation;
+                            change |= Change.ElevationDiff;
                         }
                     }
                 }
@@ -218,10 +198,11 @@ public sealed partial class Profile : ViewModelControl,
 
                 VerticalRuler.Children.Clear();
 
-                if (_elevationDiff != 0)
+                if (_maxElevation != _minElevation)
                 {
-                    GraphTransform.ScaleY = -ActualHeight / _elevationDiff / (1 + GraphBottomMarginRatio + GraphTopMarginRatio);
-                    GraphBottomTransform.ScaleY = -ActualHeight;
+                    _verticalScale = (float)ActualHeight / (1 + GraphBottomMarginRatio + GraphTopMarginRatio) / (_maxElevation - _minElevation);
+                    _container.Scale = new Vector2(_container.Scale.X, -(float)_verticalScale);
+                    _container.Offset = new Vector2(0, ElevationToY(_minElevation));
 
                     DrawVerticalRuler();
                 }
@@ -237,31 +218,17 @@ public sealed partial class Profile : ViewModelControl,
             {
                 change &= ~Change._VerticalTranslation;
 
-                GraphTransform.TranslateY = ActualHeight * (1 - GraphBottomMarginRatio);
-                GraphBottomTransform.TranslateY = ActualHeight;
-                Canvas.SetTop(TrackPois, ActualHeight - 9);
-            }
-            if ((change & Change._Bottom) != 0)
-            {
-                change &= ~Change._Bottom;
-
-                GraphBottom.Rect = new Rect(0, 0, ViewModel.Track?.Points.Total.Distance ?? 0, GraphBottomMarginRatio);
+                _container.Offset = new Vector2(0, ElevationToY(_minElevation));
             }
         }
     }
-
-    //private void RelocateTrackPois()
-    //{
-    //    for (int i = 0; i < TrackPois.Children.Count; i++)
-    //        Canvas.SetLeft(TrackPois.Children[i], _trackPois[i].Point.Distance * _horizontalScale);
-    //}
 
     private void UpdateMarker(TrackPoint point, LineGeometry line1, LineGeometry line2, EllipseGeometry circle)
     {
         if (point.IsValid)
         {
-            double x = point.Distance * _horizontalScale;
-            double y = (point.Altitude - ViewModel.Track.Points.MinAltitude) * -ActualHeight / _elevationDiff / (1 + GraphBottomMarginRatio + GraphTopMarginRatio) + ActualHeight * (1 - GraphBottomMarginRatio);
+            double x = DistanceToX(point.Distance);
+            double y = (point.Altitude - _minElevation) * -ActualHeight / (_maxElevation - _minElevation) / (1 + GraphBottomMarginRatio + GraphTopMarginRatio) + ActualHeight * (1 - GraphBottomMarginRatio);
 
             line1.StartPoint = new Point(x, 14);
             line1.EndPoint = new Point(x, y - 2);
@@ -271,13 +238,17 @@ public sealed partial class Profile : ViewModelControl,
         }
     }
 
-    private void ViewModelControl_Loaded(object sender, RoutedEventArgs e)
-    {
-        _graphTransform = (Transform)Root.Resources["GraphTransform"];
-    }
+    private float XToDistance(double x) => (float)(x / _horizontalScale);
+
+    private float DistanceToX(float distance) => distance * (float)_horizontalScale;
+
+    private float ElevationToY(float elevation) => (float)ActualHeight * (1 - GraphBottomMarginRatio) + (elevation - TrackPoint.MinAltitudeValue) * (float)_verticalScale;
+
+    //private float YToElevation(float y) => y / (float)_verticalScale + TrackPoint.MinAltitudeValue;
 
     private void ViewModelControl_SizeChanged(object _1, SizeChangedEventArgs _2)
     {
+        Debug.WriteLine(nameof(ViewModelControl_SizeChanged));
         // TODO
         // Weird behavior if HorizontalZoom equals 1 and a restored app window is maximized!
 
@@ -288,6 +259,10 @@ public sealed partial class Profile : ViewModelControl,
 
     private void Scroller_ViewChanged(object _1, ScrollViewerViewChangedEventArgs _2)
     {
+        if (Math.Abs(_scrollerOffset - Scroller.HorizontalOffset) / ActualWidth < 0.01)
+        {
+            return;
+        }
         _scrollerOffset = Scroller.HorizontalOffset;
 
         ProcessChangeAsync(Change.Scroll).FireAndForget();
@@ -305,6 +280,8 @@ public sealed partial class Profile : ViewModelControl,
 
     private void Root_SizeChanged(object _1, SizeChangedEventArgs _2)
     {
+        Debug.WriteLine($"{nameof(Root_SizeChanged)} {nameof(_isOuterSizeChange)}:{_isOuterSizeChange} {Root.ActualWidth}");
+        _visual.Size = new Vector2((float)Root.ActualWidth, (float)Root.ActualHeight);
         if (_isOuterSizeChange)
         {
             _isOuterSizeChange = false;
@@ -376,7 +353,7 @@ public sealed partial class Profile : ViewModelControl,
     private void SetHoverPoint(double x)
     {
         HoverPointValues.Enabled = true;
-        float distance = Math.Clamp((float)(x / _horizontalScale), 0, ViewModel.Track.Points.Total.Distance);
+        float distance = Math.Clamp(XToDistance(x), 0, ViewModel.Track.Points.Total.Distance);
         ViewModel.HoverPoint = ViewModel.Track.Points.Search(distance).Point;
         ViewModel.ContinueSelection();
     }
@@ -458,7 +435,7 @@ public sealed partial class Profile : ViewModelControl,
         Root.Width = double.NaN;
         _horizontalSize = 0;
         _maxElevation = 0;
-        _elevationDiff = 0;
+        _minElevation = 0;
         ProcessChangeAsync(Change.Track).FireAndForget();
         if (message.OldValue is not null)
         {
@@ -482,14 +459,12 @@ public sealed partial class Profile : ViewModelControl,
 
     void IRecipient<SelectionChanged>.Receive(SelectionChanged _)
     {
-        ResetSelection();
-        EnsureSelection();
+        EnsureTrack();
     }
 
     void IRecipient<CurrentSectionChanged>.Receive(CurrentSectionChanged _)
     {
-        ResetSection();
-        EnsureSection();
+        EnsureTrack();
     }
 
     void IRecipient<RouteChanged>.Receive(RouteChanged message)
@@ -499,7 +474,9 @@ public sealed partial class Profile : ViewModelControl,
 
     private bool IsInView(float distance)
     {
-        return distance >= Scroller.HorizontalOffset / _horizontalScale && distance <= (Scroller.HorizontalOffset + ActualWidth) / _horizontalScale;
+        float x = DistanceToX(distance);
+
+        return x >= Scroller.HorizontalOffset && x <= Scroller.HorizontalOffset + ActualWidth;
     }
 
     void IRecipient<BringTrackIntoViewMessage>.Receive(BringTrackIntoViewMessage message)

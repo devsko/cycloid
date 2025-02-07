@@ -5,7 +5,6 @@
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    Loaded="ViewModelControl_Loaded"
     SizeChanged="ViewModelControl_SizeChanged">
 
     <Grid>
@@ -33,39 +32,6 @@
                     <CompositeTransform x:Name="GraphTransform" />
                     <CompositeTransform x:Name="GraphBottomTransform" />
                 </Canvas.Resources>
-                <Path x:Name="Path" Fill="{ThemeResource TrackGraphFill}">
-                    <Path.Data>
-                        <PathGeometry Transform="{StaticResource GraphTransform}">
-                            <PathFigure x:Name="GraphFigure">
-                                <PolyLineSegment x:Name="Graph" />
-                            </PathFigure>
-                        </PathGeometry>
-                    </Path.Data>
-                </Path>
-                <Path Fill="{ThemeResource TrackGraphFill}">
-                    <Path.Data>
-                        <RectangleGeometry x:Name="GraphBottom" Transform="{StaticResource GraphBottomTransform}" />
-                    </Path.Data>
-                </Path>
-                <Path Fill="{ThemeResource SelectionGraphFill}">
-                    <Path.Data>
-                        <PathGeometry Transform="{StaticResource GraphTransform}">
-                            <PathFigure x:Name="SelectionGraphFigure">
-                                <PolyLineSegment x:Name="SelectionGraph" />
-                            </PathFigure>
-                        </PathGeometry>
-                    </Path.Data>
-                </Path>
-                <Path Fill="{ThemeResource SectionGraphFill}">
-                    <Path.Data>
-                        <PathGeometry Transform="{StaticResource GraphTransform}">
-                            <PathFigure x:Name="SectionGraphFigure">
-                                <PolyLineSegment x:Name="SectionGraph" />
-                            </PathFigure>
-                        </PathGeometry>
-                    </Path.Data>
-                </Path>
-                <Canvas x:Name="TrackPois" />
                 <Canvas x:Name="HorizontalRuler" />
                 <Path
                     Stroke="{ThemeResource TrackCurrentPointGraphOutline}"

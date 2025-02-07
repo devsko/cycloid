@@ -14,13 +14,8 @@ public class PoisVisibleChanged(bool value) : ValueChangedMessage<bool>(value);
 
 public class InfoVisibleChanged(bool value) : ValueChangedMessage<bool>(value);
 
-[GeneratedBindableCustomProperty([nameof(Name)], [])]
-public partial class MapStyleAndColor(string name, MapStyleSheet styleSheet, bool osm = false)
-{
-    public string Name => name;
-    public MapStyleSheet StyleSheet => styleSheet;
-    public bool Osm => osm;
-}
+[GeneratedBindableCustomProperty([nameof(Name)], null)]
+public partial record MapStyleAndColor(string Name, MapStyleSheet StyleSheet, bool Osm = false);
 
 partial class ViewModel
 {
@@ -28,7 +23,7 @@ partial class ViewModel
     [
         new("Aerial", MapStyleSheet.Combine([MapStyleSheet.Aerial(), StyleSheet.Extension])),
         new("Aerial with roads", MapStyleSheet.Combine([MapStyleSheet.AerialWithOverlay(), StyleSheet.Extension])),
-        new("OSM", MapStyleSheet.Combine([MapStyleSheet.RoadLight(), StyleSheet.Empty, StyleSheet.Extension]), osm: true),
+        new("OSM", MapStyleSheet.Combine([MapStyleSheet.RoadLight(), StyleSheet.Empty, StyleSheet.Extension]), Osm: true),
         new("Road (Dark)", MapStyleSheet.Combine([MapStyleSheet.RoadDark(), StyleSheet.Extension])),
         new("Road (Light)", MapStyleSheet.Combine([MapStyleSheet.RoadLight(), StyleSheet.Extension])),
     ];

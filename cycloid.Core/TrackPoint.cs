@@ -12,6 +12,8 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
         public int Compare(TrackPoint x, TrackPoint y) => x.Distance.CompareTo(y.Distance);
     }
 
+    public const float MinAltitudeValue = -50;
+
     public static readonly TrackPoint Invalid = new(float.NaN, float.NaN);
 
     public static TrackPoint Lerp(TrackPoint previous, TrackPoint next, float fraction)
@@ -46,7 +48,7 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
     private readonly float _latitude = latitude;
     private readonly float _longitude = longitude;
     private readonly CommonValues _values = new(distance, time, ascent, descent);
-    private readonly ushort _altitude = (ushort)((altitude + 50) * 10); // 0.1 meters above -50 meters msl
+    private readonly ushort _altitude = (ushort)((altitude - MinAltitudeValue) * 10); // 0.1 meters above -50 meters msl
     private readonly short _heading = (short)(heading * 10); // 0.1 °
     private readonly short _gradient = (short)(gradient * 10); // 0.1 %
     private readonly short _speed = (short)(speed * 10); // 0.1 km/h
@@ -56,7 +58,7 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
 
     public float Longitude => _longitude;
 
-    public float Altitude => ((float)_altitude / 10) - 50;
+    public float Altitude => ((float)_altitude / 10) + MinAltitudeValue;
 
     public TimeSpan Time => _values.Time;
 
@@ -84,7 +86,7 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
         other._latitude == _latitude &&
         other._longitude == _longitude;
 
-    public override bool Equals([NotNullWhen(true)] object obj) => 
+    public override bool Equals([NotNullWhen(true)] object? obj) => 
         obj is TrackPoint other && Equals(other);
 
     public override int GetHashCode() => HashCode.Combine(_latitude, _longitude);

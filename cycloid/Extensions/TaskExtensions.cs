@@ -1,5 +1,4 @@
-using System;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace cycloid;
@@ -7,10 +6,12 @@ namespace cycloid;
 
 public static class TaskExtensions
 {
+    [StackTraceHidden]
     public static void FireAndForget(this Task task)
     {
         _ = ForgetAsync();
 
+        [StackTraceHidden]
         async Task ForgetAsync()
         {
             try
