@@ -1,11 +1,16 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Storage;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls.Primitives;
+
+[assembly: UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>", Scope = "member", Target = "~M:cycloid.cycloid_XamlTypeInfo.XamlTypeInfoProvider.Activate_119_ChangePropertyAction")]
+[assembly: UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>", Scope = "member", Target = "~M:cycloid.cycloid_XamlTypeInfo.XamlTypeInfoProvider.Activate_115_EventTriggerBehavior")]
 
 namespace cycloid.Controls;
 
-public sealed partial class StreetView : TrackPointControl
+public sealed partial class StreetView : TrackPointControl  
 {
     private readonly AsyncThrottle<TrackPoint, StreetView> _updateThrottle = new(
         static (value, @this, cancellationToken) => @this.SetLocationAsync(value, cancellationToken),
@@ -25,14 +30,14 @@ public sealed partial class StreetView : TrackPointControl
     public static readonly DependencyProperty IsCollapsedProperty =
         DependencyProperty.Register(nameof(IsCollapsed), typeof(bool), typeof(StreetView), new PropertyMetadata(true, (sender, e) => ((StreetView)sender).IsCollapsedChanged(e)));
 
+    [DynamicDependency(nameof(IsCollapsed), typeof(StreetView))]
+    [DynamicDependency(nameof(ButtonBase.Click), typeof(ButtonBase))]
     public StreetView()
     {
         InitializeComponent();
 
         WebView.Visibility = Visibility.Collapsed;
         WebView.CoreWebView2Initialized += WebView_CoreWebView2Initialized;
-
-        VisualStateManager.GoToState(this, "CollapsedState", false);
     }
 
     private async void WebView_CoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)

@@ -64,7 +64,7 @@ partial class ViewModel
             CurrentPoint = Track.Points.First();
         }
 
-        // Erst nach Yield() werden IsRunning / CanBeCanceled ge‰ndert...
+        // Erst nach Yield() werden IsRunning / CanBeCanceled ge√§ndert...
         await Task.Yield();
         OnPropertyChanged(nameof(IsPlaying));
         SkipMinutesCommand.NotifyCanExecuteChanged();

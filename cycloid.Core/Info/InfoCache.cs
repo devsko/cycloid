@@ -98,7 +98,7 @@ public partial class InfoCache : ObservableObject
         async Task<InfoBucket> LoadAsync(BucketPoint point)
         {
             OverpassPoint[] overpassPoints = await _client.GetPointsAsync(new MapPoint((float)point.Bottom * BucketWidth, (float)point.Left * BucketWidth), BucketSize, default).ConfigureAwait(false);
-            InfoPoint[] infos = overpassPoints.Select(InfoPoint.FromOverpassPoint).ToArray();
+            InfoPoint[] infos = [.. overpassPoints.Select(InfoPoint.FromOverpassPoint)];
 
             return new InfoBucket { Point = point, Infos = infos };
         }

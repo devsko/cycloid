@@ -8,6 +8,6 @@ public partial class ConfigurationValue : MarkupExtension
 
     protected override object ProvideValue()
     {
-        return App.Current.Configuration[Key];
+        return App.Current.Secrets[Key];
     }
 }

@@ -9,38 +9,6 @@
     Loaded="ViewModelControl_Loaded">
 
     <controls:ViewModelControl.Resources>
-
-        <Style
-            x:Key="LocationMenuItemStyle"
-            BasedOn="{StaticResource DefaultMenuFlyoutItemStyle}"
-            TargetType="MenuFlyoutItem">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="MenuFlyoutItem">
-                        <Grid
-                            x:Name="LayoutRoot"
-                            Margin="{StaticResource MenuFlyoutItemMargin}"
-                            Padding="{StaticResource MenuFlyoutItemThemePaddingNarrow}"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding CornerRadius}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock
-                                x:Name="TextBlock"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Foreground="{TemplateBinding Foreground}"
-                                Text="{TemplateBinding Text}"
-                                TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" />
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <controls:MapMenuFlyout x:Name="MapNoTrackMenu" />
         <controls:MapMenuFlyout x:Name="MapEditMenu">
             <MenuFlyoutItem
@@ -123,7 +91,7 @@
         Loaded="MapControl_Loaded"
         LosingFocus="MapControl_LosingFocus"
         MapContextRequested="MapControl_MapContextRequested"
-        MapServiceToken="{cycloid:ConfigurationValue Key=Bing:ServiceApiKey}"
+        MapServiceToken="{cycloid:ConfigurationValue Key=BingServiceApiKey}"
         MapTapped="MapControl_MapTapped"
         PreviewKeyDown="MapControl_PreviewKeyDown"
         StyleSheet="{x:Bind Mode=OneWay, Path=ViewModel.MapStyleAndColor.StyleSheet}"

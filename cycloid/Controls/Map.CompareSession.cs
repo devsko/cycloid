@@ -34,7 +34,7 @@ partial class Map :
                     {
                         MapStyleSheetEntry = "Routing.Difference",
                         Tag = difference,
-                        Path = new Geopath(difference.OriginalPoints.Select(p => new BasicGeoposition { Longitude = p.Longitude, Latitude = p.Latitude })),
+                        Path = new Geopath(new GeopositionEnumerable(difference.OriginalPoints.Select(p => new BasicGeoposition { Longitude = p.Longitude, Latitude = p.Latitude }))),
                     });
                 }
                 break;

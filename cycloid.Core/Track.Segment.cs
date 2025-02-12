@@ -15,7 +15,7 @@ partial class Track
             private StartDistanceComparer()
             { }
 
-            public int Compare(Segment x, Segment y) => x.Start.Distance.CompareTo(y.Start.Distance);
+            public int Compare(Segment? x, Segment? y) => x!.Start.Distance.CompareTo(y!.Start.Distance);
         }
 
         public RouteSection Section { get; set; }

@@ -83,4 +83,32 @@
         </Setter>
     </Style>
 
+    <Style BasedOn="{StaticResource DefaultMenuFlyoutItemStyle}" TargetType="controls:MapLocationMenuFlyoutItem">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuFlyoutItem">
+                    <Grid
+                        x:Name="LayoutRoot"
+                        Margin="{StaticResource MenuFlyoutItemMargin}"
+                        Padding="{StaticResource MenuFlyoutItemThemePaddingNarrow}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            x:Name="TextBlock"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Text="{TemplateBinding Text}"
+                            TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

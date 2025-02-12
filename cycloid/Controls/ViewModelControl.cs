@@ -5,5 +5,5 @@ namespace cycloid.Controls;
 
 public partial class ViewModelControl : UserControl
 {
-    protected ViewModel ViewModel => (ViewModel)this.FindResource("ViewModel");
+    public ViewModel ViewModel => (ViewModel)this.FindResource("ViewModel");
 }

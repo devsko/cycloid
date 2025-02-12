@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Routing;
 using FluentIcons.Uwp;
-using Microsoft.Extensions.Configuration;
 using Windows.ApplicationModel.Activation;
 using Windows.Services.Maps;
 using Windows.Storage;
@@ -19,7 +19,7 @@ sealed partial class App : Application,
     IRecipient<PlayerStatusChanged>
 {
     public const string NewTrackSentinel = "{NewTrack}";
-    public IConfigurationRoot Configuration { get; }
+    public Secrets Secrets { get; }
 
     private CoreDispatcher _dispatcher;
 
@@ -35,14 +35,13 @@ sealed partial class App : Application,
 
         Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider.Initialize();
         this.UseSegoeMetrics();
-        
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        
-        var builder = new ConfigurationBuilder();
-        builder.AddUserSecrets("not used");
-        Configuration = builder.Build();
 
-        MapService.ServiceToken = Configuration["Bing:ServiceApiKey"];
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+        using Stream secretsJson = typeof(App).Assembly.GetManifestResourceStream("cycloid.secrets.json");
+        Secrets = JsonSerializer.Deserialize(secretsJson, SecretsContext.Default.Secrets);
+
+        MapService.ServiceToken = Secrets.BingServiceApiKey;
 
         InitializeComponent();
 

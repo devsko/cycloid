@@ -1,13 +1,13 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel;
 using Windows.UI.Xaml;
 
 namespace cycloid.Controls;
 
-[ObservableObject]
-public partial class PointValuesControl<T> : PointControl<T> where T : struct, ICanBeInvalid<T>
+public partial class PointValuesControl<T> : PointControl<T>, INotifyPropertyChanged where T : struct, ICanBeInvalid<T>
 {
     private static readonly PropertyChangedEventArgs _isVisibleChangedArgs = new(nameof(IsVisible));
+
+    public event PropertyChangedEventHandler PropertyChanged;
 
     public PointValuesControl()
     {

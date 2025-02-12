@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using CommunityToolkit.WinUI;
 using Windows.Devices.Geolocation;
 using Windows.Foundation;
@@ -8,11 +7,19 @@ using Windows.UI.Xaml.Controls.Primitives;
 
 namespace cycloid.Controls;
 
+public partial class MapLocationMenuFlyoutItem : MenuFlyoutItem
+{
+    public MapLocationMenuFlyoutItem()
+    {
+        DefaultStyleKey = typeof(MapLocationMenuFlyoutItem);
+        IsEnabled = false;
+    }
+}
+
 public partial class MapMenuFlyout : MenuFlyout
 {
     private readonly MenuFlyoutItem _coordinates = new();
-    private readonly MenuFlyoutItem _address = new();
-    private Style _locationItemStyle;
+    private readonly MapLocationMenuFlyoutItem _address = new();
 
     public MapPoint Location
     {
@@ -23,13 +30,11 @@ public partial class MapMenuFlyout : MenuFlyout
     public static readonly DependencyProperty LocationProperty =
         DependencyProperty.Register(nameof(Location), typeof(MapPoint), typeof(MapMenuFlyout), new PropertyMetadata(MapPoint.Invalid));
 
-    public void ShowAt(FrameworkElement placementTarget, MapPoint location, Point position)
+    public void ShowAt(Map map, MapPoint location, Point position)
     {
-        _locationItemStyle ??= (Style)placementTarget.FindResource("LocationMenuItemStyle");
-
         Location = location;
         _coordinates.Text = $"{Format.Latitude(location.Latitude)} {Format.Longitude(location.Longitude)}";
-        _coordinates.Command = ((ViewModel)placementTarget.FindResource(nameof(ViewModel))).OpenLocationCommand;
+        _coordinates.Command = map.ViewModel.OpenLocationCommand;
         _coordinates.CommandParameter = location;
 
         ShowAsync().FireAndForget();
@@ -44,15 +49,12 @@ public partial class MapMenuFlyout : MenuFlyout
             catch
             { }
             _address.Text = address ?? string.Empty;
-            ShowAt(placementTarget, new FlyoutShowOptions { Position = position });
+            ShowAt(map, new FlyoutShowOptions { Position = position });
         }
     }
 
     protected override Control CreatePresenter()
     {
-        _address.IsEnabled = false;
-        _address.Style = _locationItemStyle;
-
         if (Items.Count > 0)
         {
             Items.Add(new MenuFlyoutSeparator());

@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
 using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Routing;
 using Windows.Devices.Geolocation;
@@ -343,7 +341,7 @@ partial class Map :
             {
                 MapStyleSheetEntry = "Routing.Line",
                 Tag = message.Section,
-                Path = new Geopath([new BasicGeoposition()])
+                Path = new Geopath(new GeopositionEnumerable([new BasicGeoposition()]))
             };
             _routingLayer.MapElements.Add(line);
             _dragStateFrom = new DragState(line, false);
@@ -356,7 +354,7 @@ partial class Map :
                 MapStyleSheetEntry = "Routing.Line",
                 MapStyleSheetEntryState = "Routing.new",
                 Tag = message.Section,
-                Path = new Geopath([message.Section.Start.Location.ToBasicGeoposition(), message.Section.End.Location.ToBasicGeoposition()]),
+                Path = new Geopath(new GeopositionEnumerable([message.Section.Start.Location.ToBasicGeoposition(), message.Section.End.Location.ToBasicGeoposition()])),
             });
         }
     }
@@ -397,14 +395,14 @@ partial class Map :
             MapPolyline line = GetSectionLine(message.Section);
             if (message.Result.IsValid)
             {
-                line.Path = new Geopath(message.Result.Points.Select(p => new BasicGeoposition { Longitude = p.Longitude, Latitude = p.Latitude }));
+                line.Path = new Geopath(new GeopositionEnumerable(message.Result.Points.Select(p => new BasicGeoposition { Longitude = p.Longitude, Latitude = p.Latitude })));
                 line.MapStyleSheetEntryState = "";
             }
             else
             {
                 if (line.Path.Positions.Count < 2)
                 {
-                    line.Path = new Geopath([message.Section.Start.Location.ToBasicGeoposition(), message.Section.End.Location.ToBasicGeoposition()]);
+                    line.Path = new Geopath(new GeopositionEnumerable([message.Section.Start.Location.ToBasicGeoposition(), message.Section.End.Location.ToBasicGeoposition()]));
                 }
                 line.MapStyleSheetEntryState = "Routing.error";
             }
@@ -437,7 +435,7 @@ partial class Map :
             {
                 _selectionLine = new MapPolyline
                 {
-                    Path = new Geopath(positions),
+                    Path = new Geopath(new GeopositionEnumerable(positions)),
                     MapStyleSheetEntry = "Routing.Selection",
                     ZIndex = -100,
                 };

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Info;
 using Windows.Devices.Geolocation;
@@ -28,6 +24,13 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
     IRecipient<BringTrackIntoViewMessage>,
     IRecipient<TrackComplete>
 {
+    private partial class GeopositionEnumerable(IEnumerable<BasicGeoposition> geopositions) : IEnumerable<BasicGeoposition>
+    {
+        public IEnumerator<BasicGeoposition> GetEnumerator() => geopositions.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
     private static readonly PropertyChangedEventArgs _centerChangedEventArgs = new(nameof(Center));
     private static readonly PropertyChangedEventArgs _headingChangedEventArgs = new(nameof(Heading));
 
@@ -113,7 +116,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
     private async Task SetCenterAsync(IEnumerable<MapPoint> points)
     {
-        GeoboundingBox bounds = GeoboundingBox.TryCompute(points.Select(trackPoint => trackPoint.ToBasicGeoposition()));
+        GeoboundingBox bounds = GeoboundingBox.TryCompute(new GeopositionEnumerable(points.Select(trackPoint => trackPoint.ToBasicGeoposition())));
         if (bounds is not null)
         {
             await MapControl.TrySetViewBoundsAsync(bounds, new Thickness(ActualWidth * .05), MapAnimationKind.Bow);
@@ -152,7 +155,7 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
             menu = MapTrainMenu;
         }
 
-        menu.ShowAt(MapControl, location, position);
+        menu.ShowAt(this, location, position);
     }
 
     private void Nudge()

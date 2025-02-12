@@ -14,19 +14,19 @@ public partial class BrouterClient
     private static readonly Dictionary<string, Surface> s_surfaces = CreateKnownValues<Surface>();
     private static readonly Dictionary<string, Highway> s_highways = CreateKnownValues<Highway>();
 
-    private static Dictionary<string, T> CreateKnownValues<T>()
+    private static Dictionary<string, T> CreateKnownValues<T>() where T : struct, Enum
     {
         Dictionary<string, T> knownValues = [];
 
-        string[] names = Enum.GetNames(typeof(T));
-        Array values = Enum.GetValues(typeof(T));
+        string[] names = Enum.GetNames<T>();
+        T[] values = Enum.GetValues<T>();
 
         for (int i = 0; i < names.Length; i++)
         {
             string name = names[i];
             if (char.IsLower(name[0]))
             {
-                knownValues.Add(name, (T)values.GetValue(i));
+                knownValues.Add(name, values[i]);
             }
         }
 
@@ -239,5 +239,5 @@ public readonly record struct NoGoArea(MapPoint Center, ulong Radius);
 public class ProfileResponse
 {
     [JsonPropertyName("profileid")]
-    public string ProfileId { get; init; }
+    public required string ProfileId { get; init; }
 }

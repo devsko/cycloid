@@ -393,7 +393,7 @@ public partial class RouteBuilder
         return Points.IndexOf(section.Start);
     }
 
-    public async Task InitializeAsync(IEnumerable<(WayPoint WayPoint, RoutePoint[] RoutePoints)> data)
+    public async Task InitializeAsync(IEnumerable<(WayPoint WayPoint, RoutePoint[]? RoutePoints)> data)
     {
         bool wasEmpty;
         using (await ChangeLock.EnterAsync(default))
@@ -410,7 +410,7 @@ public partial class RouteBuilder
                 Points.RemoveAt(0);
             }
 
-            foreach ((WayPoint wayPoint, RoutePoint[] routePoints) in data)
+            foreach ((WayPoint wayPoint, RoutePoint[]? routePoints) in data)
             {
                 Points.Add(wayPoint);
                 if (Points.Count > 1)

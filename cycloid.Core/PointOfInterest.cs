@@ -5,11 +5,8 @@ namespace cycloid;
 
 public partial class PointOfInterest : ObservableObject
 {
-    public string Name
-    {
-        get => field;
-        set => SetProperty(ref field, value);
-    } = null!; // 'required' not possible because created from Xaml
+    [ObservableProperty]
+    public partial string Name { get; set; }
 
     public InfoType Type { get; set; }
 

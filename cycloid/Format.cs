@@ -1,5 +1,3 @@
-using System;
-
 namespace cycloid;
 
 public static class Format
@@ -19,7 +17,7 @@ public static class Format
         value = (value - minutes) * 60;
         double seconds = value;
 
-        return $"{degrees:N0}°{minutes:N0}'{seconds:N0}\"";
+        return $"{degrees:N0}Â°{minutes:N0}'{seconds:N0}\"";
     }
 
     public static string Distance(float value) => $"{value / 1000:N1} km";
