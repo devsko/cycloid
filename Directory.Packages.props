@@ -4,10 +4,10 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="System.Text.Json" Version="9.0.1" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.2" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.1" />
     <PackageVersion Include="Microsoft.UI.Xaml" Version="2.8.7" />
-    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.13.2" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Uwp.Managed" Version="3.0.0" />
     <PackageVersion Include="CommunityToolkit.Labs.Uwp.TransitionHelper" Version="0.1.250206-pull-637.2036" />
     <PackageVersion Include="CommunityToolkit.Common" Version="8.4.0" />
@@ -18,7 +18,7 @@
     <PackageVersion Include="CommunityToolkit.Uwp.Helpers" Version="8.2.250206-pull-620.1404" />
     <PackageVersion Include="CommunityToolkit.Uwp.Media" Version="8.2.250206-pull-620.1404" />
     <PackageVersion Include="CliWrap" Version="3.7.1" />
-    <PackageVersion Include="GeoJSON.Text" Version="1.1.0" />
+    <PackageVersion Include="GeoJSON.Text" Version="1.2.0-local.1" />
     <PackageVersion Include="FluentIcons.Uwp" Version="1.1.271" />
     <PackageVersion Include="xunit.v3" Version="1.1.0" />
   </ItemGroup>

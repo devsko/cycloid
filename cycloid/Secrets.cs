@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace cycloid;
 
@@ -20,7 +21,7 @@ public class Secrets
 }
 
 [JsonSerializable(typeof(Secrets))]
-[JsonSourceGenerationOptions(ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip)]
+[JsonSourceGenerationOptions(ReadCommentHandling = JsonCommentHandling.Skip)]
 public partial class SecretsContext : JsonSerializerContext
 {
 }

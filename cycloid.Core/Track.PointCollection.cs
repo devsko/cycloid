@@ -504,6 +504,10 @@ partial class Track
             {
                 Segment segment = _segments[segmentIndex];
                 TrackPoint[] points = segment.Points;
+                if (points is null)
+                {
+                    continue;
+                }
                 int endPointIndex = segmentIndex == endSegmentIndex 
                     ? to is null
                         ? points.Length - 1

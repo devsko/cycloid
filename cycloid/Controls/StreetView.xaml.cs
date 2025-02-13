@@ -5,10 +5,10 @@ using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Primitives;
 
-[assembly: UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>", Scope = "member", Target = "~M:cycloid.cycloid_XamlTypeInfo.XamlTypeInfoProvider.Activate_115_EventTriggerBehavior")]
-[assembly: UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>", Scope = "member", Target = "~M:cycloid.cycloid_XamlTypeInfo.XamlTypeInfoProvider.StaticInitializer_115_EventTriggerBehavior")]
-[assembly: UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>", Scope = "member", Target = "~M:cycloid.cycloid_XamlTypeInfo.XamlTypeInfoProvider.Activate_119_ChangePropertyAction")]
-[assembly: UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>", Scope = "member", Target = "~M:cycloid.cycloid_XamlTypeInfo.XamlTypeInfoProvider.StaticInitializer_119_ChangePropertyAction")]
+[assembly: UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DynamicDependency added", Scope = "member", Target = "~M:cycloid.cycloid_XamlTypeInfo.XamlTypeInfoProvider.Activate_115_EventTriggerBehavior")]
+[assembly: UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DynamicDependency added", Scope = "member", Target = "~M:cycloid.cycloid_XamlTypeInfo.XamlTypeInfoProvider.StaticInitializer_115_EventTriggerBehavior")]
+[assembly: UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DynamicDependency added", Scope = "member", Target = "~M:cycloid.cycloid_XamlTypeInfo.XamlTypeInfoProvider.Activate_119_ChangePropertyAction")]
+[assembly: UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DynamicDependency added", Scope = "member", Target = "~M:cycloid.cycloid_XamlTypeInfo.XamlTypeInfoProvider.StaticInitializer_119_ChangePropertyAction")]
 
 namespace cycloid.Controls;
 

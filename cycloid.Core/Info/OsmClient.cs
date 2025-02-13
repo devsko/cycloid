@@ -107,4 +107,5 @@ public enum OverpassBool
     PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower,
     NumberHandling = JsonNumberHandling.AllowReadingFromString)]
 public partial class OsmContext : JsonSerializerContext
-{ }
+{ 
+}

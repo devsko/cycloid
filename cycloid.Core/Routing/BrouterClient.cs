@@ -54,9 +54,9 @@ public partial class BrouterClient
             if (response.IsSuccessStatusCode)
             {
                 using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                FeatureCollection result = await JsonSerializer.DeserializeAsync<FeatureCollection>(contentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+                FeatureCollection<FeatureProperties>? result = await JsonSerializer.DeserializeAsync(contentStream, BrouterJsonContext.Default.FeatureCollectionFeatureProperties, cancellationToken).ConfigureAwait(false);
 
-                Feature feature = result?.Features.FirstOrDefault();
+                Feature<IGeometryObject, FeatureProperties>? feature = result?.Features.FirstOrDefault();
                 if (feature is null)
                 {
                     return default;
@@ -69,8 +69,8 @@ public partial class BrouterClient
                 //long ascend = GetProperty("filtered ascend");
 
                 ReadOnlyCollection<IPosition> positions = ((LineString)feature.Geometry).Coordinates;
-                IEnumerable<float> times = ((JsonElement)feature.Properties["times"]).EnumerateArray().Select(e => e.GetSingle());
-                IEnumerable<SurfacePart> surfaces = ((JsonElement)feature.Properties["messages"]).EnumerateArray().Skip(1).Select(CreateSurfacePart);
+                IEnumerable<float> times = feature.Properties.Times.EnumerateArray().Select(e => e.GetSingle());
+                IEnumerable<SurfacePart> surfaces = feature.Properties.Messages.EnumerateArray().Skip(1).Select(CreateSurfacePart);
 
                 IEnumerable<RoutePoint> points = positions.Zip(times,
                     (position, time) => new RoutePoint(
@@ -162,12 +162,12 @@ public partial class BrouterClient
             if (response.IsSuccessStatusCode)
             {
                 using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                FeatureCollection result = await JsonSerializer.DeserializeAsync<FeatureCollection>(contentStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+                FeatureCollection<FeatureProperties>? result = await JsonSerializer.DeserializeAsync(contentStream, BrouterJsonContext.Default.FeatureCollectionFeatureProperties, cancellationToken).ConfigureAwait(false);
 
-                Feature feature = result?.Features.FirstOrDefault();
+                Feature<IGeometryObject, FeatureProperties>? feature = result?.Features.FirstOrDefault();
                 if (feature is not null)
                 {
-                    IPosition position = (feature.Geometry as LineString)?.Coordinates[0];
+                    IPosition? position = (feature.Geometry as LineString)?.Coordinates[0];
                     if (position is not null)
                     {
                         return RoutePoint.FromPosition(position, TimeSpan.Zero, Surface.Unknown);
@@ -203,7 +203,7 @@ public partial class BrouterClient
             using HttpResponseMessage response = await _http.PostAsync("profile", new StringContent(profileValue), CancellationToken.None).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             using Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            ProfileResponse result = await JsonSerializer.DeserializeAsync<ProfileResponse>(contentStream, cancellationToken: CancellationToken.None).ConfigureAwait(false) ?? throw new Exception();
+            ProfileResponse result = await JsonSerializer.DeserializeAsync(contentStream, BrouterJsonContext.Default.ProfileResponse, CancellationToken.None).ConfigureAwait(false) ?? throw new Exception();
 
             return result.ProfileId;
         }
@@ -240,4 +240,19 @@ public class ProfileResponse
 {
     [JsonPropertyName("profileid")]
     public required string ProfileId { get; init; }
+}
+
+public class FeatureProperties
+{
+    [JsonPropertyName("times")]
+    public JsonElement Times { get; set; }
+
+    [JsonPropertyName("messages")]
+    public JsonElement Messages { get; set; }
+}
+
+[JsonSerializable(typeof(ProfileResponse))]
+[JsonSerializable(typeof(FeatureCollection<FeatureProperties>))]
+public partial class BrouterJsonContext : JsonSerializerContext
+{
 }
