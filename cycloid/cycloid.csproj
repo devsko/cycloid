@@ -52,10 +52,10 @@
     <EmbeddedResource Include="secrets.json" />
   </ItemGroup>
 
-  <!-- Workaround Transitive Wpf/WinForms references crashing the XamlCompiler -->
-  <Target Name="RemoveWindowsDesktop" BeforeTargets="AfterResolveReferences">
+  <!-- Workaround: Remove transitive Wpf/WinForms reference from Microsoft.VisualStudio.Threading -->
+  <Target Name="RemoveWindowsDesktop" BeforeTargets="ResolveLockFileReferences">
     <ItemGroup>
-      <ReferencePath Remove="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FrameworkReferenceName)').StartsWith('Microsoft.WindowsDesktop.App'))" />
+      <FrameworkReference Remove="Microsoft.WindowsDesktop.App.WPF" />
     </ItemGroup>
   </Target>
 
