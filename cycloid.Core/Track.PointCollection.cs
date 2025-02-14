@@ -15,27 +15,15 @@ partial class Track
     {
         private readonly Track _track;
         private readonly SegmentCollection _segments;
-        
-        private TrackPoint.CommonValues _total;
-        public TrackPoint.CommonValues Total
-        {
-            get => _total;
-            private set => SetProperty(ref _total, value);
-        }
 
-        private float _minAltitude = float.PositiveInfinity;
-        public float MinAltitude
-        {
-            get => _minAltitude;
-            private set => SetProperty(ref _minAltitude, value);
-        }
+        [ObservableProperty]
+        public partial TrackPoint.CommonValues Total { get; private set; }
 
-        private float _maxAltitude = float.NegativeInfinity;
-        public float MaxAltitude
-        {
-            get => _maxAltitude;
-            private set => SetProperty(ref _maxAltitude, value);
-        }
+        [ObservableProperty]
+        public partial float MinAltitude { get; private set; } = float.PositiveInfinity;
+
+        [ObservableProperty]
+        public partial float MaxAltitude { get; private set; } = float.NegativeInfinity;
 
         public PointCollection(Track track)
         {

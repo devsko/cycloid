@@ -1,6 +1,4 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Routing;
@@ -30,57 +28,47 @@ partial class ViewModel :
     IRecipient<RouteChanged>,
     IRecipient<FileSplitChanged>
 {
-    private WayPoint _hoveredWayPoint;
-    private RouteSection _hoveredSection;
     private WayPoint _capturedWayPoint;
     private MapPoint _capturedWayPointOriginalLocation;
 
-    public WayPoint HoveredWayPoint
+    [ObservableProperty]
+    public partial WayPoint HoveredWayPoint { get; set; }
+
+    [ObservableProperty]
+    public partial RouteSection HoveredSection { get; set; }
+
+    partial void OnHoveredWayPointChanged(WayPoint value)
     {
-        get => _hoveredWayPoint;
-        set
+        if (value is null)
         {
-            if (SetProperty(ref _hoveredWayPoint, value))
+            HoverPoint = TrackPoint.Invalid;
+        }
+        else if (!Track.RouteBuilder.IsCalculating)
+        {
+            (RouteSection to, RouteSection from) = Track.RouteBuilder.GetSections(value);
+            if (from is null)
             {
-                if (value is null)
-                {
-                    HoverPoint = TrackPoint.Invalid;
-                }
-                else if (!Track.RouteBuilder.IsCalculating)
-                {
-                    (RouteSection to, RouteSection from) = Track.RouteBuilder.GetSections(value);
-                    if (from is null)
-                    {
-                        HoverPoint = to is null ? TrackPoint.Invalid : Track.Points.Last();
-                    }
-                    else
-                    {
-                        HoverPoint = Track.Points[new Track.Index(Track.RouteBuilder.GetSectionIndex(from), 0)];
-                    }
-                }
+                HoverPoint = to is null ? TrackPoint.Invalid : Track.Points.Last();
+            }
+            else
+            {
+                HoverPoint = Track.Points[new Track.Index(Track.RouteBuilder.GetSectionIndex(from), 0)];
             }
         }
     }
 
-    public RouteSection HoveredSection
+    partial void OnHoveredSectionChanged(RouteSection value)
     {
-        get => _hoveredSection;
-        set
+        if (value is null)
         {
-            if (SetProperty(ref _hoveredSection, value))
-            {
-                if (value is null)
-                {
-                    HoverPoint = TrackPoint.Invalid;
-                }
-                else if (!Track.RouteBuilder.IsCalculating)
-                {
-                    int index = Track.RouteBuilder.GetSectionIndex(value);
-                    int pointCount = Track.Points.GetPointCount(index);
+            HoverPoint = TrackPoint.Invalid;
+        }
+        else if (!Track.RouteBuilder.IsCalculating)
+        {
+            int index = Track.RouteBuilder.GetSectionIndex(value);
+            int pointCount = Track.Points.GetPointCount(index);
 
-                    HoverPoint = Track.Points[new Track.Index(index, pointCount / 2)];
-                }
-            }
+            HoverPoint = Track.Points[new Track.Index(index, pointCount / 2)];
         }
     }
 

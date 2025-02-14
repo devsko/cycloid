@@ -1,6 +1,4 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
 
@@ -12,13 +10,8 @@ partial class ViewModel
         static (value, @this, cancellationToken) => @this.GetAddressAsync(value, cancellationToken),
         TimeSpan.FromSeconds(5));
 
-    private string _currentPointAddress;
-
-    public string CurrentPointAddress
-    {
-        get => _currentPointAddress;
-        set => SetProperty(ref _currentPointAddress, value);
-    }
+    [ObservableProperty]
+    public partial string CurrentPointAddress { get; set; }
 
     private async Task GetAddressAsync(TrackPoint point, CancellationToken _)
     {

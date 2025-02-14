@@ -166,14 +166,14 @@ public sealed partial class Map : ViewModelControl, INotifyPropertyChanged,
 
     private async Task LoadInfosAsync(MapPoint location, CancellationToken cancellationToken)
     {
-        ViewModel.InfoIsLoading = true;
+        ViewModel.InfosAreLoading = true;
         try
         {
             await ViewModel.Infos.LoadAsync(location, cancellationToken);
         }
         finally
         {
-            ViewModel.InfoIsLoading = false;
+            ViewModel.InfosAreLoading = false;
         }
     }
 

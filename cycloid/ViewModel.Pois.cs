@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
@@ -33,51 +29,31 @@ public class PointOfInterestCommandParameter
 
 partial class ViewModel
 {
-    private OnTrack _currentSection;
-    private OnTrack _currentPoi;
-    private InfoPoint _hoverInfo = InfoPoint.Invalid;
     private (Track.Index Start, Track.Index End, MapPoint NorthWest, MapPoint SouthEast)[] _boundingBoxes;
 
     public ObservableCollection<OnTrack> Sections { get; } = [];
 
     public ObservableCollection<OnTrack> Points { get; } = [];
 
-    public OnTrack CurrentSection
-    {
-        get => _currentSection;
-        set
-        {
-            if (SetProperty(ref _currentSection, value))
-            {
-                RemoveCurrentSectionCommand.NotifyCanExecuteChanged();
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RemoveCurrentSectionCommand))]
+    public partial OnTrack CurrentSection { get; set; }
 
-                StrongReferenceMessenger.Default.Send(new CurrentSectionChanged(value));
-            }
-        }
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RemoveCurrentPoiCommand))]
+    public partial OnTrack CurrentPoi { get; set; }
+
+    [ObservableProperty]
+    public partial InfoPoint HoverInfo { get; set; } = InfoPoint.Invalid;
+
+    partial void OnCurrentSectionChanged(OnTrack value)
+    {
+        StrongReferenceMessenger.Default.Send(new CurrentSectionChanged(value));
     }
 
-    public OnTrack CurrentPoi
+    partial void OnHoverInfoChanged(InfoPoint value)
     {
-        get => _currentPoi;
-        set
-        {
-            if (SetProperty(ref _currentPoi, value))
-            {
-                RemoveCurrentPoiCommand.NotifyCanExecuteChanged();
-            }
-        }
-    }
-
-    public InfoPoint HoverInfo
-    {
-        get => _hoverInfo;
-        set
-        {
-            if (SetProperty(ref _hoverInfo, value))
-            {
-                StrongReferenceMessenger.Default.Send(new HoverInfoChanged(value));
-            }
-        }
+        StrongReferenceMessenger.Default.Send(new HoverInfoChanged(value));
     }
 
     public int OnTrackCount => Sections.Count + Points.Count;

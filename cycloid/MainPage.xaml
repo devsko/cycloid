@@ -171,7 +171,7 @@
                         CategoryChanged="InfoButton_CategoryChanged"
                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.InfoVisible}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.InfoEnabled}"
-                        IsLoading="{x:Bind Mode=OneWay, Path=ViewModel.InfoIsLoading}"
+                        IsLoading="{x:Bind Mode=OneWay, Path=ViewModel.InfosAreLoading}"
                         Symbol="OutlineStar"
                         TotalCount="{x:Bind Mode=OneWay, Path=ViewModel.Infos.CachedCount}"
                         VisibleCount="{x:Bind Mode=OneWay, Path=ViewModel.Infos.ActivatedCount}">

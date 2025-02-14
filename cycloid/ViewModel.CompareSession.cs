@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Specialized;
-using System.Threading;
-using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
@@ -10,133 +8,90 @@ namespace cycloid;
 partial class ViewModel :
     IRecipient<CompareSessionChanged>
 {
-    private TrackDifference _currentDifference;
     private TrackDifference _previousDifference;
-    private int _downhillCost;
-    private float _downhillCutoff;
-    private int _uphillCost;
-    private float _uphillCutoff;
-    private int _bikerPower;
-    private bool _trackIsRecalculating;
+
+    [ObservableProperty]
+    public partial TrackDifference CurrentDifference { get; set; }
+
+    [ObservableProperty]
+    public partial int DownhillCost { get; set; }
+
+    [ObservableProperty]
+    public partial float DownhillCutoff { get; set; }
+
+    [ObservableProperty]
+    public partial int UphillCost { get; set; }
+
+    [ObservableProperty]
+    public partial float UphillCutoff { get; set; }
+
+    [ObservableProperty]
+    public partial int BikerPower { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CompareSessionState))]
+    [NotifyCanExecuteChangedFor(nameof(CompareSessionCommand))]
+    public partial bool TrackIsRecalculating { get; set; }
+
+    partial void OnCurrentDifferenceChanged(TrackDifference oldValue, TrackDifference newValue)
+    {
+        _previousDifference = newValue is null ? oldValue : null;
+    }
+
+    partial void OnDownhillCostChanged(int value)
+    {
+        if (Track.Points.IsEmpty)
+        {
+            Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { DownhillCost = value };
+        }
+    }
+
+    partial void OnDownhillCutoffChanged(float value)
+    {
+        if (Track.Points.IsEmpty)
+        {
+            Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { DownhillCutoff = value };
+        }
+    }
+
+    partial void OnUphillCostChanged(int value)
+    {
+        if (Track.Points.IsEmpty)
+        {
+            Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { UphillCost = value };
+        }
+    }
+
+    partial void OnUphillCutoffChanged(float value)
+    {
+        if (Track.Points.IsEmpty)
+        {
+            Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { UphillCutoff = value };
+        }
+    }
+
+    partial void OnBikerPowerChanged(int value)
+    {
+        if (Track.Points.IsEmpty)
+        {
+            Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { BikerPower = value };
+        }
+    }
 
     public bool HasCompareSession => Track?.CompareSession is not null;
 
-    public TrackDifference CurrentDifference
-    {
-        get => _currentDifference;
-        set
-        {
-            _previousDifference = value is null ? _currentDifference : null;
-
-            if (SetProperty(ref _currentDifference, value))
-            {
-
-
-            }
-        }
-    }
-
-    public int DownhillCost
-    {
-        get => _downhillCost;
-        set
-        {
-            if (SetProperty(ref _downhillCost, value))
-            {
-                if (Track.Points.IsEmpty)
-                {
-                    Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { DownhillCost = value };
-                }
-            }
-        }
-    }
-
-    public float DownhillCutoff
-    {
-        get => _downhillCutoff;
-        set
-        {
-            if (SetProperty(ref _downhillCutoff, value))
-            {
-                if (Track.Points.IsEmpty)
-                {
-                    Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { DownhillCutoff = value };
-                }
-            }
-        }
-    }
-
-    public int UphillCost
-    {
-        get => _uphillCost;
-        set
-        {
-            if (SetProperty(ref _uphillCost, value))
-            {
-                if (Track.Points.IsEmpty)
-                {
-                    Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { UphillCost = value };
-                }
-            }
-        }
-    }
-
-    public float UphillCutoff
-    {
-        get => _uphillCutoff;
-        set
-        {
-            if (SetProperty(ref _uphillCutoff, value))
-            {
-                if (Track.Points.IsEmpty)
-                {
-                    Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { UphillCutoff = value };
-                }
-            }
-        }
-    }
-
-    public int BikerPower
-    {
-        get => _bikerPower;
-        set
-        {
-            if (SetProperty(ref _bikerPower, value))
-            {
-                if (Track.Points.IsEmpty)
-                {
-                    Track.RouteBuilder.Profile = Track.RouteBuilder.Profile with { BikerPower = value };
-                }
-            }
-        }
-    }
-
-    public bool TrackIsRecalculating
-    {
-        get => _trackIsRecalculating;
-        set
-        {
-            if (SetProperty(ref _trackIsRecalculating, value))
-            {
-                OnPropertyChanged(nameof(CompareSessionState));
-
-                CompareSessionCommand.NotifyCanExecuteChanged();
-            }
-        }
-    }
+    public string CompareSessionCommandName => Track?.CompareSession is not null ? "Accept" : "Restore point";
 
     public string CompareSessionState =>
         Track?.CompareSession is null
         ? ""
-        : (Track.CompareSession.Differences.Count) switch
+        : Track.CompareSession.Differences.Count switch
         {
             0 => "No differences",
             1 => "1 difference",
             int n => $"{n} differences",
         } +
         (TrackIsRecalculating ? $" ({Track.CompareSession.OriginalSegmentsCount - Track.RouteBuilder.ChangeLock.RunningCalculationCounter} / {Track.CompareSession.OriginalSegmentsCount})" : "");
-
-    public string CompareSessionCommandName => Track?.CompareSession is not null ? "Accept" : "Restore point";
 
     [RelayCommand(CanExecute = nameof(CanCompareSession))]
     public async Task CompareSessionAsync(CancellationToken cancellationToken)

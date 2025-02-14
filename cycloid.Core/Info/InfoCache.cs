@@ -26,20 +26,11 @@ public partial class InfoCache : ObservableObject
     private readonly Dictionary<BucketPoint, InfoBucket> _buckets = [];
     private readonly List<InfoBucket> _activated = new(9);
 
-    private int _cachedCount;
-    private int _activatedCount;
+    [ObservableProperty]
+    public partial int CachedCount { get; set; }
 
-    public int CachedCount
-    {
-        get => _cachedCount;
-        set => SetProperty(ref _cachedCount, value);
-}
-
-    public int ActivatedCount
-    {
-        get => _activatedCount;
-        set => SetProperty(ref _activatedCount, value);
-    }
+    [ObservableProperty]
+    public partial int ActivatedCount { get; set; }
 
     public async Task LoadAsync(MapPoint point, CancellationToken cancellationToken)
     {
@@ -54,8 +45,7 @@ public partial class InfoCache : ObservableObject
             new BucketPoint(center.Bottom - 1, center.Left - 1),
             new BucketPoint(center.Bottom + 1, center.Left + 1),
             new BucketPoint(center.Bottom - 1, center.Left + 1),
-            new BucketPoint(center.Bottom + 1, center.Left - 1),
-            ];
+            new BucketPoint(center.Bottom + 1, center.Left - 1)];
 
         List<InfoBucket> toDeactivate = new(9);
         foreach (InfoBucket activated in _activated)

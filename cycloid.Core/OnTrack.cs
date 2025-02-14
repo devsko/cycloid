@@ -6,7 +6,6 @@ public partial class OnTrack : ObservableObject
 {
     private readonly IList<OnTrack> _onTracks;
     private readonly TrackPoint _trackPoint;
-    private TrackPoint.CommonValues _values;
 
     public PointOfInterest PointOfInterest { get; set; }
 
@@ -15,6 +14,14 @@ public partial class OnTrack : ObservableObject
     public string TrackFilePosition { get; set; }
 
     public int MaskBitPosition { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Distance))]
+    [NotifyPropertyChangedFor(nameof(Ascent))]
+    [NotifyPropertyChangedFor(nameof(Descent))]
+    [NotifyPropertyChangedFor(nameof(Time))]
+    [NotifyPropertyChangedFor(nameof(Speed))]
+    private partial TrackPoint.CommonValues Values { get; set; }
 
     public OnTrack(IList<OnTrack> onTracks, TrackPoint trackPoint, PointOfInterest pointOfInterest, string trackFilePosition, int maskBitPosition)
     {
@@ -74,6 +81,10 @@ public partial class OnTrack : ObservableObject
 
     public MapPoint Location => IsOffTrack || !PointOfInterest.IsSection ? PointOfInterest.Location : _trackPoint;
 
+    public TrackPoint.CommonValues Start => IsOffTrack ? default : _trackPoint.Values - Values;
+
+    public TrackPoint.CommonValues End => IsOffTrack ? default : _trackPoint.Values;
+
     public float? Distance => IsOffTrack ? null : Values.Distance;
 
     public float? Ascent => IsOffTrack ? null : Values.Ascent;
@@ -110,26 +121,6 @@ public partial class OnTrack : ObservableObject
         int index = _onTracks.IndexOf(this);
 
         return index == 0 ? null : _onTracks[index - 1];
-    }
-
-    public TrackPoint.CommonValues Start => IsOffTrack ? default : _trackPoint.Values - Values;
-
-    public TrackPoint.CommonValues End => IsOffTrack ? default : _trackPoint.Values;
-
-    private TrackPoint.CommonValues Values
-    {
-        get => _values;
-        set
-        {
-            if (SetProperty(ref _values, value))
-            {
-                OnPropertyChanged(nameof(Distance));
-                OnPropertyChanged(nameof(Ascent));
-                OnPropertyChanged(nameof(Descent));
-                OnPropertyChanged(nameof(Time));
-                OnPropertyChanged(nameof(Speed));
-            }
-        }
     }
 
     public OnTrack? Remove()

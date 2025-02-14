@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
@@ -38,22 +34,16 @@ partial class ViewModel
 {
     private const string DataFormat = "cycloid/route";
 
-    private Selection _currentSelection = Selection.Invalid;
     private TrackPoint _selectionCapture = TrackPoint.Invalid;
 
-    public Selection CurrentSelection
-    {
-        get => _currentSelection;
-        set
-        {
-            if (SetProperty(ref _currentSelection, value))
-            {
-                CopySelectionCommand.NotifyCanExecuteChanged();
-                DeleteSelectionCommand.NotifyCanExecuteChanged();
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CopySelectionCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteSelectionCommand))]
+    public partial Selection CurrentSelection { get; set; } = Selection.Invalid;
 
-                StrongReferenceMessenger.Default.Send(new SelectionChanged(value));
-            }
-        }
+    partial void OnCurrentSelectionChanged(Selection value)
+    {
+        StrongReferenceMessenger.Default.Send(new SelectionChanged(value));
     }
 
     [RelayCommand(CanExecute = nameof(CanDeleteSelection))]

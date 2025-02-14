@@ -12,7 +12,9 @@
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION;DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+  </PropertyGroup>
 
+  <PropertyGroup>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
@@ -51,6 +53,11 @@
   <ItemGroup>
     <EmbeddedResource Include="secrets.json" />
   </ItemGroup>
+
+  <!-- Workaround: WindowsBase.dll version conflict -->
+  <PropertyGroup>
+    <NoWarn>MSB3277;$(NoWarn)</NoWarn>
+  </PropertyGroup>
 
   <!-- Workaround: Remove transitive Wpf/WinForms reference from Microsoft.VisualStudio.Threading -->
   <Target Name="RemoveWindowsDesktop" BeforeTargets="ResolveLockFileReferences">

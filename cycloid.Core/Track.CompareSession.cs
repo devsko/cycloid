@@ -22,24 +22,17 @@ public class TrackDifference
 
 partial class Track
 {
-    private CompareSession _compareSession;
+    [ObservableProperty]
+    public partial CompareSession CompareSession { get; set; }
 
-    public CompareSession CompareSession
+    partial void OnCompareSessionChanged(CompareSession oldValue, CompareSession newValue)
     {
-        get => _compareSession;
-        set
-        {
-            CompareSession oldValue = _compareSession;
-            if (SetProperty(ref _compareSession, value))
-            {
-                StrongReferenceMessenger.Default.Send(new CompareSessionChanged(this, oldValue, value));
-            }
-        }
+        StrongReferenceMessenger.Default.Send(new CompareSessionChanged(this, oldValue, newValue));
     }
 
     public async Task InitializeCompareSessionAsync()
     {
-        _compareSession?.Initialize(await Points.GetSegmentsAsync(default));
+        CompareSession?.Initialize(await Points.GetSegmentsAsync(default));
     }
 }
 
