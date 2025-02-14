@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using CommunityToolkit.WinUI;
 using Windows.UI.Xaml;
 
 namespace cycloid.Controls;
@@ -14,23 +15,16 @@ public partial class PointValuesControl<T> : PointControl<T>, INotifyPropertyCha
         IsHitTestVisible = false;
     }
 
-    public Track Track
+    [GeneratedDependencyProperty]
+    public partial Track Track { get; set; }
+
+    [GeneratedDependencyProperty]
+    public partial bool Enabled { get; set; }
+
+    partial void OnEnabledChanged(bool newValue)
     {
-        get => (Track)GetValue(TrackProperty);
-        set => SetValue(TrackProperty, value);
+        RaiseIsVisibleChanged();
     }
-
-    public static readonly DependencyProperty TrackProperty =
-        DependencyProperty.Register(nameof(Track), typeof(Track), typeof(PointValuesControl<T>), new PropertyMetadata(null));
-
-    public bool Enabled
-    {
-        get => (bool)GetValue(EnabledProperty);
-        set => SetValue(EnabledProperty, value);
-    }
-
-    public static readonly DependencyProperty EnabledProperty =
-        DependencyProperty.Register(nameof(Enabled), typeof(bool), typeof(PointValuesControl<T>), new PropertyMetadata(false, (sender, _) => ((PointValuesControl<T>)sender).EnabledChanged()));
 
     public bool IsVisible => Enabled && Point.IsValid;
 
@@ -40,11 +34,6 @@ public partial class PointValuesControl<T> : PointControl<T>, INotifyPropertyCha
         {
             RaiseIsVisibleChanged();
         }
-    }
-
-    private void EnabledChanged()
-    {
-        RaiseIsVisibleChanged();
     }
 
     private void RaiseIsVisibleChanged()

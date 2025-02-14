@@ -1,29 +1,34 @@
+using System.Numerics;
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Animations;
 using Microsoft.Xaml.Interactivity;
-using System;
-using System.Numerics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 
 namespace cycloid.Behaviors;
 
-public class DragableBehavior : Behavior<FrameworkElement>
+public partial class DragableBehavior : Behavior<FrameworkElement>
 {
     private Vector3? _originalOffset;
     private Vector3 _startOffset;
 
     public event EventHandler DragCompleted;
 
-    public bool IsEnabled
-    {
-        get => (bool)GetValue(IsEnabledProperty);
-        set => SetValue(IsEnabledProperty, value);
-    }
+    [GeneratedDependencyProperty]
+    public partial bool IsEnabled { get; set; }
 
-    public static readonly DependencyProperty IsEnabledProperty =
-        DependencyProperty.Register(nameof(IsEnabled), typeof(bool), typeof(DragableBehavior), new PropertyMetadata(true, (sender, e) => ((DragableBehavior)sender).EnabledChanged(e)));
+    partial void OnIsEnabledChanged(bool newValue)
+    {
+        if (newValue)
+        {
+            _originalOffset = null;
+        }
+        else
+        {
+            Reset();
+        }
+    }
 
     protected override void OnAttached()
     {
@@ -49,18 +54,6 @@ public class DragableBehavior : Behavior<FrameworkElement>
                 .Offset(originalOffset)
                 .StartAsync(AssociatedObject)
                 .FireAndForget();
-        }
-    }
-
-    private void EnabledChanged(DependencyPropertyChangedEventArgs _)
-    {
-        if (IsEnabled)
-        {
-            _originalOffset = null;
-        }
-        else
-        {
-            Reset();
         }
     }
 

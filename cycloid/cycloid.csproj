@@ -19,6 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Labs.Uwp.DependencyPropertyGenerator" />
     <PackageReference Include="CommunityToolkit.Labs.Uwp.TransitionHelper" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="CommunityToolkit.Uwp.Animations" />

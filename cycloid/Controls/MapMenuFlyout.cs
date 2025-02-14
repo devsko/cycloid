@@ -21,14 +21,13 @@ public partial class MapMenuFlyout : MenuFlyout
     private readonly MenuFlyoutItem _coordinates = new();
     private readonly MapLocationMenuFlyoutItem _address = new();
 
-    public MapPoint Location
-    {
-        get => (MapPoint)GetValue(LocationProperty);
-        set => SetValue(LocationProperty, value);
-    }
+    [GeneratedDependencyProperty]
+    public partial MapPoint Location { get; set; }
 
-    public static readonly DependencyProperty LocationProperty =
-        DependencyProperty.Register(nameof(Location), typeof(MapPoint), typeof(MapMenuFlyout), new PropertyMetadata(MapPoint.Invalid));
+    public MapMenuFlyout()
+    {
+        Location = MapPoint.Invalid;
+    }
 
     public void ShowAt(Map map, MapPoint location, Point position)
     {

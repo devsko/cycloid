@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Storage;
@@ -23,14 +24,32 @@ public sealed partial class StreetView : TrackPointControl
 
     public string GoogleApiKey { get; set; }
 
-    public bool IsCollapsed
-    {
-        get => (bool)GetValue(IsCollapsedProperty);
-        set => SetValue(IsCollapsedProperty, value);
-    }
+    [GeneratedDependencyProperty]
+    public partial bool IsCollapsed { get; set; }
 
-    public static readonly DependencyProperty IsCollapsedProperty =
-        DependencyProperty.Register(nameof(IsCollapsed), typeof(bool), typeof(StreetView), new PropertyMetadata(true, (sender, e) => ((StreetView)sender).IsCollapsedChanged(e)));
+    partial void OnIsCollapsedChanged(bool newValue)
+    {
+        DragableBehavior.IsEnabled = !IsCollapsed;
+
+        if (IsCollapsed)
+        {
+            WebView.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            bool large = Window.Current.Bounds.Width > 1_600 && Window.Current.Bounds.Height > 800;
+            (ContentRoot.Height, ContentRoot.Width) = large ? (480, 720) : (320, 480);
+
+            if (_isWebViewInitialized)
+            {
+                Update();
+            }
+            else
+            {
+                _ = WebView.EnsureCoreWebView2Async();
+            }
+        }
+    }
 
     [DynamicDependency(nameof(IsCollapsed), typeof(StreetView))]
     [DynamicDependency(nameof(ButtonBase.Click), typeof(ButtonBase))]
@@ -74,30 +93,6 @@ public sealed partial class StreetView : TrackPointControl
         if (_isWebViewInitialized && !IsCollapsed)
         {
             Update();
-        }
-    }
-
-    private void IsCollapsedChanged(DependencyPropertyChangedEventArgs _1)
-    {
-        DragableBehavior.IsEnabled = !IsCollapsed;
-
-        if (IsCollapsed)
-        {
-            WebView.Visibility = Visibility.Collapsed;
-        }
-        else
-        {
-            bool large = Window.Current.Bounds.Width > 1_600 && Window.Current.Bounds.Height > 800;
-            (ContentRoot.Height, ContentRoot.Width) = large ? (480, 720) : (320, 480);
-
-            if (_isWebViewInitialized)
-            {
-                Update();
-            }
-            else
-            {
-                _ = WebView.EnsureCoreWebView2Async();
-            }
         }
     }
 

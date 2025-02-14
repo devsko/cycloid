@@ -51,14 +51,16 @@ public sealed partial class Profile : ViewModelControl,
         static (@this, amount) => @this.ScrollToRelative(amount), 
         TimeSpan.FromMilliseconds(50));
 
-    public double HorizontalZoom
-    {
-        get => (double)GetValue(HorizontalZoomProperty);
-        set => SetValue(HorizontalZoomProperty, value);
-    }
+    [GeneratedDependencyProperty(DefaultValue = 1.0)]
+    public partial double HorizontalZoom { get; set; }
 
-    public static readonly DependencyProperty HorizontalZoomProperty = 
-        DependencyProperty.Register(nameof(HorizontalZoom), typeof(double), typeof(Profile), new PropertyMetadata(1d, (d, e) => ((Profile)d).HorizontalZoomChanged(e)));
+    partial void OnHorizontalZoomChanged(double newValue)
+    {
+        if (ViewModel.HasTrack)
+        {
+            ProcessChangeAsync(Change.Zoom).FireAndForget();
+        }
+    }
 
     private float _maxElevation;
     private float _minElevation;
@@ -87,14 +89,6 @@ public sealed partial class Profile : ViewModelControl,
         StrongReferenceMessenger.Default.Register<SelectionChanged>(this);
         StrongReferenceMessenger.Default.Register<CurrentSectionChanged>(this);
         StrongReferenceMessenger.Default.Register<BringTrackIntoViewMessage>(this);
-    }
-
-    private void HorizontalZoomChanged(DependencyPropertyChangedEventArgs _)
-    {
-        if (ViewModel.HasTrack)
-        {
-            ProcessChangeAsync(Change.Zoom).FireAndForget();
-        }
     }
 
     private double GetOffset(TrackPoint point) => point.IsValid ? point.Distance * _horizontalScale - _scrollerOffset : 0;

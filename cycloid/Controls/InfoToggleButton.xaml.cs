@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using CommunityToolkit.WinUI;
+﻿using CommunityToolkit.WinUI;
 using cycloid.Info;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -13,45 +11,20 @@ public sealed partial class InfoToggleButton : UserControl
     private readonly CheckBox[] _checkBoxes;
     private bool _isRecursion;
 
-    public bool IsChecked
-    {
-        get => (bool)GetValue(IsCheckedProperty);
-        set => SetValue(IsCheckedProperty, value);
-    }
+    [GeneratedDependencyProperty]
+    public partial bool IsChecked { get; set; }
 
-    public static readonly DependencyProperty IsCheckedProperty = DependencyProperty.Register(nameof(IsChecked), typeof(bool), typeof(InfoToggleButton), new PropertyMetadata(false));
+    [GeneratedDependencyProperty]
+    public partial bool IsLoading { get; set; }
 
-    public bool IsLoading
-    {
-        get => (bool)GetValue(IsLoadingProperty);
-        set => SetValue(IsLoadingProperty, value);
-    }
+    [GeneratedDependencyProperty]
+    public partial Symbol Symbol { get; set; }
 
-    public static readonly DependencyProperty IsLoadingProperty = DependencyProperty.Register(nameof(IsLoading), typeof(bool), typeof(InfoToggleButton), new PropertyMetadata(false));
+    [GeneratedDependencyProperty]
+    public partial int VisibleCount { get; set; }
 
-    public Symbol Symbol
-    {
-        get => (Symbol)GetValue(SymbolProperty);
-        set => SetValue(SymbolProperty, value);
-    }
-
-    public static readonly DependencyProperty SymbolProperty = DependencyProperty.Register(nameof(Symbol), typeof(Symbol), typeof(InfoToggleButton), new PropertyMetadata(null));
-
-    public int VisibleCount
-    {
-        get => (int)GetValue(VisibleCountProperty);
-        set => SetValue(VisibleCountProperty, value);
-    }
-
-    public static readonly DependencyProperty VisibleCountProperty = DependencyProperty.Register(nameof(VisibleCount), typeof(int), typeof(InfoToggleButton), new PropertyMetadata(0));
-
-    public int TotalCount
-    {
-        get => (int)GetValue(TotalCountProperty);
-        set => SetValue(TotalCountProperty, value);
-    }
-
-    public static readonly DependencyProperty TotalCountProperty = DependencyProperty.Register(nameof(TotalCount), typeof(int), typeof(InfoToggleButton), new PropertyMetadata(0));
+    [GeneratedDependencyProperty]
+    public partial int TotalCount { get; set; }
 
     public event Action<InfoCategory, bool> CategoryChanged;
 

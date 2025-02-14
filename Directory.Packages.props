@@ -9,6 +9,7 @@
     <PackageVersion Include="Microsoft.UI.Xaml" Version="2.8.7" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.13.2" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Uwp.Managed" Version="3.0.0" />
+    <PackageVersion Include="CommunityToolkit.Labs.Uwp.DependencyPropertyGenerator" Version="0.1.250206-pull-637.2036" />
     <PackageVersion Include="CommunityToolkit.Labs.Uwp.TransitionHelper" Version="0.1.250206-pull-637.2036" />
     <PackageVersion Include="CommunityToolkit.Common" Version="8.4.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />

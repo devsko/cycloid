@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.WinUI;
 using Windows.UI.Composition;
-using Windows.UI.Xaml;
 
 namespace cycloid.Controls;
 
@@ -11,13 +10,8 @@ public sealed partial class Compass : TrackPointControl
     private readonly Visual _needleVisual;
     private int _needleRounds;
 
-    public float Heading
-    {
-        get => (float)GetValue(HeadingProperty);
-        set => SetValue(HeadingProperty, value);
-    }
-
-    public static readonly DependencyProperty HeadingProperty = DependencyProperty.Register(nameof(Heading), typeof(float), typeof(Compass), new PropertyMetadata(0f));
+    [GeneratedDependencyProperty]
+    public partial float Heading { get; set; }
 
     public Compass()
     {
