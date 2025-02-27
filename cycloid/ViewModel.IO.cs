@@ -86,7 +86,8 @@ partial class ViewModel
             SuggestedFileName = "Save Track",
             SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
         };
-        picker.FileTypeChoices.Add("Track", [".track"]);
+        // TODO CsWinRT 2.3
+        picker.FileTypeChoices.Add("Track", (string[])[".track"]);
         StorageFile file = await picker.PickSaveFileAsync();
 
         if (file is null)
@@ -117,7 +118,8 @@ partial class ViewModel
             SuggestedFileName = "New Track",
             SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
         };
-        picker.FileTypeChoices.Add("Track", [".track"]);
+        // TODO CsWinRT 2.3
+        picker.FileTypeChoices.Add("Track", (string[])[".track"]);
         StorageFile file = await picker.PickSaveFileAsync();
 
         if (file is null)

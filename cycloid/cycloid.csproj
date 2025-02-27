@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.18362.0</SupportedOSPlatformVersion>
     <Platforms>x64</Platforms>
     <UseUwp>true</UseUwp>
     <DefaultLanguage>en-US</DefaultLanguage>
@@ -30,7 +30,6 @@
     <PackageReference Include="FluentIcons.Uwp" />
     <PackageReference Include="GeoJSON.Text" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,7 +59,7 @@
     <NoWarn>MSB3277;$(NoWarn)</NoWarn>
   </PropertyGroup>
 
-  <!-- Workaround: Remove transitive Wpf/WinForms reference from Microsoft.VisualStudio.Threading -->
+  <!-- Workaround: Remove transitive WPF reference from Microsoft.VisualStudio.Threading -->
   <Target Name="RemoveWindowsDesktop" BeforeTargets="ResolveLockFileReferences">
     <ItemGroup>
       <FrameworkReference Remove="Microsoft.WindowsDesktop.App.WPF" />

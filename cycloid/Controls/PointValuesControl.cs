@@ -56,4 +56,5 @@ public partial class TrackPointValuesControl : PointValuesControl<TrackPoint>
 }
 
 public partial class SelectionValuesControl : PointValuesControl<Selection>
-{ }
+{ 
+}

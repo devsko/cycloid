@@ -10,7 +10,7 @@ public sealed partial class Compass : TrackPointControl
     private readonly Visual _needleVisual;
     private int _needleRounds;
 
-    [GeneratedDependencyProperty]
+    [GeneratedDependencyProperty(IsLocalCacheEnabled = true)]
     public partial float Heading { get; set; }
 
     public Compass()

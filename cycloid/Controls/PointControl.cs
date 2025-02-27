@@ -6,7 +6,7 @@ namespace cycloid.Controls;
 
 public partial class PointControl<T> : UserControl where T : struct, ICanBeInvalid<T>
 {
-    [GeneratedDependencyProperty]
+    [GeneratedDependencyProperty(IsLocalCacheEnabled = true)]
     public partial T Point { get; set; }
 
     partial void OnPointPropertyChanged(DependencyPropertyChangedEventArgs e) => PointChanged(e);
@@ -21,4 +21,5 @@ public partial class PointControl<T> : UserControl where T : struct, ICanBeInval
 }
 
 public partial class TrackPointControl : PointControl<TrackPoint>
-{ }
+{ 
+}
