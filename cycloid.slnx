@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="todo.md" />
+  </Folder>
+  <Project Path="cycloid.Core/cycloid.Core.csproj" />
+  <Project Path="cycloid.Package/cycloid.Package.wapproj" Type="c7167f0d-bc9f-4e6e-afe1-012c56b48db5">
+    <Platform Project="x64" />
+    <Deploy />
+  </Project>
+  <Project Path="cycloid.Test/cycloid.Test.csproj" />
+  <Project Path="cycloid.Wahoo/cycloid.Wahoo.csproj" />
+  <Project Path="cycloid/cycloid.csproj">
+    <Platform Project="x64" />
+  </Project>
+</Solution>
