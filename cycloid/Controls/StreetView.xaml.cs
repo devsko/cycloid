@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.WinUI;
+using FluentIcons.Common;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Storage;
@@ -25,6 +26,9 @@ public sealed partial class StreetView : TrackPointControl
     public string GoogleApiKey { get; set; }
 
     [GeneratedDependencyProperty]
+    public partial bool IsUpdating { get; set; }
+
+    [GeneratedDependencyProperty]
     public partial bool IsCollapsed { get; set; }
 
     partial void OnIsCollapsedChanged(bool newValue)
@@ -46,6 +50,7 @@ public sealed partial class StreetView : TrackPointControl
             }
             else
             {
+                IsUpdating = true;
                 _ = WebView.EnsureCoreWebView2Async();
             }
         }
@@ -110,9 +115,13 @@ public sealed partial class StreetView : TrackPointControl
 
     private async Task SetLocationAsync(TrackPoint point, CancellationToken _)
     {
+        IsUpdating = true;
         _setLocationTcs = new();
         await WebView.ExecuteScriptAsync(FormattableString.Invariant(
             $"setLocation({point.Latitude}, {point.Longitude}, {point.Heading});"));
         await _setLocationTcs.Task;
+        IsUpdating = false;
     }
+
+    private static Symbol ToSymbol(bool isUpdating) => isUpdating ? Symbol.Hourglass : Symbol.CameraOff;
 }

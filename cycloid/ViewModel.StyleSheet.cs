@@ -139,7 +139,7 @@ partial class ViewModel
                     "shape-icon": "brewery"
                   },
                   "hover": {
-                    "scale": 1,
+                    "scale": 1.3,
                     "strokeColor": "#FF000000"
                   }
                 },

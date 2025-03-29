@@ -31,7 +31,7 @@
                 <ic:SymbolIcon
                     FontSize="32"
                     Opacity=".5"
-                    Symbol="CameraOff"
+                    Symbol="{x:Bind Mode=OneWay, Path=controls:StreetView.ToSymbol(IsUpdating)}"
                     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(Point.IsValid)}" />
                 <mux:WebView2 x:Name="WebView" />
                 <Grid
