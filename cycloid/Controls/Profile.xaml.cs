@@ -91,7 +91,10 @@ public sealed partial class Profile : ViewModelControl,
         StrongReferenceMessenger.Default.Register<BringTrackIntoViewMessage>(this);
     }
 
-    private double GetOffset(TrackPoint point) => point.IsValid ? point.Distance * _horizontalScale - _scrollerOffset : 0;
+    private double GetOffset(TrackPoint point)
+    {
+        return point.IsValid ? point.Distance * _horizontalScale - _scrollerOffset : 0;
+    }
 
     private async Task ProcessChangeAsync(Change change)
     {
@@ -207,6 +210,7 @@ public sealed partial class Profile : ViewModelControl,
 
                 UpdateMarker(ViewModel.CurrentPoint, CurrentPointLine1, CurrentPointLine2, CurrentPointCircle);
                 UpdateMarker(ViewModel.HoverPoint, HoverPointLine1, HoverPointLine2, HoverPointCircle);
+                Canvas.SetLeft(HoverPointValues, GetOffset(ViewModel.HoverPoint));
             }
             if ((change & Change._VerticalTranslation) != 0)
             {
@@ -253,13 +257,7 @@ public sealed partial class Profile : ViewModelControl,
 
     private void Scroller_ViewChanged(object _1, ScrollViewerViewChangedEventArgs _2)
     {
-        if (Math.Abs(_scrollerOffset - Scroller.HorizontalOffset) / ActualWidth < 0.01)
-        {
-            return;
-        }
         _scrollerOffset = Scroller.HorizontalOffset;
-
-        ProcessChangeAsync(Change.Scroll).FireAndForget();
 
         Point pointer = new(
             Window.Current.CoreWindow.PointerPosition.X - Window.Current.Bounds.X,
@@ -270,6 +268,8 @@ public sealed partial class Profile : ViewModelControl,
         {
             ViewModel.HoverPoint = ViewModel.Track.Points.Search((float)(Window.Current.Content.TransformToVisual(Root).TransformPoint(pointer).X / _horizontalScale)).Point;
         }
+
+        ProcessChangeAsync(Change.Scroll).FireAndForget();
     }
 
     private void Root_SizeChanged(object _1, SizeChangedEventArgs _2)

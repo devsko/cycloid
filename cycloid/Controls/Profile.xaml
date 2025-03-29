@@ -32,22 +32,7 @@
                     <CompositeTransform x:Name="GraphTransform" />
                     <CompositeTransform x:Name="GraphBottomTransform" />
                 </Canvas.Resources>
-                <Canvas x:Name="HorizontalRuler" />
-                <Path
-                    Stroke="{ThemeResource TrackCurrentPointGraphOutline}"
-                    StrokeThickness="1.5"
-                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.CurrentPoint)}">
-                    <Path.Data>
-                        <GeometryGroup>
-                            <LineGeometry x:Name="CurrentPointLine1" />
-                            <LineGeometry x:Name="CurrentPointLine2" />
-                            <EllipseGeometry
-                                x:Name="CurrentPointCircle"
-                                RadiusX="3"
-                                RadiusY="3" />
-                        </GeometryGroup>
-                    </Path.Data>
-                </Path>
+                <Canvas x:Name="HorizontalRuler" IsHitTestVisible="False" />
                 <Path
                     Stroke="{ThemeResource TrackHoverPointGraphOutline}"
                     StrokeThickness="1.5"
@@ -58,6 +43,21 @@
                             <LineGeometry x:Name="HoverPointLine2" />
                             <EllipseGeometry
                                 x:Name="HoverPointCircle"
+                                RadiusX="3"
+                                RadiusY="3" />
+                        </GeometryGroup>
+                    </Path.Data>
+                </Path>
+                <Path
+                    Stroke="{ThemeResource TrackCurrentPointGraphOutline}"
+                    StrokeThickness="1.5"
+                    Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(ViewModel.CurrentPoint)}">
+                    <Path.Data>
+                        <GeometryGroup>
+                            <LineGeometry x:Name="CurrentPointLine1" />
+                            <LineGeometry x:Name="CurrentPointLine2" />
+                            <EllipseGeometry
+                                x:Name="CurrentPointCircle"
                                 RadiusX="3"
                                 RadiusY="3" />
                         </GeometryGroup>
