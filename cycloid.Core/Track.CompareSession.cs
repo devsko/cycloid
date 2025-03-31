@@ -45,7 +45,7 @@ public class CompareSession : ObservableObject,
     private readonly struct OriginalSegment(TrackPoint[] points)
     {
         public TrackPoint[] Points { get; } = points;
-        public Dictionary<MapPoint, int> Indices { get; } = points.Select((point, index) => (Point: (MapPoint)point, Index: index)).ToDictionary(tuple => tuple.Point, tuple => tuple.Index);
+        public Dictionary<MapPoint, int> Indices { get; } = points.Select((point, index) => (Point: (MapPoint)point, Index: index)).ToLookup(tuple => tuple.Point).ToDictionary(lookup => lookup.Key, lookup => lookup.First().Index);
     }
 
     private class NewSegment
@@ -70,7 +70,7 @@ public class CompareSession : ObservableObject,
         _originalProfile = track.RouteBuilder.Profile;
         _originalValues = track.Points.Total;
         _originalSegments = segments.TrackPoints.Select(points => new OriginalSegment(points)).ToArray();
-        _originalSegmentIndices = segments.WayPoints.SkipLast(1).Select((point, index) => (point, index)).ToDictionary(tuple => tuple.point.Location, tuple => tuple.index);
+        _originalSegmentIndices = segments.WayPoints.SkipLast(1).Select((point, index) => (Point: point, Index: index)).ToLookup(tuple => tuple.Point.Location).ToDictionary(lookup => lookup.Key, lookup => lookup.First().Index);
         _originalWayPoints = segments.WayPoints;
         _newSegments = segments.WayPoints.SkipLast(1).Zip(segments.TrackPoints, (wayPoint, points) => new NewSegment { Start = wayPoint.Location, Points = points }).ToList();
 
@@ -86,7 +86,7 @@ public class CompareSession : ObservableObject,
         _originalProfile = profile;
         _originalValues = values;
         _originalSegments = trackPoints.Select(segmentPoints => new OriginalSegment(segmentPoints)).ToArray();
-        _originalSegmentIndices = wayPoints.SkipLast(1).Select((point, index) => (Point: point, Index: index)).ToDictionary(tuple => tuple.Point.Location, tuple => tuple.Index);
+        _originalSegmentIndices = wayPoints.SkipLast(1).Select((point, index) => (Point: point, Index: index)).ToLookup(tuple => tuple.Point.Location).ToDictionary(lookup => lookup.Key, lookup => lookup.First().Index);
         _originalWayPoints = wayPoints;
         _newSegments = [];
     }
