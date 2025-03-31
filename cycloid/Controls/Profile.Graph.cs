@@ -1,3 +1,6 @@
+using System.Collections.Frozen;
+using System.Numerics;
+using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Helpers;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
@@ -17,6 +20,7 @@ partial class Profile
     private CompositionPathGeometry _sectionGeometry;
     private CompositionPathGeometry _selectionGeometry;
     private CompositionContainerShape _container;
+    private CompositionContainerShape _surfacesContainer;
     private ShapeVisual _visual;
 
     private Color _trackGraphOutlineColor;
@@ -27,7 +31,16 @@ partial class Profile
     private Color _selectionGraphFillColor;
     private double _selectionGraphOpacity;
 
+    private FrozenDictionary<Surface, CompositionColorBrush> _surfaceBrushes;
     private readonly ThemeListener _themeListener = new();
+
+    [GeneratedDependencyProperty(DefaultValue = true)]
+    public partial bool ShowSurface { get; set; }
+
+    partial void OnShowSurfaceChanged(bool newValue)
+    {
+        _surfacesContainer.Scale = newValue ? new Vector2(1, 1) : default;
+    }
 
     private void UpdateTheme()
     {
@@ -50,6 +63,51 @@ partial class Profile
         _resourceCreator = new CanvasDevice();
 
         Compositor compositor = Window.Current.Compositor;
+
+        CompositionColorBrush red = compositor.CreateColorBrush(Colors.Red);
+        CompositionColorBrush orange = compositor.CreateColorBrush(Colors.Orange);
+
+        _surfaceBrushes = new Dictionary<Surface, CompositionColorBrush>
+        {
+            { Surface.Unknown, compositor.CreateColorBrush(Colors.Goldenrod) },
+            { Surface.UnknownLikelyPaved, compositor.CreateColorBrush(Color.FromArgb(0x40, Colors.Yellow.R, Colors.Yellow.G, Colors.Yellow.B)) },
+            { Surface.UnknownLikelyUnpaved, red },
+
+            { Surface.paved, null },
+            { Surface.asphalt, null },
+            { Surface.chipseal, null },
+            { Surface.concrete, null },
+            { Surface.paving_stones, null },
+
+            { Surface.sett, orange },
+            { Surface.unhewn_cobblestone, orange },
+            { Surface.cobblestone, orange },
+            { Surface.metal, compositor.CreateColorBrush(Colors.Blue) },
+            { Surface.wood, compositor.CreateColorBrush(Colors.Brown) },
+            { Surface.stepping_stones, compositor.CreateColorBrush(Colors.GreenYellow) },
+            { Surface.rubber, compositor.CreateColorBrush(Colors.PaleVioletRed) },
+
+            { Surface.unpaved, red },
+            { Surface.compacted, red },
+            { Surface.fine_gravel, red },
+            { Surface.gravel, red },
+            { Surface.shells, red },
+            { Surface.rock, red },
+            { Surface.pebblestone, red },
+            { Surface.ground, red },
+            { Surface.dirt, red },
+            { Surface.earth, red },
+            { Surface.grass, red },
+            { Surface.grass_paver, red },
+            { Surface.metal_grid, red },
+            { Surface.mud, red },
+            { Surface.sand, red },
+            { Surface.woodchips, red },
+            { Surface.snow, red },
+            { Surface.ice, red },
+            { Surface.salt, red },
+        }.ToFrozenDictionary();
+
         _container = compositor.CreateContainerShape();
 
         _trackGeometry = compositor.CreatePathGeometry();
@@ -65,6 +123,9 @@ partial class Profile
         _selectionGeometry = compositor.CreatePathGeometry();
         shape = compositor.CreateSpriteShape(_selectionGeometry);
         _container.Shapes.Add(shape);
+
+        _surfacesContainer = compositor.CreateContainerShape();
+        _container.Shapes.Add(_surfacesContainer);
 
         _visual = compositor.CreateShapeVisual();
         _visual.IsPixelSnappingEnabled = true;
@@ -94,6 +155,12 @@ partial class Profile
         float selectionStart = ViewModel.CurrentSelection.IsValid ? ViewModel.CurrentSelection.Start.Distance : -1;
         float selectionEnd = ViewModel.CurrentSelection.IsValid ? ViewModel.CurrentSelection.End.Distance : -1;
 
+        foreach (CompositionShape shape in _surfacesContainer.Shapes)
+        {
+            shape.Dispose();
+        }
+        _surfacesContainer.Shapes.Clear();
+
         float minElevation = float.PositiveInfinity;
         float maxElevation = float.NegativeInfinity;
 
@@ -101,10 +168,12 @@ partial class Profile
         using (CanvasPathBuilder sectionBuilder = new(_resourceCreator))
         using (CanvasPathBuilder selectionBuilder = new(_resourceCreator))
         {
+            Dictionary<CompositionColorBrush, CanvasPathBuilder> surfaceBuilders = [];
+
             IEnumerator<(float Distance, float Altitude, Surface Surface)> enumerator = ViewModel.Track.Points.EnumerateByDistance(startDistance, endDistance, 1 / _horizontalScale).GetEnumerator();
             if (enumerator.MoveNext())
             {
-                trackBuilder.BeginFigure(0, -1000); // -1000 to ensure margin is filled
+                trackBuilder.BeginFigure(0, -1000);
 
                 bool hasSection = sectionStart <= endDistance && sectionEnd >= startDistance;
                 if (hasSection)
@@ -118,15 +187,18 @@ partial class Profile
                     selectionBuilder.BeginFigure(selectionStart, -1000);
                 }
 
-                (float distance, float altitude, _) = enumerator.Current;
+                (float distance, float altitude, Surface surface) = enumerator.Current;
                 trackBuilder.AddLine(0, altitude - TrackPoint.MinAltitudeValue);
+
+                CompositionColorBrush currentSurfaceBrush = null;
+                CanvasPathBuilder currentSurfaceBuilder = null;
 
                 while (true)
                 {
                     minElevation = Math.Min(minElevation, altitude);
                     maxElevation = Math.Max(maxElevation, altitude);
                     trackBuilder.AddLine(distance, altitude - TrackPoint.MinAltitudeValue);
-                    
+
                     if (hasSection && distance > sectionStart && distance < sectionEnd)
                     {
                         sectionBuilder.AddLine(distance, altitude - TrackPoint.MinAltitudeValue);
@@ -135,13 +207,38 @@ partial class Profile
                     {
                         selectionBuilder.AddLine(distance, altitude - TrackPoint.MinAltitudeValue);
                     }
+
+                    currentSurfaceBuilder?.AddLine(distance, altitude - TrackPoint.MinAltitudeValue);
+
+                    CompositionColorBrush surfaceBrush = _surfaceBrushes[surface];
+                    if (surfaceBrush != currentSurfaceBrush)
+                    {
+                        if (currentSurfaceBuilder is not null)
+                        {
+                            currentSurfaceBuilder.EndFigure(CanvasFigureLoop.Open);
+                            currentSurfaceBuilder = null;
+                        }
+                        currentSurfaceBrush = surfaceBrush;
+                        if (currentSurfaceBrush is not null)
+                        {
+                            if (!surfaceBuilders.TryGetValue(currentSurfaceBrush, out currentSurfaceBuilder))
+                            {
+                                currentSurfaceBuilder = new CanvasPathBuilder(_resourceCreator);
+                                surfaceBuilders.Add(currentSurfaceBrush, currentSurfaceBuilder);
+                            }
+                            currentSurfaceBuilder.BeginFigure(distance, altitude - TrackPoint.MinAltitudeValue);
+                        }
+                    }
+
                     if (!enumerator.MoveNext())
                     {
                         trackBuilder.AddLine(_trackTotalDistance, altitude - TrackPoint.MinAltitudeValue);
+                        currentSurfaceBuilder?.AddLine(_trackTotalDistance, altitude - TrackPoint.MinAltitudeValue);
+                        currentSurfaceBuilder?.EndFigure(CanvasFigureLoop.Open);
                         break;
                     }
 
-                    (distance, altitude, _) = enumerator.Current;
+                    (distance, altitude, surface) = enumerator.Current;
                 }
 
                 trackBuilder.AddLine(_trackTotalDistance, -1000);
@@ -158,6 +255,17 @@ partial class Profile
                     selectionBuilder.AddLine(selectionEnd, -1000);
                     selectionBuilder.EndFigure(CanvasFigureLoop.Closed);
                 }
+
+                Compositor compositor = Window.Current.Compositor;
+                foreach (KeyValuePair<CompositionColorBrush, CanvasPathBuilder> pair in surfaceBuilders)
+                {
+                    CompositionSpriteShape surfaceShape = compositor.CreateSpriteShape(compositor.CreatePathGeometry(new CompositionPath(CanvasGeometry.CreatePath(pair.Value))));
+                    pair.Value.Dispose();
+                    surfaceShape.StrokeBrush = pair.Key;
+                    surfaceShape.StrokeThickness = 3;
+                    surfaceShape.IsStrokeNonScaling = true;
+                    _surfacesContainer.Shapes.Add(surfaceShape);
+                }
             }
 
             _trackGeometry.Path = new CompositionPath(CanvasGeometry.CreatePath(trackBuilder));
@@ -167,68 +275,4 @@ partial class Profile
 
         return (minElevation, maxElevation);
     }
-
-    //private readonly Dictionary<Brush, Path> _surfacePaths = [];
-    //private Path _currentSurfacePath;
-    //private PolyLineSegment _currentSurfaceLine;
-
-    //private void EnsureGraph(PolyLineSegment graph, float startDistance, float endDistance, ref float currentStartDistance, ref float currentEndDistance, bool surfacePaths = false)
-    //{
-    //    void Reset(PointCollection points, ref float currentStartDistance, ref float currentEndDistance, bool surfacePaths)
-    //    {
-    //        points.Clear();
-    //        currentStartDistance = currentEndDistance = -1;
-    //        if (surfacePaths)
-    //        {
-    //            _currentSurfaceLine = null;
-    //            _currentSurfacePath = null;
-    //            foreach (Path path in _surfacePaths.Values)
-    //            {
-    //                Root.Children.Remove(path);
-    //            }
-    //            _surfacePaths.Clear();
-    //        }
-    //    }
-
-
-    //    void AddSurfacePathPoint(Surface surface, float distance, float altitude)
-    //    {
-    //        Point point = new(distance, altitude);
-    //        Brush surfaceBrush = Convert.SurfaceBrush(surface);
-
-    //        if (!_surfacePaths.TryGetValue(surfaceBrush, out Path path))
-    //        {
-    //            path = new()
-    //            {
-    //                Stroke = surfaceBrush,
-    //                StrokeThickness = surfaceBrush == _trackGraphOutlineBrush
-    //                    ? .5 
-    //                    : surface == Surface.UnknownLikelyPaved
-    //                        ? .75
-    //                        : 3,
-    //                Data = new PathGeometry { Transform = _graphTransform }
-    //            };
-    //            Root.Children.Add(path);
-    //            _surfacePaths.Add(surfaceBrush, path);
-    //        }
-    //        if (path == _currentSurfacePath)
-    //        {
-    //            _currentSurfaceLine.Points.Add(point);
-    //        }
-    //        else
-    //        {
-    //            if (_currentSurfacePath is not null)
-    //            {
-    //                _currentSurfaceLine.Points.Add(point);
-    //            }
-    //            _currentSurfacePath = path;
-    //            _currentSurfaceLine = new PolyLineSegment { Points = { point } };
-    //            ((PathGeometry)path.Data).Figures.Add(new PathFigure 
-    //            { 
-    //                Segments = { _currentSurfaceLine }, 
-    //                StartPoint = point 
-    //            });
-    //        }
-    //    }
-    //}
 }

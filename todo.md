@@ -1,25 +1,16 @@
 # TODO cycloid
 
-- Untersuchen was XamlCompiler in WinUI macht wenn eine Referencz UseWpf setzt
-- ProfileControl rewrite in Win2d
+- BUG Track mit Schleifen, Exception bei ChangeSession Start
+- Auf Train Seite CurrentPoint erzwingen (kann nicht durch Click in die Landschaft entfernt werden)
+- Auf Train Seite HoverPoint auf dem Track zulassen wenn IsPlaying false
+- Auf Train Seite 10Minute Skip immer erlaubens
 
 dotnet build
 DesktopBridge setzt immer erstmal TargetPlatform UAP für den Restore 
 - wenn ein referenziertes Package auch UAP unterstützt wird falsch restored
 - wenn nicht, kommt eine Warnung 
 
-- Review e928bfe
-
-## Dependencies
-- BehaviorsSDKManaged.sln
-  - Release|AnyCPU Build
-  - scripts>nuget pack Microsoft.Xaml.Behaviors.Uwp.Managed.nuspec -version 3.0.241018-local
-  - scripts>nuget push Microsoft.Xaml.Behaviors.Uwp.Managed.3.0.241018-local.nupkg -source D:\packages\NuGet\feed
-- CommunityToolkit
-  - CommunityToolkit> Windows\tooling\Build-Toolkit-Components.ps1 -MultiTargets uwp -PreviewVersion local -NupkgOutput d:\repos\communitytoolkit\packages -Release
-  - CommunityToolkit> nuget push .\packages\CommunityToolkit.Uwp.*.nupkg -source d:\packages\NuGet\feed
-  - CommunityToolkit> Labs-Windows\tooling\Build-Toolkit-Components.ps1 -MultiTargets uwp -PreviewVersion local -NupkgOutput d:\repos\communitytoolkit\packages -Release
-  - CommunityToolkit> nuget push .\packages\CommunityToolkit.Labs.*.nupkg -source d:\packages\NuGet\feed
+- Review ChangeSession ändern von Diff: e928bfe REVIEW!!
 
 ## Links
 - [Bing maps styling](https://learn.microsoft.com/en-us/bingmaps/styling/map-style-sheet-entry-properties)
@@ -31,7 +22,6 @@ DesktopBridge setzt immer erstmal TargetPlatform UAP für den Restore
 
 ProfileControl Surface
 CurrentItem in Liste der Diffs
-ProfileControl Zoom in, Tooltip beim Scrollen an der falschen Stelle
 
 ## Bugs
 - Surface verschoben (Holzbrücke in CH bei km 1402)

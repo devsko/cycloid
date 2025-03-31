@@ -20,8 +20,6 @@ public static class Convert
 
     private static readonly Dictionary<InfoType, BitmapImage> _infoTypeIcons = CreateInfoTypeIcons();
 
-    private static readonly Dictionary<Surface, Brush> _surfaceBrushes = CreateSurfaceBrushes();
-
     private static Dictionary<InfoType, BitmapImage> CreateInfoTypeIcons()
     {
         return InfoCategory
@@ -29,52 +27,6 @@ public static class Convert
             .Where(category => !category.Hide)
             .SelectMany(category => category.Types)
             .ToDictionary(type => type, type => new BitmapImage { UriSource = new Uri($"ms-appx:///Assets/{type}.png") });
-    }
-
-    private static Dictionary<Surface, Brush> CreateSurfaceBrushes()
-    {
-        Brush orange = new SolidColorBrush(Colors.Orange);
-        Brush red = new SolidColorBrush(Colors.Red);
-
-        return new Dictionary<Surface, Brush>()
-        {
-            { cycloid.Surface.Unknown, new SolidColorBrush(Colors.Goldenrod) },
-            { cycloid.Surface.UnknownLikelyPaved, new SolidColorBrush(Colors.Yellow) },
-            { cycloid.Surface.UnknownLikelyUnpaved, red },
-
-            { cycloid.Surface.paved, null },
-            { cycloid.Surface.asphalt, null },
-            { cycloid.Surface.chipseal, null },
-            { cycloid.Surface.concrete, null },
-            { cycloid.Surface.paving_stones, null },
-            { cycloid.Surface.sett, orange },
-            { cycloid.Surface.unhewn_cobblestone, orange },
-            { cycloid.Surface.cobblestone, orange },
-            { cycloid.Surface.metal, new SolidColorBrush(Colors.Blue) },
-            { cycloid.Surface.wood, new SolidColorBrush(Colors.Brown) },
-            { cycloid.Surface.stepping_stones, new SolidColorBrush(Colors.GreenYellow) },
-            { cycloid.Surface.rubber, new SolidColorBrush(Colors.PaleVioletRed) },
-
-            { cycloid.Surface.unpaved, red },
-            { cycloid.Surface.compacted, red },
-            { cycloid.Surface.fine_gravel, red },
-            { cycloid.Surface.gravel, red },
-            { cycloid.Surface.shells, red },
-            { cycloid.Surface.rock, red },
-            { cycloid.Surface.pebblestone, red },
-            { cycloid.Surface.ground, red },
-            { cycloid.Surface.dirt, red },
-            { cycloid.Surface.earth, red },
-            { cycloid.Surface.grass, red },
-            { cycloid.Surface.grass_paver, red },
-            { cycloid.Surface.metal_grid, red },
-            { cycloid.Surface.mud, red },
-            { cycloid.Surface.sand, red },
-            { cycloid.Surface.woodchips, red },
-            { cycloid.Surface.snow, red },
-            { cycloid.Surface.ice, red },
-            { cycloid.Surface.salt, red },
-        };
     }
 
     private static (Brush[], Brush[]) CreateGradientBrushes()
@@ -149,11 +101,6 @@ public static class Convert
         return value.TotalHours > 1e-5
             ? _differenceBrushes.Positive
             : _differenceBrushes.Negative;
-    }
-
-    public static Brush SurfaceBrush(Surface value)
-    {
-        return _surfaceBrushes[value];
     }
 
     public static string Surface(Surface value)

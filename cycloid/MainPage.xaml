@@ -17,6 +17,12 @@
 
                     <cycloid:ViewModel x:Name="ViewModel" />
 
+                    <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
+                        <Setter Property="Width" Value="32" />
+                        <Setter Property="Height" Value="28" />
+                        <Setter Property="Padding" Value="0" />
+                    </Style>
+                    
                     <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}" TargetType="AppBarButton">
                         <Setter Property="Width" Value="56" />
                     </Style>

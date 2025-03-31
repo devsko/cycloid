@@ -98,8 +98,6 @@ public sealed partial class Profile : ViewModelControl,
 
     private async Task ProcessChangeAsync(Change change)
     {
-        var w = ActualWidth;
-        Debug.WriteLine($"{nameof(ProcessChangeAsync)} {change} {ActualWidth}");
         while (change != 0)
         {
             if ((change & Change._SetHorizontalSize) != 0)

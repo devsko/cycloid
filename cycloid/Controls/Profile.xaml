@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
+    xmlns:ic="using:FluentIcons.Uwp"
     xmlns:ui="using:CommunityToolkit.WinUI"
     SizeChanged="ViewModelControl_SizeChanged">
 
@@ -68,21 +69,27 @@
 
         <Canvas x:Name="VerticalRuler" IsHitTestVisible="False" />
 
-        <StackPanel
-            Padding="5,5,5,15"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            Orientation="Vertical"
-            Spacing="5">
-            <Button
+        <Grid Padding="5,5,5,5" HorizontalAlignment="Right">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="9" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="9" />
+            </Grid.RowDefinitions>
+            <ToggleButton
+                Grid.Row="1"
                 HorizontalAlignment="Right"
-                Click="ZoomIn_Click"
-                Content="{ui:SymbolIcon Symbol=ZoomIn}" />
-            <Button
-                HorizontalAlignment="Right"
-                Click="ZoomOut_Click"
-                Content="{ui:SymbolIcon Symbol=ZoomOut}" />
-        </StackPanel>
+                Content="{ic:SymbolIcon Symbol=Highway}"
+                IsChecked="{x:Bind Mode=TwoWay, Path=ShowSurface}"/>
+            <StackPanel
+                Grid.Row="2"
+                VerticalAlignment="Bottom"
+                Orientation="Vertical"
+                Spacing="5">
+                <Button Click="ZoomIn_Click" Content="{ui:SymbolIcon Symbol=ZoomIn}" />
+                <Button Click="ZoomOut_Click" Content="{ui:SymbolIcon Symbol=ZoomOut}" />
+            </StackPanel>
+        </Grid>
 
         <Canvas Margin="-125,15,0,0">
             <controls:ProfileHoverPointValues
