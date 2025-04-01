@@ -123,5 +123,5 @@ public sealed partial class StreetView : TrackPointControl
         IsUpdating = false;
     }
 
-    private static Symbol ToSymbol(bool isUpdating) => isUpdating ? Symbol.Hourglass : Symbol.CameraOff;
+    private static Symbol ToSymbol(bool isUpdating) => isUpdating ? Symbol.HourglassHalf : Symbol.CameraOff;
 }

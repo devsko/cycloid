@@ -246,8 +246,6 @@ public sealed partial class MainPage : Page,
 
     private void TextBox_CharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs args)
     {
-        _ = this;
-
         if (args.Character is '\r')
         {
             sender.FindAscendant<ListView>().Focus(FocusState.Programmatic);
@@ -269,12 +267,12 @@ public sealed partial class MainPage : Page,
 
     private void CoreWindow_Activated(CoreWindow sender, WindowActivatedEventArgs args)
     {
-        TitleBarControlsRoot.Opacity = args.WindowActivationState == CoreWindowActivationState.Deactivated ? .5 : 1;
+        TitleTextBlock.Opacity = args.WindowActivationState == CoreWindowActivationState.Deactivated ? .5 : 1;
     }
 
     void IRecipient<FileChanged>.Receive(FileChanged message)
     {
-        TitleTextBlock.Text = $"{(message.Value is null ? "" : Path.GetFileNameWithoutExtension(message.Value.Name))} - cycloid";
+        TitleTextBlock.Text = $"cycloid - {(message.Value is null ? "" : Path.GetFileNameWithoutExtension(message.Value.Name))}";
     }
 
     void IRecipient<OnTrackAdded>.Receive(OnTrackAdded message)

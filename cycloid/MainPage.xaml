@@ -21,12 +21,15 @@
                         <Setter Property="Width" Value="56" />
                     </Style>
 
-                    <Style x:Key="SmallButtonStyle" BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
+                    <Style
+                        x:Key="SmallButtonStyle"
+                        BasedOn="{StaticResource DefaultButtonStyle}"
+                        TargetType="Button">
                         <Setter Property="Width" Value="32" />
                         <Setter Property="Height" Value="28" />
                         <Setter Property="Padding" Value="0" />
                     </Style>
-                    
+
                     <Style BasedOn="{StaticResource DefaultToggleButtonStyle}" TargetType="ToggleButton">
                         <Setter Property="Width" Value="32" />
                         <Setter Property="Height" Value="28" />
@@ -129,8 +132,8 @@
                     x:Name="TitleTextBlock"
                     Grid.Column="0"
                     VerticalAlignment="Center"
+                    FontSize="13"
                     IsHitTestVisible="False"
-                    Style="{StaticResource BodyTextBlockStyle}"
                     Text="cycloid" />
 
                 <StackPanel
@@ -272,9 +275,6 @@
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
                 </StackPanel>
-
-
-
 
                 <mux:TabView
                     x:Name="TabView"
