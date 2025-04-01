@@ -44,7 +44,7 @@ public class CompareSession : ObservableObject,
 {
     private readonly struct OriginalSegment(TrackPoint[] points)
     {
-        public TrackPoint[] Points { get; } = points;
+        public TrackPoint[] Points => points;
         public Dictionary<MapPoint, int> Indices { get; } = points.Select((point, index) => (Point: (MapPoint)point, Index: index)).ToLookup(tuple => tuple.Point).ToDictionary(lookup => lookup.Key, lookup => lookup.First().Index);
     }
 

@@ -90,6 +90,14 @@ public static class TrackPointConverter
             trackPoints[i++] = trackPoint;
         }
 
+        if (i < count)
+        {
+            // At least 1 point was skipped - adjust array size
+            Span<TrackPoint> oldPoints = trackPoints.AsSpan(0, i);
+            trackPoints = new TrackPoint[i];
+            oldPoints.CopyTo(trackPoints);
+        }
+
         return new RouteResult(trackPoints, minAltitude, maxAltitude);
 
         IEnumerable<TrackPoint> Convert(IEnumerable<RoutePoint> points, IEnumerable<SurfacePart>? surfaces)
@@ -140,14 +148,15 @@ public static class TrackPointConverter
                     current = enumerator.Current;
                     currentAltitude = current.Altitude ?? previousAltitude;
 
-                    (distance, heading) = GeoCalculation.DistanceAndHeading(previous, current);
+                    (double d, double h) = GeoCalculation.DistanceAndHeading(previous, current);
 
-                    if (distance < 1e-2)
+                    if (d < 1e-2)
                     {
-                        distance = heading = gradient = speed = 0;
+                        continue;
                     }
                     else
                     {
+                        (distance, heading) = (d, h);
                         float altitudeDiff = currentAltitude - previousAltitude;
 
                         ascentCumulated += altitudeDiff;
