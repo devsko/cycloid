@@ -487,7 +487,6 @@
                                     HorizontalTextAlignment="Center"
                                     Text="{x:Bind Mode=OneWay, Path=ViewModel.CompareSessionState}" />
                                 <ListView
-                                    x:Name="Differences"
                                     Grid.Row="5"
                                     ItemsSource="{x:Bind Mode=OneWay, Path=ViewModel.Track.CompareSession.Differences}"
                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -497,7 +496,7 @@
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="cycloid:TrackDifference">
                                             <Grid>
-                                                <TextBlock Text="{x:Bind Mode=OneTime, Path=cycloid:Format.FlexDistance(Length)}" />
+                                                <TextBlock Opacity="{x:Bind Mode=OneTime, Path=cycloid:Convert.InsignificanceToOpacity(IsNotSignificant)}" Text="{x:Bind Mode=OneTime, Path=cycloid:Format.FlexDistance(Length)}" />
                                                 <TextBlock HorizontalAlignment="Right">
                                                     <Run Foreground="{x:Bind Mode=OneTime, Path=cycloid:Convert.DifferenceBrush(Diff.Distance)}" Text="{x:Bind Mode=OneTime, Path=cycloid:Format.FlexDistance(Diff.Distance)}" />
                                                     <Run>/</Run>

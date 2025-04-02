@@ -103,6 +103,11 @@ public static class Convert
             : _differenceBrushes.Negative;
     }
 
+    public static double InsignificanceToOpacity(bool isNotSignifanct)
+    {
+        return isNotSignifanct ? .5 : 1;
+    }
+
     public static string Surface(Surface value)
     {
         return value switch

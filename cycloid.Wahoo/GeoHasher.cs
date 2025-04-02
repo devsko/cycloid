@@ -1,18 +1,27 @@
-﻿namespace cycloid.Wahoo;
+﻿using System.Numerics;
+
+namespace cycloid.Wahoo;
 
 public static class GeoHasher
 {
     private const string Base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
 
-    private struct Interval
+    private struct Interval<T> where T : IBinaryFloatingPointIeee754<T>
     {
-        public double Min;
-        public double Max;
-        public double Value;
+        public static readonly T LatMin = T.CreateChecked(-90);
+        public static readonly T LatMax = T.CreateChecked(90);
+        public static readonly T LonMin = T.CreateChecked(-180);
+        public static readonly T LonMax = T.CreateChecked(180);
+
+        private static readonly T _half = T.CreateChecked(.5);
+
+        public T Min;
+        public T Max;
+        public T Value;
 
         public int Bisect()
         {
-            double center = (Max + Min) / 2;
+            T center = T.Lerp(Min, Max, _half);
             if (Value >= center)
             {
                 Min = center;
@@ -26,10 +35,10 @@ public static class GeoHasher
         }
     }
 
-    public static void Encode(double latitude, double longitude, Span<char> hash)
+    public static void Encode<T>(T latitude, T longitude, Span<char> hash) where T : IBinaryFloatingPointIeee754<T>
     {
-        Interval latInterval = new() { Min = -90, Max = 90, Value = latitude };
-        Interval lonInterval = new() { Min = -180, Max = 180, Value = longitude };
+        Interval<T> latInterval = new() { Min = Interval<T>.LatMin, Max = Interval<T>.LatMax, Value = latitude };
+        Interval<T> lonInterval = new() { Min = Interval<T>.LonMin, Max = Interval<T>.LonMax, Value = longitude };
 
         int pos = 0;
         bool even = false;
@@ -37,9 +46,52 @@ public static class GeoHasher
         {
             int ch = 0;
             for (int i = 0; i < 5; i++)
+            {
                 ch = ch << 1 | ((even = !even) ? ref lonInterval : ref latInterval).Bisect();
+            }
 
             hash[pos++] = Base32[ch];
         }
+    }
+
+    public static int GetHashCode(float latitude, float longitude)
+    {
+        Interval<float> latInterval = new() { Min = Interval<float>.LatMin, Max = Interval<float>.LatMax, Value = latitude };
+        Interval<float> lonInterval = new() { Min = Interval<float>.LonMin, Max = Interval<float>.LonMax, Value = longitude };
+
+        int hash = lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+        hash = hash << 1 | lonInterval.Bisect();
+        hash = hash << 1 | latInterval.Bisect();
+
+        return hash;
     }
 }

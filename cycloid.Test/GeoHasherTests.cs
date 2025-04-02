@@ -22,4 +22,11 @@ public class GeoHasherTests
 
         Assert.Equal(geoHash, hash.ToString());
     }
+
+    [Theory]
+    [InlineData(44.85027, 7.193301)]
+    public void GeoHashCode(float latitude, float longitude)
+    {
+        int hashCode = GeoHasher.GetHashCode(latitude, longitude);
+    }
 }

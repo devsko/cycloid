@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
@@ -10,14 +11,13 @@ namespace cycloid;
 
 public class CompareSessionChanged(object sender, CompareSession oldValue, CompareSession newValue) : PropertyChangedMessage<CompareSession>(sender, null, oldValue, newValue);
 
-public class RemovingDifference((TrackDifference, int) value) : ValueChangedMessage<(TrackDifference Difference, int Index)>(value);
-
 public class TrackDifference
 {
     public IEnumerable<TrackPoint> OriginalPoints { get; init; }
     public int SectionIndex { get; init; }
     public float Length { get; init; }
     public TrackPoint.CommonValues Diff { get; init; }
+    public bool IsNotSignificant { get; init; }
 }
 
 partial class Track
@@ -52,6 +52,24 @@ public class CompareSession : ObservableObject,
     {
         public MapPoint Start { get; init; }
         public TrackPoint[] Points { get; set; }
+    }
+
+    private class SignificanceComparer : IEqualityComparer<TrackPoint>
+    {
+        public static readonly SignificanceComparer Instance = new();
+
+        private SignificanceComparer()
+        { }
+
+        public bool Equals(TrackPoint x, TrackPoint y)
+        {
+            return GeoCalculation.Distance(x, y) <= 1;
+        }
+
+        public int GetHashCode([DisallowNull] TrackPoint obj)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private readonly Track _track;
@@ -178,6 +196,17 @@ public class CompareSession : ObservableObject,
         }
         originalEnd--;
 
+        int[] delete = Differences
+            .Select((diff, index) => (diff, index))
+            .Where(tuple => tuple.diff.SectionIndex >= originalStart && tuple.diff.SectionIndex <= originalEnd)
+            .Select(tuple => tuple.index)
+            .ToArray();
+
+        for (int i = delete.Length - 1; i >= 0; i--)
+        {
+            Differences.RemoveAt(delete[i]);
+        }
+
         IEnumerator<IndexedPoint> originalEnumerator = EnumerateOriginalPoints(originalStart, 0, originalEnd, -1).GetEnumerator();
         bool hasMore = originalEnumerator.MoveNext();
         IndexedPoint original = originalEnumerator.Current;
@@ -194,7 +223,8 @@ public class CompareSession : ObservableObject,
             {
                 if (differs)
                 {
-                    while (originalEnumerator.MoveNext()) ;
+                    while (originalEnumerator.MoveNext())
+                    { }
                     AddDifference();
                 }
                 break;
@@ -237,6 +267,7 @@ public class CompareSession : ObservableObject,
                     {
                         originalEnumerator = EnumerateOriginalPoints(segmentIndex, pointIndex, originalEnd, -1).GetEnumerator();
                         originalEnumerator.MoveNext();
+
                         return true;
                     }
                 }
@@ -257,6 +288,13 @@ public class CompareSession : ObservableObject,
                 IndexedPoint newEndPoint = newPoint;
                 TrackPoint.CommonValues newValues = GetNewValues(newStartPoint, newStartSegmentIndex, newEndPoint.Point, newEndPoint.SegmentIndex);
 
+                IEnumerable<TrackPoint> differentOriginalPoints = EnumerateOriginalPoints(original.SegmentIndex, original.PointIndex, originalEndPoint.SegmentIndex, originalEndPoint.PointIndex).Select(point => point.Point);
+                IEnumerable<TrackPoint> differentNewPoints = EnumerateTrackPoints(newDiffPoint.SegmentIndex, newDiffPoint.PointIndex, newEndPoint.SegmentIndex, newEndPoint.PointIndex);
+                if (differentNewPoints.SkipLast(1).SequenceEqual(differentOriginalPoints.SkipLast(1), SignificanceComparer.Instance))
+                {
+                    return;
+                }
+
                 differences.Add(new TrackDifference
                 {
                     OriginalPoints = EnumerateOriginalPoints(originalStartSegmentIndex, originalStartPointIndex, originalEndPoint.SegmentIndex, originalEndPoint.PointIndex).Select(point => point.Point),
@@ -264,8 +302,6 @@ public class CompareSession : ObservableObject,
                     Length = originalValues.Distance,
                     Diff = newValues - originalValues,
                 });
-
-                var exactNewPoints = EnumerateExactNewPoints(newStartSegmentIndex, newStartPointIndex, newEndPoint.SegmentIndex, newEndPoint.PointIndex).ToArray();
 
                 (int SegmentIndex, int PointIndex) PreviousIndex(int segmentIndex, int pointIndex, int minSegmentIndex)
                 {
@@ -287,12 +323,6 @@ public class CompareSession : ObservableObject,
             }
         }
 
-        (TrackDifference Difference, int Index)[] existingDifferences = Differences
-            .Select((diff, index) => (diff, index))
-            .Where(tuple => tuple.diff.SectionIndex >= originalStart && tuple.diff.SectionIndex <= originalEnd)
-            .ToArray();
-
-        int existingI = 0;
         if (differences.Count > 0)
         {
             int i = 0;
@@ -302,34 +332,7 @@ public class CompareSession : ObservableObject,
             }
             for (int j = 0; j < differences.Count; j++)
             {
-                while (existingI < existingDifferences.Length && existingDifferences[existingI].Index < i + j)
-                {
-                    existingI++;
-                }
-                if (existingI < existingDifferences.Length && existingDifferences[existingI].Index == i + j)
-                {
-                    Differences[i + j] = differences[j];
-                    existingDifferences[existingI] = default;
-                }
-                else
-                {
-                    for (int restI = existingI; restI < existingDifferences.Length; restI++)
-                    {
-                        ref (TrackDifference Difference, int Index) existingDifference = ref existingDifferences[restI];
-                        existingDifference.Index++;
-                    }
-                    Differences.Insert(i + j, differences[j]);
-                }
-            }
-        }
-
-        for (existingI = existingDifferences.Length - 1; existingI >= 0; existingI--)
-        {
-            var existingDifference = existingDifferences[existingI];
-            if (existingDifference.Difference is not null)
-            {
-                StrongReferenceMessenger.Default.Send(new RemovingDifference(existingDifference));
-                Differences.RemoveAt(existingDifference.Index);
+                Differences.Insert(i + j, differences[j]);
             }
         }
 
@@ -347,7 +350,7 @@ public class CompareSession : ObservableObject,
             yield return (lastPoints[^1], endSegment, lastPoints.Length - 1);
         }
 
-        IEnumerable<IndexedPoint> EnumerateExactNewPoints(int startSegment, int startPoint, int endSegment, int endPoint)
+        IEnumerable<TrackPoint> EnumerateTrackPoints(int startSegment, int startPoint, int endSegment, int endPoint)
         {
             int startPointIndex = startPoint;
             for (int segmentIndex = startSegment; segmentIndex <= endSegment; segmentIndex++)
@@ -355,7 +358,7 @@ public class CompareSession : ObservableObject,
                 TrackPoint[] points = _newSegments[segmentIndex].Points;
                 for (int pointIndex = (startPointIndex == -1 ? points.Length - 1 : startPointIndex); pointIndex <= (segmentIndex == endSegment ? (endPoint == -1 ? points.Length - 1 : endPoint) : points.Length - 2); pointIndex++)
                 {
-                    yield return (points[pointIndex], segmentIndex, pointIndex);
+                    yield return points[pointIndex];
                 }
                 startPointIndex = 0;
             }
