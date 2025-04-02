@@ -491,7 +491,7 @@
                                     ItemsSource="{x:Bind Mode=OneWay, Path=ViewModel.Track.CompareSession.Differences}"
                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
                                     ScrollViewer.VerticalScrollMode="Auto"
-                                    SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.CurrentDifference}"
+                                    SelectedItem="{x:Bind Mode=TwoWay, Path=ViewModel.Track.CompareSession.CurrentDifference}"
                                     SelectionChanged="Differences_SelectionChanged">
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="cycloid:TrackDifference">

@@ -5,17 +5,10 @@ DesktopBridge setzt immer erstmal TargetPlatform UAP für den Restore
 - wenn ein referenziertes Package auch UAP unterstützt wird falsch restored
 - wenn nicht, kommt eine Warnung 
 
-- Review ChangeSession ändern von Diff: e928bfe REVIEW!!
-
 ## Links
 - [Bing maps styling](https://learn.microsoft.com/en-us/bingmaps/styling/map-style-sheet-entry-properties)
 - [Bing maps tiling](https://learn.microsoft.com/en-us/bingmaps/articles/bing-maps-tile-system)
 - [App elevation sample](https://stefanwick.com/2018/10/07/app-elevation-samples-part-3/)
-
-- CT Tooling https://github.com/CommunityToolkit/Tooling-Windows-Submodule/tree/uwp-net8-windows
-- Build CT NuGet packages locally `.\tooling\Build-Toolkit-Components.ps1 -MultiTargets uwp -winui 2 -Components AppServices -PreviewVersion local -NupkgOutput ./some/output/path -Release`
-
-CurrentItem in Liste der Diffs
 
 ## Bugs
 - Surface verschoben (Holzbrücke in CH bei km 1402)

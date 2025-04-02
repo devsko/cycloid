@@ -57,6 +57,7 @@ public struct CompareSession
     public Profile Profile { get; set; }
     public WayPoint[] WayPoints { get; set; }
     public byte[][] TrackPoints { get; set; }
+    public float[] Distances { get; set; }
     public float Distance { get; set; }
     public TimeSpan Time { get; set; }
     public float Ascent { get; set; }

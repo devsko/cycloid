@@ -9,9 +9,6 @@ partial class ViewModel :
     IRecipient<CompareSessionChanged>
 {
     [ObservableProperty]
-    public partial TrackDifference CurrentDifference { get; set; }
-
-    [ObservableProperty]
     public partial int DownhillCost { get; set; }
 
     [ObservableProperty]

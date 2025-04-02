@@ -70,13 +70,13 @@ public static class Serializer
 
     private static async Task<Track> ConvertAsync(cycloid.Track track, CancellationToken cancellationToken)
     {
-        (cycloid.WayPoint[] wayPoints, TrackPoint[][] trackPoints) = await track.Points.GetSegmentsAsync(cancellationToken).ConfigureAwait(false);
+        (cycloid.WayPoint[] wayPoints, (float Distance, TrackPoint[] Points)[] trackPoints) = await track.Points.GetSegmentsAsync(cancellationToken).ConfigureAwait(false);
 
         return new Track
         {
             Profile = Convert(track.RouteBuilder.Profile),
             WayPoints = Convert(wayPoints, Convert),
-            TrackPoints = Convert(trackPoints, Convert),
+            TrackPoints = Convert(trackPoints, p => Convert(p.Points)),
             PointsOfInterest = Convert(track.PointsOfInterest, Convert),
             CompareSession = Convert(track.CompareSession),
         };
@@ -208,7 +208,8 @@ public static class Serializer
         {
             Profile = Convert(compareSession.OriginalProfile),
             WayPoints = Convert(compareSession.OriginalWayPoints, Convert),
-            TrackPoints = Convert(compareSession.OriginalTrackPoints, Convert),
+            TrackPoints = Convert(compareSession.OriginalTrackPoints, p => Convert(p.Points)),
+            Distances = Convert(compareSession.OriginalTrackPoints, p => p.Distance),
             Distance = originalValues.Distance,
             Time = originalValues.Time,
             Ascent = originalValues.Ascent,
@@ -216,7 +217,7 @@ public static class Serializer
         };
     }
 
-    private static cycloid.CompareSession Convert(CompareSession? compareSession, cycloid.Track track)
+    private static cycloid.CompareSession? Convert(CompareSession? compareSession, cycloid.Track track)
     {
         if (compareSession is null)
         {
@@ -228,9 +229,14 @@ public static class Serializer
             Convert(compareSession.Value.Profile),
             new TrackPoint.CommonValues(compareSession.Value.Distance, compareSession.Value.Time, compareSession.Value.Ascent, compareSession.Value.Descent),
             Convert(compareSession.Value.WayPoints, Convert),
-            Convert(compareSession.Value.TrackPoints, Convert)
-                .Select(segmentRoutePoints => TrackPointConverter.Convert(segmentRoutePoints, segmentRoutePoints.Length, null).Points)
-                .ToArray());
+            Convert(compareSession.Value.Distances.Zip(compareSession.Value.TrackPoints), Convert));
+    }
+
+    private static (float Distance, TrackPoint[] Points) Convert((float Distance, byte[] Points) trackPoint)
+    {
+        Routing.RoutePoint[] routePoints = Convert(trackPoint.Points);
+
+        return (trackPoint.Distance, TrackPointConverter.Convert(routePoints, routePoints.Length, null).Points);
     }
 
     private static (string, string, string, cycloid.WayPoint[], cycloid.PointOfInterest[]) Convert(Selection selection)

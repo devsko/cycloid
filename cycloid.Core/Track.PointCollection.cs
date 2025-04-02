@@ -266,14 +266,14 @@ partial class Track
             return [.. results];
         }
 
-        public async Task<(WayPoint[] WayPoints, TrackPoint[][] TrackPoints)> GetSegmentsAsync(CancellationToken cancellationToken)
+        public async Task<(WayPoint[] WayPoints, (float Distance, TrackPoint[] Points)[] TrackPoints)> GetSegmentsAsync(CancellationToken cancellationToken)
         {
             using (await _track.RouteBuilder.ChangeLock.EnterAsync(cancellationToken))
             {
                 return 
                 (
                     _track.RouteBuilder.Points.ToArray(),
-                    _segments.Select(segment => segment.Points).ToArray()
+                    _segments.Select(segment => (segment.Start.Distance, segment.Points)).ToArray()
                 );
             }
         }

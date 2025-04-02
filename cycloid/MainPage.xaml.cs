@@ -24,12 +24,14 @@ public sealed partial class MainPage : Page,
     IRecipient<OnTrackAdded>,
     IRecipient<RequestPasteSelectionDetails>,
     IRecipient<RequestDeleteSelectionDetails>,
-    IRecipient<RequestExportDetails>
+    IRecipient<RequestExportDetails>,
+    IRecipient<DragWayPointEnded>
 {
     private bool _initialNewFile;
     private IStorageFile _initialFile;
     private bool _ignoreTextChange;
     private OnTrack _lastAddedOnTrack;
+    private bool _delayZoomCurrentTrackDifference;
 
     public MainPage()
     {
@@ -63,6 +65,7 @@ public sealed partial class MainPage : Page,
         StrongReferenceMessenger.Default.Register<RequestPasteSelectionDetails>(this);
         StrongReferenceMessenger.Default.Register<RequestDeleteSelectionDetails>(this);
         StrongReferenceMessenger.Default.Register<RequestExportDetails>(this);
+        StrongReferenceMessenger.Default.Register<DragWayPointEnded>(this);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -144,8 +147,6 @@ public sealed partial class MainPage : Page,
 
     private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
-        _ = this;
-
         MapLocation location;
         if (args.ChosenSuggestion is MapLocationWrapper wrapper)
         {
@@ -177,7 +178,18 @@ public sealed partial class MainPage : Page,
     {
         if (e.AddedItems is [TrackDifference diff, ..])
         {
-            Map.ZoomTrackDifference(diff);
+            if (ViewModel.IsDraggingWayPoint)
+            {
+                _delayZoomCurrentTrackDifference = true;
+            }
+            else
+            {
+                Map.ZoomTrackDifference(diff);
+            }
+        }
+        else if (e.RemovedItems is not [])
+        {
+            _delayZoomCurrentTrackDifference = false;
         }
     }
 
@@ -276,6 +288,15 @@ public sealed partial class MainPage : Page,
     void IRecipient<OnTrackAdded>.Receive(OnTrackAdded message)
     {
         _lastAddedOnTrack = message.Value;
+    }
+
+    void IRecipient<DragWayPointEnded>.Receive(DragWayPointEnded message)
+    {
+        if (_delayZoomCurrentTrackDifference)
+        {
+            Map.ZoomTrackDifference(ViewModel.Track?.CompareSession?.CurrentDifference);
+            _delayZoomCurrentTrackDifference = false;
+        }
     }
 
     void IRecipient<RequestPasteSelectionDetails>.Receive(RequestPasteSelectionDetails message)
