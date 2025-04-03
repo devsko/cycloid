@@ -8,15 +8,15 @@
     <PackageVersion Include="Microsoft.UI.Xaml" Version="2.8.7" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.13.61" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Uwp.Managed" Version="3.0.0" />
-    <PackageVersion Include="CommunityToolkit.Labs.Uwp.DependencyPropertyGenerator" Version="0.1.250318-pull-655.2086" />
-    <PackageVersion Include="CommunityToolkit.Labs.Uwp.TransitionHelper" Version="0.1.250318-pull-655.2086" />
+    <PackageVersion Include="CommunityToolkit.Labs.Uwp.DependencyPropertyGenerator" Version="0.1.250319-build.2093" />
+    <PackageVersion Include="CommunityToolkit.Labs.Uwp.TransitionHelper" Version="0.1.250319-build.2093" />
     <PackageVersion Include="CommunityToolkit.Common" Version="8.4.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageVersion Include="CommunityToolkit.Uwp.Animations" Version="8.2.250325-pull-493.1450" />
-    <PackageVersion Include="CommunityToolkit.Uwp.Behaviors" Version="8.2.250325-pull-493.1450" />
-    <PackageVersion Include="CommunityToolkit.Uwp.Extensions" Version="8.2.250325-pull-493.1450" />
-    <PackageVersion Include="CommunityToolkit.Uwp.Helpers" Version="8.2.250325-pull-493.1450" />
-    <PackageVersion Include="CommunityToolkit.Uwp.Media" Version="8.2.250325-pull-493.1450" />
+    <PackageVersion Include="CommunityToolkit.Uwp.Animations" Version="8.2.250402" />
+    <PackageVersion Include="CommunityToolkit.Uwp.Behaviors" Version="8.2.250402" />
+    <PackageVersion Include="CommunityToolkit.Uwp.Extensions" Version="8.2.250402" />
+    <PackageVersion Include="CommunityToolkit.Uwp.Helpers" Version="8.2.250402" />
+    <PackageVersion Include="CommunityToolkit.Uwp.Media" Version="8.2.250402" />
     <PackageVersion Include="CliWrap" Version="3.8.2" />
     <PackageVersion Include="GeoJSON.Text" Version="1.2.0-local.1" />
     <PackageVersion Include="FluentIcons.Uwp" Version="1.1.292" />

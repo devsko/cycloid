@@ -18,6 +18,9 @@ DesktopBridge setzt immer erstmal TargetPlatform UAP für den Restore
 ## Perf
 - Profile MaxElevation in EnsureTrack oder aus den MaxAltitudes der Segments in PointColection - auf jeden Fall nicht nochmal Enumerate()
 ## Feature
+- Splits im Profile
+	- Am unteren Rand
+	- Ähnlich wie Tabstops in Word
 - Train Mode
 	- Tempo einstellbar
 	- Aktuelle Werte/Section anzeigen
