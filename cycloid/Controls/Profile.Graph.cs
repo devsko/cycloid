@@ -82,7 +82,7 @@ partial class Profile
             { Surface.sett, orange },
             { Surface.unhewn_cobblestone, orange },
             { Surface.cobblestone, orange },
-            { Surface.metal, compositor.CreateColorBrush(Colors.Blue) },
+            { Surface.metal, compositor.CreateColorBrush(Colors.DeepSkyBlue) },
             { Surface.wood, compositor.CreateColorBrush(Colors.Brown) },
             { Surface.stepping_stones, compositor.CreateColorBrush(Colors.GreenYellow) },
             { Surface.rubber, compositor.CreateColorBrush(Colors.PaleVioletRed) },
