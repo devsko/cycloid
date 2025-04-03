@@ -1,0 +1,22 @@
+﻿<ContentDialog
+    x:Class="cycloid.ErrorDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:cycloid"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Error"
+    CloseButtonText="Close"
+    DefaultButton="Close"
+    SecondaryButtonClick="ContentDialog_SecondaryButtonClick"
+    SecondaryButtonText="Copy">
+
+    <Grid>
+        <TextBox
+            x:Name="MessageBox"
+            AcceptsReturn="True"
+            IsReadOnly="True"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+            ScrollViewer.VerticalScrollBarVisibility="Visible"
+            TextWrapping="NoWrap" />
+    </Grid>
+</ContentDialog>

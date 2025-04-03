@@ -111,12 +111,7 @@ sealed partial class App : Application,
             {
                 try
                 {
-                    ContentDialog dialog = new()
-                    {
-                        Title = "Error",
-                        Content = message,
-                        CloseButtonText = "Close",
-                    };
+                    ErrorDialog dialog = new(message);
                     await dialog.ShowAsync();
                 }
                 catch (Exception ex)

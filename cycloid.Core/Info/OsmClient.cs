@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -46,18 +47,23 @@ public class OsmClient
         int retryCount = 0;
         while (true)
         {
-            using HttpResponseMessage response = await _http.PostAsync("", new StringContent(content), cancellationToken).ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
+            HttpResponseMessage? response = null;
+            try
             {
-                using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                response = await _http.PostAsync("", new StringContent(content), cancellationToken).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
 
-                OverpassResponse overpass = await JsonSerializer.DeserializeAsync(stream, OsmContext.Default.OverpassResponse, cancellationToken).ConfigureAwait(false);
+                OverpassResponse overpass = await response.Content.ReadFromJsonAsync(OsmContext.Default.OverpassResponse, cancellationToken).ConfigureAwait(false);
 
                 return overpass.Elements;
             }
-            else if (++retryCount > 3 || response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+            catch (HttpRequestException) when (retryCount < 3 && response?.StatusCode is not (HttpStatusCode.BadGateway or HttpStatusCode.NotFound))
             {
-                response.EnsureSuccessStatusCode();
+                retryCount++;
+            }
+            finally
+            {
+                response?.Dispose();
             }
 
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);

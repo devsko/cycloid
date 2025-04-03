@@ -116,8 +116,11 @@ partial class Map :
             if (ViewModel.HoverInfo.IsValid)
             {
                 MapIcon icon = GetInfoIcon(ViewModel.HoverInfo);
-                icon.MapStyleSheetEntryState = "";
-                icon.ZIndex = 0;
+                if (icon is not null)
+                {
+                    icon.MapStyleSheetEntryState = "";
+                    icon.ZIndex = 0;
+                }
             }
             if (nearestIcon is not null)
             {
