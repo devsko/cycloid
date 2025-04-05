@@ -17,6 +17,8 @@
 
                     <cycloid:ViewModel x:Name="ViewModel" />
 
+                    <Thickness x:Key="TitleBarMargin">8,0,0,0</Thickness>
+                    
                     <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}" TargetType="AppBarButton">
                         <Setter Property="Width" Value="56" />
                     </Style>
@@ -118,7 +120,6 @@
 
             <Grid
                 x:Name="TitleBarControlsRoot"
-                Margin="8,0,0,0"
                 ColumnSpacing="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition x:Name="TitleColumn" Width="219" />

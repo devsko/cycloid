@@ -15,6 +15,8 @@ using Windows.UI.Xaml.Controls;
 
 namespace cycloid;
 
+public class TitleBarLayoutChanged();
+
 sealed partial class App : Application,
     IRecipient<PlayerStatusChanged>
 {
@@ -90,13 +92,23 @@ sealed partial class App : Application,
             rootFrame.NavigationFailed += (_, e) => throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
 
             Window.Current.Content = rootFrame;
+
+            ApplicationView.GetForCurrentView().TitleBar.ButtonBackgroundColor = Colors.Transparent;
+
+            CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
+            titleBar.ExtendViewIntoTitleBar = true;
+            titleBar.LayoutMetricsChanged += TitleBar_LayoutMetricsChanged;
+            //titleBar.IsVisibleChanged += TitleBar_IsVisibleChanged;
+        }
         }
 
-        if (rootFrame.Content == null && args.Files is [StorageFile file, ..])
+    public Vector2 TitleBarInset { get; private set; }
+
+    private void TitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
         {
-            rootFrame.Navigate(typeof(MainPage), file);
-        }
-        Window.Current.Activate();
+        TitleBarInset = new Vector2((float)sender.SystemOverlayLeftInset, (float)sender.SystemOverlayRightInset);
+        
+        StrongReferenceMessenger.Default.Send(new TitleBarLayoutChanged());
     }
 
     public Task ShowExceptionAsync(Exception ex) => ShowExceptionAsync(ex.ToString());

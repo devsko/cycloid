@@ -24,7 +24,8 @@ public sealed partial class MainPage : Page,
     IRecipient<RequestPasteSelectionDetails>,
     IRecipient<RequestDeleteSelectionDetails>,
     IRecipient<RequestExportDetails>,
-    IRecipient<DragWayPointEnded>
+    IRecipient<DragWayPointEnded>,
+    IRecipient<TitleBarLayoutChanged>
 {
     private bool _initialNewFile;
     private IStorageFile _initialFile;
@@ -36,14 +37,9 @@ public sealed partial class MainPage : Page,
     {
         InitializeComponent();
 
-        ApplicationView.GetForCurrentView().TitleBar.ButtonBackgroundColor = Colors.Transparent;
-        
-        CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
-        titleBar.ExtendViewIntoTitleBar = true;
-        titleBar.LayoutMetricsChanged += TitleBar_LayoutMetricsChanged;
-        titleBar.IsVisibleChanged += TitleBar_IsVisibleChanged;
-
         Window.Current.SetTitleBar(TitleBar);
+        UpdateTitleBarLayout();
+
         Window.Current.CoreWindow.Activated += CoreWindow_Activated;
 
         // Workaround: Cannot create IncrementNumberRounder as XAML resource
@@ -64,6 +60,7 @@ public sealed partial class MainPage : Page,
         StrongReferenceMessenger.Default.Register<RequestDeleteSelectionDetails>(this);
         StrongReferenceMessenger.Default.Register<RequestExportDetails>(this);
         StrongReferenceMessenger.Default.Register<DragWayPointEnded>(this);
+        StrongReferenceMessenger.Default.Register<TitleBarLayoutChanged>(this);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -78,6 +75,14 @@ public sealed partial class MainPage : Page,
         }
     }
 
+    private void UpdateTitleBarLayout()
+    {
+        var margin = (Thickness)Resources["TitleBarMargin"];
+
+        TitleBarControlsRoot.Margin = new Thickness(margin.Left + App.Current.TitleBarInset.X, margin.Top, margin.Right + App.Current.TitleBarInset.Y, margin.Bottom);
+        TitleColumn.Width = new GridLength(TitleColumn.Width.Value - App.Current.TitleBarInset.X);
+    }
+
     private TabViewItem GetTabItem(Modes mode)
     {
         return TabView.TabItems.Cast<TabViewItem>().First(item => item.Tag.Equals(mode));
@@ -86,6 +91,11 @@ public sealed partial class MainPage : Page,
     private void GetMode(object item)
     {
         ViewModel.Mode = (Modes)((TabViewItem)item).Tag;
+    }
+
+    private void CoreWindow_Activated(CoreWindow sender, WindowActivatedEventArgs args)
+    {
+        TitleTextBlock.Opacity = args.WindowActivationState == CoreWindowActivationState.Deactivated ? .5 : 1;
     }
 
     private void Page_Loaded(object _1, RoutedEventArgs _2)
@@ -261,23 +271,6 @@ public sealed partial class MainPage : Page,
         }
     }
 
-    private void TitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
-    {
-        var margin = TitleBarControlsRoot.Margin;
-        TitleBarControlsRoot.Margin = new Thickness(margin.Left + sender.SystemOverlayLeftInset, margin.Top, margin.Right + sender.SystemOverlayRightInset, margin.Bottom);
-        TitleColumn.Width = new GridLength(TitleColumn.Width.Value - sender.SystemOverlayLeftInset);
-    }
-
-    private void TitleBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)
-    {
-        TitleBar.Visibility = sender.IsVisible ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    private void CoreWindow_Activated(CoreWindow sender, WindowActivatedEventArgs args)
-    {
-        TitleTextBlock.Opacity = args.WindowActivationState == CoreWindowActivationState.Deactivated ? .5 : 1;
-    }
-
     void IRecipient<OnTrackAdded>.Receive(OnTrackAdded message)
     {
         _lastAddedOnTrack = message.Value;
@@ -290,6 +283,11 @@ public sealed partial class MainPage : Page,
             Map.ZoomTrackDifference(ViewModel.Track?.CompareSession?.CurrentDifference);
             _delayZoomCurrentTrackDifference = false;
         }
+    }
+
+    void IRecipient<TitleBarLayoutChanged>.Receive(TitleBarLayoutChanged message)
+    {
+        UpdateTitleBarLayout();
     }
 
     void IRecipient<RequestPasteSelectionDetails>.Receive(RequestPasteSelectionDetails message)
