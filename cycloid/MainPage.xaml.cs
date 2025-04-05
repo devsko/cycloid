@@ -20,7 +20,6 @@ using WinRT;
 namespace cycloid;
 
 public sealed partial class MainPage : Page,
-    IRecipient<FileChanged>,
     IRecipient<OnTrackAdded>,
     IRecipient<RequestPasteSelectionDetails>,
     IRecipient<RequestDeleteSelectionDetails>,
@@ -60,7 +59,6 @@ public sealed partial class MainPage : Page,
         };
         DownhillCutoff.NumberFormatter = UphillCutoff.NumberFormatter = cutoffFormatter;
 
-        StrongReferenceMessenger.Default.Register<FileChanged>(this);
         StrongReferenceMessenger.Default.Register<OnTrackAdded>(this);
         StrongReferenceMessenger.Default.Register<RequestPasteSelectionDetails>(this);
         StrongReferenceMessenger.Default.Register<RequestDeleteSelectionDetails>(this);
@@ -278,11 +276,6 @@ public sealed partial class MainPage : Page,
     private void CoreWindow_Activated(CoreWindow sender, WindowActivatedEventArgs args)
     {
         TitleTextBlock.Opacity = args.WindowActivationState == CoreWindowActivationState.Deactivated ? .5 : 1;
-    }
-
-    void IRecipient<FileChanged>.Receive(FileChanged message)
-    {
-        TitleTextBlock.Text = $"cycloid - {(message.Value is null ? "" : Path.GetFileNameWithoutExtension(message.Value.Name))}";
     }
 
     void IRecipient<OnTrackAdded>.Receive(OnTrackAdded message)

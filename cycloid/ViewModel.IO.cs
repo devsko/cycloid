@@ -15,8 +15,6 @@ using Windows.UI.Xaml.Controls;
 
 namespace cycloid;
 
-public class FileChanged(IStorageFile value) : ValueChangedMessage<IStorageFile>(value);
-
 public class TrackComplete(bool isNew)
 {
     public bool IsNew => isNew;
@@ -143,7 +141,7 @@ partial class ViewModel
 
             StrongReferenceMessenger.Default.Send(new TrackComplete(true));
 
-            Status = $"{Track.Name} created";
+            Status = $"{TrackName} created";
 
             StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", File);
 
@@ -182,7 +180,7 @@ partial class ViewModel
 
                 await SaveAsync();
 
-                Status = $"{Track.Name} saved ({watch.ElapsedMilliseconds} ms) {++_saveCounter}";
+                Status = $"{TrackName} saved ({watch.ElapsedMilliseconds} ms) {++_saveCounter}";
 
                 StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", File);
 
@@ -217,7 +215,7 @@ partial class ViewModel
 
         await LoadAsync();
 
-        Status = $"{Track.Name} opened ({watch.ElapsedMilliseconds} ms)";
+        Status = $"{TrackName} opened ({watch.ElapsedMilliseconds} ms)";
 
         StrongReferenceMessenger.Default.Send(new TrackComplete(false));
 

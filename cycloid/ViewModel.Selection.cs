@@ -93,7 +93,7 @@ partial class ViewModel
         var output = stream.GetOutputStreamAt(0).AsStreamForWrite();
         await Serializer.SerializeAsync(
             output, 
-            Track.Name, 
+            TrackName, 
             await GetAddressAsync(new Geopoint(wayPoints[0].Location.ToBasicGeoposition()), shorter: true),
             await GetAddressAsync(new Geopoint(wayPoints[^1].Location.ToBasicGeoposition()), shorter: true),
             wayPoints, 

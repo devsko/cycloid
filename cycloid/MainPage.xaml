@@ -130,11 +130,13 @@
 
                 <TextBlock
                     x:Name="TitleTextBlock"
-                    Grid.Column="0"
+                    Padding="5,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="13"
-                    IsHitTestVisible="False"
-                    Text="cycloid" />
+                    FontSize="12"
+                    IsHitTestVisible="False">
+                    <Run Text="cycloid - " />
+                    <Run Text="{x:Bind Mode=OneWay, Path=ViewModel.TrackName}" />
+                </TextBlock>
 
                 <StackPanel
                     Grid.Column="1"

@@ -7,8 +7,6 @@ namespace cycloid;
 
 public partial class Track : ObservableObject
 {
-    public string Name { get; set; }
-
     public RouteBuilder RouteBuilder { get; }
 
     public PointCollection Points { get; }

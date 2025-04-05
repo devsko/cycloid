@@ -195,12 +195,12 @@ partial class ViewModel
         using Stream zipStream = winRtStream.AsStreamForWrite();
         using ZipArchive archive = new(zipStream, ZipArchiveMode.Create);
 
-        await WriteEntryAsync($"{Track.Name} complete", Track.Points, DateTime.Now).ConfigureAwait(false);
+        await WriteEntryAsync($"{TrackName} complete", Track.Points, DateTime.Now).ConfigureAwait(false);
 
         int i = 0;
         foreach (IEnumerable<TrackPoint> filePoints in Track.Points.EnumerateFiles())
         {
-            await WriteEntryAsync($"{Track.Name} {++i:D2}", filePoints, DateTime.Now).ConfigureAwait(false);
+            await WriteEntryAsync($"{TrackName} {++i:D2}", filePoints, DateTime.Now).ConfigureAwait(false);
         }
 
         async Task WriteEntryAsync(string name, IEnumerable<TrackPoint> points, DateTime start)

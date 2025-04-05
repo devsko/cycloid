@@ -58,6 +58,7 @@ public partial class ViewModel : ObservableObject,
     public partial Track Track { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TrackName))]
     public partial IStorageFile File { get; set; }
 
     [ObservableProperty]
@@ -137,13 +138,6 @@ public partial class ViewModel : ObservableObject,
         StrongReferenceMessenger.Default.Send(new TrackChanged(this, oldValue, newValue));
     }
 
-    partial void OnFileChanged(IStorageFile value)
-    {
-        Track.Name = value is null ? "" : Path.GetFileNameWithoutExtension(value.Name);
-
-        StrongReferenceMessenger.Default.Send(new FileChanged(value));
-    }
-
     partial void OnTrackIsInitializedChanged(bool value)
     {
         if (value)
@@ -171,6 +165,8 @@ public partial class ViewModel : ObservableObject,
     public bool IsEditMode => Mode == Modes.Edit;
 
     public bool HasTrack => Track is not null;
+
+    public string TrackName => File is null ? string.Empty : Path.GetFileNameWithoutExtension(File.Name);
 
     public bool MapHoverPointVisible => HoverPoint.IsValid && (!IsEditMode || ProfileHoverPointValuesEnabled);
 

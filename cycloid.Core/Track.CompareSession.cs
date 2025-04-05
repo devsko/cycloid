@@ -9,7 +9,7 @@ using IndexedPoint = (cycloid.TrackPoint Point, int SegmentIndex, int PointIndex
 
 namespace cycloid;
 
-public class CompareSessionChanged(object sender, CompareSession oldValue, CompareSession newValue) : PropertyChangedMessage<CompareSession>(sender, null, oldValue, newValue);
+public class CompareSessionChanged(object sender, CompareSession? oldValue, CompareSession? newValue) : PropertyChangedMessage<CompareSession?>(sender, null, oldValue, newValue);
 
 public class TrackDifference
 {
@@ -24,9 +24,9 @@ public class TrackDifference
 partial class Track
 {
     [ObservableProperty]
-    public partial CompareSession CompareSession { get; set; }
+    public partial CompareSession? CompareSession { get; set; }
 
-    partial void OnCompareSessionChanged(CompareSession oldValue, CompareSession newValue)
+    partial void OnCompareSessionChanged(CompareSession? oldValue, CompareSession? newValue)
     {
         StrongReferenceMessenger.Default.Send(new CompareSessionChanged(this, oldValue, newValue));
     }
