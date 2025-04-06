@@ -3,23 +3,19 @@ using CommunityToolkit.WinUI;
 using cycloid.Controls;
 using cycloid.Info;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.Core;
 using Windows.Globalization.NumberFormatting;
 using Windows.Services.Maps;
 using Windows.Storage;
 using Windows.System;
-using Windows.UI;
 using Windows.UI.Core;
-using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Navigation;
 using WinRT;
 
 namespace cycloid;
 
-public sealed partial class MainPage : Page,
+public sealed partial class MainPage : UserControl,
     IRecipient<OnTrackAdded>,
     IRecipient<RequestPasteSelectionDetails>,
     IRecipient<RequestDeleteSelectionDetails>,
@@ -27,8 +23,6 @@ public sealed partial class MainPage : Page,
     IRecipient<DragWayPointEnded>,
     IRecipient<TitleBarLayoutChanged>
 {
-    private bool _initialNewFile;
-    private IStorageFile _initialFile;
     private bool _ignoreTextChange;
     private OnTrack _lastAddedOnTrack;
     private bool _delayZoomCurrentTrackDifference;
@@ -63,17 +57,7 @@ public sealed partial class MainPage : Page,
         StrongReferenceMessenger.Default.Register<TitleBarLayoutChanged>(this);
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
-    {
-        if (e.Parameter is App.NewTrackSentinel)
-        {
-            _initialNewFile = true;
-        }
-        else if (e.Parameter is IStorageFile file)
-        {
-            _initialFile = file;
-        }
-    }
+    private ViewModel ViewModel => App.Current.ViewModel;
 
     private void UpdateTitleBarLayout()
     {
@@ -101,25 +85,8 @@ public sealed partial class MainPage : Page,
     private void Page_Loaded(object _1, RoutedEventArgs _2)
     {
         ViewModel.ToggleHeatmapVisibleCommand.Execute(null);
-        OpenTrackAsync().FireAndForget();
 
-        async Task OpenTrackAsync()
-        {
-            if (_initialNewFile)
-            {
-                await ViewModel.NewTrackAsync();
-                _initialNewFile = false;
-            }
-            else if (_initialFile is not null)
-            {
-                await ViewModel.OpenTrackFileAsync(_initialFile);
-                _initialFile = null;
-            }
-            else
-            {
-                await ViewModel.OpenLastTrackAsync();
-            }
-        }
+        ViewModel.LoadFileAsync().FireAndForget();
     }
 
     [GeneratedBindableCustomProperty([nameof(DisplayName)], null)]

@@ -1,11 +1,6 @@
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.Mvvm.Messaging.Messages;
 using cycloid.Serialization;
 using Microsoft.VisualStudio.Threading;
 using Windows.Storage;
@@ -26,8 +21,7 @@ partial class ViewModel
     private CancellationTokenSource _saveTrackCts = new();
     private int _saveCounter;
 
-    [RelayCommand]
-    public async Task OpenTrackAsync()
+    public async Task<bool> OpenTrackAsync()
     {
         FileOpenPicker picker = new()
         {
@@ -39,77 +33,29 @@ partial class ViewModel
 
         if (file is null)
         {
-            return;
+            return false;
         }
 
-        await OpenTrackFileAsync(file);
+        return await OpenTrackFileAsync(file);
     }
 
-    public async Task OpenLastTrackAsync()
+    public async Task<bool> OpenTrackFileAsync(IStorageFile file)
     {
-        if (StorageApplicationPermissions.FutureAccessList.ContainsItem("LastTrack"))
-        {
-            try
-            {
-                StorageFile file = await StorageApplicationPermissions.FutureAccessList.GetFileAsync("LastTrack");
-                await OpenTrackFileAsync(file, dontShowDialog: true);
-            }
-            catch (FileNotFoundException)
-            {
-                StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
-            }
-        }
-    }
-
-    public async Task OpenTrackFileAsync(IStorageFile file, bool dontShowDialog = false)
-    {
-        StorageApplicationPermissions.MostRecentlyUsedList.Add(file, "", RecentStorageItemVisibility.AppAndSystem);
-
         if (Program.RegisterForFile(file, out _))
         {
-            StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", file);
-            await LoadTrackFileAsync(file);
-        }
-        else if (!dontShowDialog)
-        {
-            await ShowFileAlreadyOpenAsync(file);
-        }
-    }
+            File = file;
 
-    [RelayCommand(CanExecute = nameof(CanSaveTrackAs))]
-    public async Task SaveTrackAsAsync()
-    {
-        FileSavePicker picker = new()
-        {
-            SuggestedFileName = "Save Track",
-            SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-        };
-        // TODO CsWinRT 2.3
-        picker.FileTypeChoices.Add("Track", (string[])[".track"]);
-        StorageFile file = await picker.PickSaveFileAsync();
-
-        if (file is null)
-        {
-            return;
-        }
-
-        StorageApplicationPermissions.MostRecentlyUsedList.Add(file, "", RecentStorageItemVisibility.AppAndSystem);
-
-        if (!Program.RegisterForFile(file, out _))
-        {
-            await ShowFileAlreadyOpenAsync(file);
+            return true;
         }
         else
         {
-            await File.CopyAndReplaceAsync(file);
-            File = file;
+            await ShowFileAlreadyOpenAsync(file);
+            
+            return false;
         }
     }
 
-    private bool CanSaveTrackAs() => HasTrack;
-
-    [RelayCommand]
-    public async Task NewTrackAsync()
+    public async Task<bool> NewTrackAsync()
     {
         FileSavePicker picker = new()
         {
@@ -122,7 +68,7 @@ partial class ViewModel
 
         if (file is null)
         {
-            return;
+            return false;
         }
 
         StorageApplicationPermissions.MostRecentlyUsedList.Add(file, "", RecentStorageItemVisibility.AppAndSystem);
@@ -133,15 +79,29 @@ partial class ViewModel
             {
                 StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
             }
-
-            Track = new Track(true);
             File = file;
+            _fileIsNew = true;
+
+            return true;
+        }
+        else
+        {
+            await ShowFileAlreadyOpenAsync(file);
+
+            return false;
+        }
+    }
+
+    public async Task LoadFileAsync()
+    {
+        if (_fileIsNew)
+        {
+            Track = new Track(true);
 
             await SaveAsync();
 
-            StrongReferenceMessenger.Default.Send(new TrackComplete(true));
-
             Status = $"{TrackName} created";
+            StrongReferenceMessenger.Default.Send(new TrackComplete(true));
 
             StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", File);
 
@@ -160,11 +120,30 @@ partial class ViewModel
         }
         else
         {
-            await ShowFileAlreadyOpenAsync(file);
+            Track = new Track(false);
+
+            Stopwatch watch = Stopwatch.StartNew();
+
+            await LoadAsync();
+
+            Status = $"{TrackName} opened ({watch.ElapsedMilliseconds} ms)";
+            StrongReferenceMessenger.Default.Send(new TrackComplete(false));
+
+            StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", File);
+            StorageApplicationPermissions.MostRecentlyUsedList.Add(File, $"{Format.Distance(Track.Points.Total.Distance)}", RecentStorageItemVisibility.AppAndSystem);
+
+            async Task LoadAsync()
+            {
+                SynchronizationContext ui = SynchronizationContext.Current;
+                await TaskScheduler.Default;
+
+                using Stream stream = await File.OpenStreamForReadAsync().ConfigureAwait(false);
+
+                await Serializer.LoadAsync(stream, Track, ui).ConfigureAwait(false);
+            }
         }
     }
 
-    [RelayCommand]
     public async Task SaveTrackAsync()
     {
         if (Track is not null)
@@ -182,6 +161,7 @@ partial class ViewModel
 
                 Status = $"{TrackName} saved ({watch.ElapsedMilliseconds} ms) {++_saveCounter}";
 
+                StorageApplicationPermissions.MostRecentlyUsedList.Add(File, $"{Format.Distance(Track.Points.Total.Distance)}", RecentStorageItemVisibility.AppAndSystem);
                 StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", File);
 
                 async Task SaveAsync()
@@ -203,30 +183,6 @@ partial class ViewModel
             {
                 _saveTrackSemaphore.Release();
             }
-        }
-    }
-
-    private async Task LoadTrackFileAsync(IStorageFile file)
-    {
-        Track = new Track(false);
-        File = file;
-
-        Stopwatch watch = Stopwatch.StartNew();
-
-        await LoadAsync();
-
-        Status = $"{TrackName} opened ({watch.ElapsedMilliseconds} ms)";
-
-        StrongReferenceMessenger.Default.Send(new TrackComplete(false));
-
-        async Task LoadAsync()
-        {
-            SynchronizationContext ui = SynchronizationContext.Current;
-            await TaskScheduler.Default;
-
-            using Stream stream = await File.OpenStreamForReadAsync().ConfigureAwait(false);
-            
-            await Serializer.LoadAsync(stream, Track, ui).ConfigureAwait(false);
         }
     }
 

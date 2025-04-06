@@ -1,17 +1,20 @@
 ﻿using System.Diagnostics;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Routing;
-using FluentIcons.Uwp;
+using Microsoft.VisualStudio.Threading;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Core;
 using Windows.Services.Maps;
 using Windows.Storage;
 using Windows.System.Display;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.StartScreen;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 
 namespace cycloid;
 
@@ -20,9 +23,15 @@ public class TitleBarLayoutChanged();
 sealed partial class App : Application,
     IRecipient<PlayerStatusChanged>
 {
-    public const string NewTrackSentinel = "{NewTrack}";
+    public const string NewTrackArgument = "-new";
+
     public Secrets Secrets { get; }
 
+    public ViewModel ViewModel { get; private set; }
+
+    public Vector2 TitleBarInset { get; private set; }
+
+    private readonly DisplayRequest _displayRequest = new();
     private CoreDispatcher _dispatcher;
 
     public App()
@@ -35,6 +44,8 @@ sealed partial class App : Application,
 
         RouteBuilder.ExceptionHandler = Current.ShowExceptionAsync;
 
+        InitJumpListAsync().FireAndForget();
+
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         using Stream secretsJson = typeof(App).Assembly.GetManifestResourceStream("cycloid.secrets.json");
@@ -45,67 +56,60 @@ sealed partial class App : Application,
         InitializeComponent();
 
         StrongReferenceMessenger.Default.Register<PlayerStatusChanged>(this);
-    }
-
-    public static new App Current => (App)Application.Current;
-
-    protected override void OnLaunched(LaunchActivatedEventArgs e)
-    {
-        _dispatcher = Window.Current.Dispatcher;
-
-        InitJumpListAsync().FireAndForget();
-
-        if (Window.Current.Content is not Frame rootFrame)
-        {
-            rootFrame = new Frame();
-            rootFrame.NavigationFailed += (_, e) => throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
-
-            Window.Current.Content = rootFrame;
-        }
-
-        if (!e.PrelaunchActivated)
-        {
-            if (rootFrame.Content == null)
-            {
-                rootFrame.Navigate(typeof(MainPage), e.Arguments);
-            }
-            Window.Current.Activate();
-        }
 
         static async Task InitJumpListAsync()
         {
             JumpList list = await JumpList.LoadCurrentAsync();
             list.SystemGroupKind = JumpListSystemGroupKind.Recent;
             list.Items.Clear();
-            list.Items.Add(JumpListItem.CreateWithArguments(NewTrackSentinel, "New track"));
+            list.Items.Add(JumpListItem.CreateWithArguments(NewTrackArgument, "New track"));
             await list.SaveAsync();
+        }
+    }
+
+    public static new App Current => (App)Application.Current;
+
+    protected override void OnLaunched(LaunchActivatedEventArgs e)
+    {
+        if (Window.Current.Content is null)
+        {
+            Initialize();
+
+            Window.Current.Content = new StartPage(e.Arguments == NewTrackArgument);
+            Window.Current.Activate();
         }
     }
 
     protected override void OnFileActivated(FileActivatedEventArgs args)
     {
+        if (Window.Current.Content is null)
+        {
+            Initialize();
+
+            if (args.Files is [StorageFile file, ..])
+            {
+                Window.Current.Content = new StartPage(file);
+                Window.Current.Activate();
+            }
+        }
+    }
+
+    private void Initialize()
+    {
+        ViewModel = new ViewModel();
+
         _dispatcher = Window.Current.Dispatcher;
 
-        if (Window.Current.Content is not Frame rootFrame)
-        {
-            rootFrame = new Frame();
-            rootFrame.NavigationFailed += (_, e) => throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
+        ApplicationView.GetForCurrentView().TitleBar.ButtonBackgroundColor = Colors.Transparent;
+        ApplicationView.GetForCurrentView().TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
 
-            Window.Current.Content = rootFrame;
-
-            ApplicationView.GetForCurrentView().TitleBar.ButtonBackgroundColor = Colors.Transparent;
-
-            CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
-            titleBar.ExtendViewIntoTitleBar = true;
-            titleBar.LayoutMetricsChanged += TitleBar_LayoutMetricsChanged;
-            //titleBar.IsVisibleChanged += TitleBar_IsVisibleChanged;
-        }
-        }
-
-    public Vector2 TitleBarInset { get; private set; }
+        CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
+        titleBar.ExtendViewIntoTitleBar = true;
+        titleBar.LayoutMetricsChanged += TitleBar_LayoutMetricsChanged;
+    }
 
     private void TitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
-        {
+    {
         TitleBarInset = new Vector2((float)sender.SystemOverlayLeftInset, (float)sender.SystemOverlayRightInset);
         
         StrongReferenceMessenger.Default.Send(new TitleBarLayoutChanged());
@@ -139,7 +143,6 @@ sealed partial class App : Application,
         }
     }
 
-    private readonly DisplayRequest _displayRequest = new();
     void IRecipient<PlayerStatusChanged>.Receive(PlayerStatusChanged message)
     {
         if (message.Value)

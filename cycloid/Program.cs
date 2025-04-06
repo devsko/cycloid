@@ -18,7 +18,7 @@ public static class Program
             {
                 if (RegisterForFile(file, out AppInstance instance))
                 {
-                    StartApp();
+                    Run();
                 }
                 else
                 {
@@ -28,18 +28,18 @@ public static class Program
         }
         else
         {
-            if (AppInstance.RecommendedInstance != null)
+            if (AppInstance.RecommendedInstance is not null)
             {
                 AppInstance.RecommendedInstance.RedirectActivationTo();
             }
             else
             {
-                StartApp();
+                Run();
             }
         }
     }
 
-    private static void StartApp()
+    private static void Run()
     {
         Application.Start(p =>
         {

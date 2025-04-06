@@ -176,15 +176,11 @@ partial class Map :
 
     private Visibility VisibleIfNotIsFileSplit(WayPoint wayPoint)
     {
-        _ = this;
-
         return wayPoint?.IsFileSplit == false ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private Visibility VisibleIfNotIsDirectRoute(RouteSection section)
     {
-        _ = this;
-
         return section?.IsDirectRoute == false ? Visibility.Visible : Visibility.Collapsed;
     }
 

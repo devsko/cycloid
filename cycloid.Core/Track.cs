@@ -55,15 +55,11 @@ public partial class Track : ObservableObject
 
     public float DistanceFromStart(float distance)
     {
-        _ = this;
-
         return distance;
     }
 
     public TimeSpan TimeFromStart(TimeSpan time)
     {
-        _ = this;
-
         return time;
     }
 

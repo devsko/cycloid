@@ -13,37 +13,37 @@
                     <Border x:Name="Border" Background="{ThemeResource SystemControlTransientBackgroundBrush}">
                         <Border>
                             <ui:Effects.Shadow>
-                                <media:AttachedCardShadow Offset="2,8" Color="#60000000" />
+                                <media:AttachedCardShadow Offset="4,8" Color="#60000000" />
                             </ui:Effects.Shadow>
 
                             <Border
                                 Padding="15"
                                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                                 CornerRadius="5">
-                                <Grid RowSpacing="10">
+                                <Grid ColumnSpacing="5" RowSpacing="10">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
-                                    <Grid Grid.Row="0" ColumnSpacing="5">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Border
-                                            Grid.Column="0"
-                                            Padding="5"
-                                            BorderBrush="{ThemeResource TextBoxDisabledBorderThemeBrush}"
-                                            BorderThickness="1"
-                                            CornerRadius="3">
-                                            <TextBlock x:Name="TextBlock" />
-                                        </Border>
-                                        <Button
-                                            x:Name="CloseButton"
-                                            Grid.Column="1"
-                                            Content="{ui:SymbolIcon Symbol=Cancel}" />
-                                    </Grid>
-                                    <mux:WebView2 x:Name="WebView" Grid.Row="1" />
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border
+                                        Padding="5"
+                                        BorderBrush="{ThemeResource TextBoxDisabledBorderThemeBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="3">
+                                        <TextBlock x:Name="TextBlock" />
+                                    </Border>
+                                    <Button
+                                        x:Name="CloseButton"
+                                        Grid.Column="1"
+                                        Content="{ui:SymbolIcon Symbol=Cancel}" />
+                                    <mux:WebView2
+                                        x:Name="WebView"
+                                        Grid.Row="1"
+                                        Grid.ColumnSpan="2" />
                                 </Grid>
                             </Border>
 
@@ -61,7 +61,7 @@
                 <ControlTemplate TargetType="controls:MapControlBorder">
                     <Border>
                         <ui:Effects.Shadow>
-                            <media:AttachedCardShadow Offset="2,8" Color="#60000000" />
+                            <media:AttachedCardShadow Offset="4,8" Color="#60000000" />
                         </ui:Effects.Shadow>
 
                         <Border
@@ -95,9 +95,6 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
                         <TextBlock
                             x:Name="TextBlock"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"

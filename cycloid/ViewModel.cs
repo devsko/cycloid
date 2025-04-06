@@ -49,7 +49,6 @@ public partial class ViewModel : ObservableObject,
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasTrack))]
     [NotifyPropertyChangedFor(nameof(CanEditProfile))]
-    [NotifyCanExecuteChangedFor(nameof(SaveTrackAsCommand))]
     [NotifyCanExecuteChangedFor(nameof(CompareSessionCommand))]
     [NotifyCanExecuteChangedFor(nameof(AddPointOfInterestCommand))]
     [NotifyCanExecuteChangedFor(nameof(RemoveCurrentSectionCommand))]
@@ -60,6 +59,8 @@ public partial class ViewModel : ObservableObject,
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TrackName))]
     public partial IStorageFile File { get; set; }
+
+    private bool _fileIsNew;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CompareSessionCommand))]
