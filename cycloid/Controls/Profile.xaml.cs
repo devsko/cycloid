@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Numerics;
+﻿using System.Numerics;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using cycloid.Routing;
@@ -43,10 +42,6 @@ public sealed partial class Profile : ViewModelControl,
     private const float HorizontalRulerTickMinimumGap = 50;
     private const float VerticalRulerTickMinimumGap = 25;
 
-    private readonly Throttle<double, Profile> _setHoverPointThrottle = new(
-        static (value, @this) => @this.SetHoverPoint(value),
-        TimeSpan.FromMilliseconds(100));
-
     private readonly PeriodicAction<Profile, int> _periodicScroll = new(
         static (@this, amount) => @this.ScrollToRelative(amount), 
         TimeSpan.FromMilliseconds(50));
@@ -75,6 +70,9 @@ public sealed partial class Profile : ViewModelControl,
     private double _scrollerOffset;
 
     private bool _isOuterSizeChange;
+
+    private Point _windowOrigin;
+    private GeneralTransform _windowToControl;
 
     public Profile()
     {
@@ -206,8 +204,8 @@ public sealed partial class Profile : ViewModelControl,
             {
                 change &= ~Change._Marker;
 
-                UpdateMarker(ViewModel.CurrentPoint, CurrentPointLine1, CurrentPointLine2, CurrentPointCircle);
-                UpdateMarker(ViewModel.HoverPoint, HoverPointLine1, HoverPointLine2, HoverPointCircle);
+                UpdateMarker(ViewModel.CurrentPoint, CurrentPointLine1, CurrentPointLine2, CurrentPointCircle, false);
+                UpdateMarker(ViewModel.HoverPoint, HoverPointLine1, HoverPointLine2, HoverPointCircle, true);
                 Canvas.SetLeft(HoverPointValues, GetOffset(ViewModel.HoverPoint));
             }
             if ((change & Change._VerticalTranslation) != 0)
@@ -219,11 +217,15 @@ public sealed partial class Profile : ViewModelControl,
         }
     }
 
-    private void UpdateMarker(TrackPoint point, LineGeometry line1, LineGeometry line2, EllipseGeometry circle)
+    private void UpdateMarker(TrackPoint point, LineGeometry line1, LineGeometry line2, EllipseGeometry circle, bool outsideScroller)
     {
         if (point.IsValid)
         {
             double x = DistanceToX(point.Distance);
+            if (outsideScroller)
+            {
+                x -= Scroller.HorizontalOffset;
+            }
             double y = (point.Altitude - _minElevation) * -ActualHeight / (_maxElevation - _minElevation) / (1 + GraphBottomMarginRatio + GraphTopMarginRatio) + ActualHeight * (1 - GraphBottomMarginRatio);
 
             line1.StartPoint = new Point(x, 14);
@@ -244,9 +246,9 @@ public sealed partial class Profile : ViewModelControl,
 
     private void ViewModelControl_SizeChanged(object _1, SizeChangedEventArgs _2)
     {
-        Debug.WriteLine(nameof(ViewModelControl_SizeChanged));
-        // TODO
-        // Weird behavior if HorizontalZoom equals 1 and a restored app window is maximized!
+        Rect windowBounds = Window.Current.Bounds;
+        _windowOrigin = new Point(windowBounds.X, windowBounds.Y);
+        _windowToControl = Window.Current.Content.TransformToVisual(this);
 
         Scroller.MaxWidth = ActualWidth;
         Root.Width = ActualWidth * HorizontalZoom;
@@ -257,14 +259,12 @@ public sealed partial class Profile : ViewModelControl,
     {
         _scrollerOffset = Scroller.HorizontalOffset;
 
-        Point pointer = new(
-            Window.Current.CoreWindow.PointerPosition.X - Window.Current.Bounds.X,
-            Window.Current.CoreWindow.PointerPosition.Y - Window.Current.Bounds.Y);
-
-        Panel panel = VisualTreeHelper.FindElementsInHostCoordinates(pointer, this).OfType<Panel>().FirstOrDefault();
-        if (panel is not null && (panel == Root || panel.FindParents().Contains(Root)))
+        Point position = Window.Current.CoreWindow.PointerPosition;
+        position = new(position.X - _windowOrigin.X, position.Y - _windowOrigin.Y);
+        position = _windowToControl.TransformPoint(position);
+        if (RectHelper.Contains(new Rect(0, 0, ActualWidth, ActualHeight), position))
         {
-            ViewModel.HoverPoint = ViewModel.Track.Points.Search((float)(Window.Current.Content.TransformToVisual(Root).TransformPoint(pointer).X / _horizontalScale)).Point;
+            SetHoverPoint(position.X + Scroller.HorizontalOffset);
         }
 
         ProcessChangeAsync(Change.Scroll).FireAndForget();
@@ -272,7 +272,6 @@ public sealed partial class Profile : ViewModelControl,
 
     private void Root_SizeChanged(object _1, SizeChangedEventArgs _2)
     {
-        Debug.WriteLine($"{nameof(Root_SizeChanged)} {nameof(_isOuterSizeChange)}:{_isOuterSizeChange} {Root.ActualWidth}");
         _visual.Size = new Vector2((float)Root.ActualWidth, (float)Root.ActualHeight);
         if (_isOuterSizeChange)
         {
@@ -316,11 +315,11 @@ public sealed partial class Profile : ViewModelControl,
             {
                 if (x >= _scrollerOffset + ActualWidth - 3)
                 {
-                    _periodicScroll.Start(this, 10);
+                    _periodicScroll.Start(this, 20);
                 }
                 else if (x <= _scrollerOffset + 3)
                 {
-                    _periodicScroll.Start(this, -10);
+                    _periodicScroll.Start(this, -20);
                 }
                 else
                 {
@@ -330,7 +329,7 @@ public sealed partial class Profile : ViewModelControl,
 
             if (!_periodicScroll.IsRunning)
             {
-                _setHoverPointThrottle.Next(x, this);
+                SetHoverPoint(x);
             }
         }
     }
@@ -366,7 +365,6 @@ public sealed partial class Profile : ViewModelControl,
 
     private void PointerExit()
     {
-        _setHoverPointThrottle.Clear();
         ViewModel.HoverPoint = TrackPoint.Invalid;
         HoverPointValues.Enabled = false;
         Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
@@ -441,12 +439,12 @@ public sealed partial class Profile : ViewModelControl,
 
     void IRecipient<HoverPointChanged>.Receive(HoverPointChanged message)
     {
-        UpdateMarker(message.Value, HoverPointLine1, HoverPointLine2, HoverPointCircle);
+        UpdateMarker(message.Value, HoverPointLine1, HoverPointLine2, HoverPointCircle, true);
     }
 
     void IRecipient<CurrentPointChanged>.Receive(CurrentPointChanged message)
     {
-        UpdateMarker(message.Value, CurrentPointLine1, CurrentPointLine2, CurrentPointCircle);
+        UpdateMarker(message.Value, CurrentPointLine1, CurrentPointLine2, CurrentPointCircle, false);
     }
 
     void IRecipient<SelectionChanged>.Receive(SelectionChanged _)

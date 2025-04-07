@@ -1,7 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace cycloid;
 
 public class PeriodicAction<TSender, TParameter>(Action<TSender, TParameter> action, TimeSpan interval)

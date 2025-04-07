@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
+    xmlns:ic="using:FluentIcons.Uwp"
     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(Point)}">
 
     <controls:MapControlBorder>
@@ -37,12 +38,11 @@
                 HorizontalTextAlignment="Center"
                 Text="{x:Bind Mode=OneWay, Path=FilePosition(Point)}" />
 
-            <FontIcon
+            <ic:SymbolIcon
                 Grid.Row="1"
                 Grid.Column="0"
-                FontFamily="{ThemeResource SymbolThemeFontFamily}"
                 FontSize="12"
-                Glyph="&#xe76b;" />
+                Symbol="CaretLeft" />
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="1"
@@ -60,12 +60,11 @@
                 <LineBreak />
                 <Run Text="{x:Bind Mode=OneWay, Path=TimeToEnd(Point)}" />
             </TextBlock>
-            <FontIcon
+            <ic:SymbolIcon
                 Grid.Row="1"
                 Grid.Column="3"
-                FontFamily="{ThemeResource SymbolThemeFontFamily}"
                 FontSize="12"
-                Glyph="&#xe76c;" />
+                Symbol="CaretRight" />
 
             <Path
                 Grid.Row="2"
@@ -77,12 +76,11 @@
                 <Run Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Point.Altitude)}" />
             </TextBlock>
 
-            <FontIcon
+            <ic:SymbolIcon
                 Grid.Row="2"
                 Grid.Column="3"
-                FontFamily="FluentSystemIcons-Regular"
                 FontSize="12"
-                Glyph="&#xfea0;" />
+                Symbol="TopSpeed" />
             <TextBlock
                 Grid.Row="2"
                 Grid.Column="2"

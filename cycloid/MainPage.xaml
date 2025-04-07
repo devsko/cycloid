@@ -16,6 +16,7 @@
                 <ResourceDictionary>
 
                     <Thickness x:Key="TitleBarMargin">8,0,0,0</Thickness>
+                    <FontFamily x:Key="SeagullFont">ms-appx:///FluentIcons.Uwp/Assets/SeagullFluentIcons.ttf#Seagull Fluent Icons</FontFamily>
 
                     <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}" TargetType="AppBarButton">
                         <Setter Property="Width" Value="56" />
@@ -251,7 +252,10 @@
                             IsClosable="false"
                             Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Edit}">
                             <mux:TabViewItem.IconSource>
-                                <mux:SymbolIconSource Symbol="Edit" />
+                                <mux:FontIconSource
+                                    FontFamily="{StaticResource SeagullFont}"
+                                    FontSize="12"
+                                    Glyph="&#xE70F;" />
                             </mux:TabViewItem.IconSource>
                             <Grid RowSpacing="15">
                                 <Grid.RowDefinitions>
@@ -264,6 +268,7 @@
                                 </Grid.RowDefinitions>
                                 <Grid
                                     Grid.Row="0"
+                                    Padding="5,5,5,0"
                                     ColumnSpacing="10"
                                     RowSpacing="5">
                                     <Grid.RowDefinitions>
@@ -342,7 +347,10 @@
                                         Text="{x:Bind Mode=OneWay, Path=cycloid:Format.ShortDistance(ViewModel.Track.CompareSession.Diff.Descent)}"
                                         Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIf(ViewModel.HasCompareSession)}" />
                                 </Grid>
-                                <Grid Grid.Row="1" ColumnSpacing="5">
+                                <Grid
+                                    Grid.Row="1"
+                                    Padding="5,5,5,0"
+                                    ColumnSpacing="5">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition />
                                         <ColumnDefinition />
@@ -360,6 +368,7 @@
                                 </Grid>
                                 <Grid
                                     Grid.Row="2"
+                                    Padding="5,5,5,0"
                                     ColumnSpacing="10"
                                     RowSpacing="5">
                                     <Grid.RowDefinitions>
@@ -433,7 +442,10 @@
                                         SmallChange="5"
                                         Value="{x:Bind Mode=TwoWay, Path=ViewModel.BikerPower}" />
                                 </Grid>
-                                <Grid Grid.Row="3" ColumnSpacing="5">
+                                <Grid
+                                    Grid.Row="3"
+                                    Padding="5,5,5,0"
+                                    ColumnSpacing="5">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition />
                                         <ColumnDefinition />
@@ -476,7 +488,10 @@
                             IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
                             Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Sections}">
                             <mux:TabViewItem.IconSource>
-                                <mux:SymbolIconSource Symbol="FullScreen" />
+                                <mux:FontIconSource
+                                    FontFamily="{StaticResource SeagullFont}"
+                                    FontSize="12"
+                                    Glyph="&#xE916;" />
                             </mux:TabViewItem.IconSource>
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -520,7 +535,7 @@
                                                     Grid.Column="0"
                                                     Orientation="Horizontal"
                                                     Spacing="1">
-                                                    <FontIcon FontSize="9" Glyph="&#xF0AD;" />
+                                                    <ic:SymbolIcon FontSize="9" Symbol="ArrowUp" />
                                                     <TextBlock Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Ascent)}" />
                                                 </StackPanel>
                                                 <TextBlock
@@ -534,7 +549,7 @@
                                                     HorizontalAlignment="Right"
                                                     Orientation="Horizontal"
                                                     Spacing="1">
-                                                    <FontIcon FontSize="9" Glyph="&#xF0AE;" />
+                                                    <ic:SymbolIcon FontSize="9" Symbol="ArrowDown" />
                                                     <TextBlock Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Altitude(Descent)}" />
                                                 </StackPanel>
                                                 <TextBox
@@ -562,7 +577,10 @@
                             IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
                             Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.POIs}">
                             <mux:TabViewItem.IconSource>
-                                <mux:SymbolIconSource Symbol="MapPin" />
+                                <mux:FontIconSource
+                                    FontFamily="{StaticResource SeagullFont}"
+                                    FontSize="12"
+                                    Glyph="&#xE7B7;" />
                             </mux:TabViewItem.IconSource>
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -633,7 +651,10 @@
                             IsEnabled="{x:Bind Mode=OneWay, Path=cycloid:Convert.Not(ViewModel.HasCompareSession)}"
                             Tag="{x:Bind Mode=OneTime, Path=cycloid:Modes.Train}">
                             <mux:TabViewItem.IconSource>
-                                <mux:SymbolIconSource Symbol="Play" />
+                                <mux:FontIconSource
+                                    FontFamily="{StaticResource SeagullFont}"
+                                    FontSize="12"
+                                    Glyph="&#x1027E0;" />
                             </mux:TabViewItem.IconSource>
                             <Grid>
                                 <Grid.RowDefinitions>
