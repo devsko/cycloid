@@ -13,24 +13,14 @@ public record class FileAccessEntry(string Token, string Name, string Distance, 
 
 public sealed partial class StartPage : UserControl
 {
-    private IStorageFile _file;
     private readonly bool _newFile;
 
     private ObservableCollection<FileAccessEntry> FileEntries { get; } = new();
 
-    private StartPage()
-    {
-        InitializeComponent();
-    }
-
-    public StartPage(bool newFile) : this()
+    public StartPage(bool newFile)
     {
         _newFile = newFile;
-    }
-
-    public StartPage(StorageFile file) : this()
-    {
-        _file = file;
+        InitializeComponent();
     }
 
     private void NewFile(object _1 = null, TappedRoutedEventArgs _2 = null)
@@ -50,16 +40,6 @@ public sealed partial class StartPage : UserControl
         async Task OpenEntryAsync()
         {
             GotoMain(await App.Current.ViewModel.OpenTrackFileAsync(await StorageApplicationPermissions.MostRecentlyUsedList.GetFileAsync(entry.Token)));
-        }
-    }
-
-    private void OpenFile(IStorageFile file)
-    {
-        OpenFileAsync().FireAndForget();
-
-        async Task OpenFileAsync()
-        {
-            GotoMain(await App.Current.ViewModel.OpenTrackFileAsync(file));
         }
     }
 
@@ -89,10 +69,6 @@ public sealed partial class StartPage : UserControl
         if (_newFile)
         {
             NewFile();
-        }
-        else if (_file is not null)
-        {
-            OpenFile(file: _file);
         }
 
         Popup.IsOpen = true;

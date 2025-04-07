@@ -71,8 +71,6 @@ partial class ViewModel
             return false;
         }
 
-        StorageApplicationPermissions.MostRecentlyUsedList.Add(file, "", RecentStorageItemVisibility.AppAndSystem);
-
         if (Program.RegisterForFile(file, out _))
         {
             if (StorageApplicationPermissions.FutureAccessList.ContainsItem("LastTrack"))
@@ -104,6 +102,7 @@ partial class ViewModel
             StrongReferenceMessenger.Default.Send(new TrackComplete(true));
 
             StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", File);
+            StorageApplicationPermissions.MostRecentlyUsedList.Add(File, "", RecentStorageItemVisibility.AppAndSystem);
 
             async Task SaveAsync()
             {

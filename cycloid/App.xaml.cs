@@ -88,7 +88,8 @@ sealed partial class App : Application,
 
             if (args.Files is [StorageFile file, ..])
             {
-                Window.Current.Content = new StartPage(file);
+                ViewModel.File = file;
+                Window.Current.Content = new MainPage();
                 Window.Current.Activate();
             }
         }
