@@ -9,6 +9,7 @@
             <mux:XamlControlsResources.MergedDictionaries>
                 <ResourceDictionary Source="ms-appx://Microsoft.UI.Xaml.2.8/Microsoft.UI.Xaml/DensityStyles/Compact.xaml" />
                 <ResourceDictionary>
+                    <FontFamily x:Key="SeagullFont">ms-appx:///FluentIcons.Uwp/Assets/SeagullFluentIcons.ttf#Seagull Fluent Icons</FontFamily>
                     <ResourceDictionary.ThemeDictionaries>
 
                         <ResourceDictionary x:Key="Dark">

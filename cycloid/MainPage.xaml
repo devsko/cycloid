@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
+    xmlns:fi="using:FluentIcons.Common"
     xmlns:ic="using:FluentIcons.Uwp"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
@@ -16,7 +17,6 @@
                 <ResourceDictionary>
 
                     <Thickness x:Key="TitleBarMargin">8,0,0,0</Thickness>
-                    <FontFamily x:Key="SeagullFont">ms-appx:///FluentIcons.Uwp/Assets/SeagullFluentIcons.ttf#Seagull Fluent Icons</FontFamily>
 
                     <Style BasedOn="{StaticResource DefaultAppBarButtonStyle}" TargetType="AppBarButton">
                         <Setter Property="Width" Value="56" />
@@ -255,7 +255,7 @@
                                 <mux:FontIconSource
                                     FontFamily="{StaticResource SeagullFont}"
                                     FontSize="12"
-                                    Glyph="&#xE70F;" />
+                                    Glyph="{x:Bind Mode=OneTime, Path=cycloid:Format.Glyph(fi:Symbol.Edit)}" />
                             </mux:TabViewItem.IconSource>
                             <Grid RowSpacing="15">
                                 <Grid.RowDefinitions>
@@ -491,7 +491,7 @@
                                 <mux:FontIconSource
                                     FontFamily="{StaticResource SeagullFont}"
                                     FontSize="12"
-                                    Glyph="&#xE916;" />
+                                    Glyph="{x:Bind Mode=OneTime, Path=cycloid:Format.Glyph(fi:Symbol.Timer)}" />
                             </mux:TabViewItem.IconSource>
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -580,7 +580,7 @@
                                 <mux:FontIconSource
                                     FontFamily="{StaticResource SeagullFont}"
                                     FontSize="12"
-                                    Glyph="&#xE7B7;" />
+                                    Glyph="{x:Bind Mode=OneTime, Path=cycloid:Format.Glyph(fi:Symbol.Location)}" />
                             </mux:TabViewItem.IconSource>
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -654,7 +654,7 @@
                                 <mux:FontIconSource
                                     FontFamily="{StaticResource SeagullFont}"
                                     FontSize="12"
-                                    Glyph="&#x1027E0;" />
+                                    Glyph="{x:Bind Mode=OneTime, Path=cycloid:Format.Glyph(fi:Symbol.VehicleBicycle)}" />
                             </mux:TabViewItem.IconSource>
                             <Grid>
                                 <Grid.RowDefinitions>

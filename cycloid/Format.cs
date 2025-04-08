@@ -1,3 +1,6 @@
+using System.Text;
+using FluentIcons.Common;
+
 namespace cycloid;
 
 public static class Format
@@ -42,4 +45,6 @@ public static class Format
     public static string Altitude(float? value) => value is null ? "" : $"{value.Value:N0}";
 
     public static string Speed(float? value) => value is null ? "" : $"{value.Value:N1} km/h";
+
+    public static string Glyph(Symbol value) => new Rune((int)value).ToString();
 }

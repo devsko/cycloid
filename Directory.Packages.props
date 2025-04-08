@@ -19,7 +19,7 @@
     <PackageVersion Include="CommunityToolkit.Uwp.Media" Version="8.2.250402" />
     <PackageVersion Include="CliWrap" Version="3.8.2" />
     <PackageVersion Include="GeoJSON.Text" Version="1.2.0-local.1" />
-    <PackageVersion Include="FluentIcons.Uwp" Version="1.1.292" />
-    <PackageVersion Include="xunit.v3" Version="2.0.0" />
+    <PackageVersion Include="FluentIcons.Uwp" Version="1.1.293" />
+    <PackageVersion Include="xunit.v3" Version="2.0.1" />
   </ItemGroup>
 </Project>
