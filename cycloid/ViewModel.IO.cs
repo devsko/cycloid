@@ -28,12 +28,14 @@ public partial class TrackListItem : ObservableObject
 
     public DateTime LastAccessDate { get; private set; }
 
-    [ObservableProperty]
-    public partial float TrackDistance { get; set; }
-
-    partial void OnTrackDistanceChanged(float value)
-    {
-        Update();
+    public float TrackDistance 
+    { 
+        get;
+        set
+        {
+            field = value;
+            Update();
+        }
     }
 
     [ObservableProperty]
