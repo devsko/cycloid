@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 using cycloid.External;
 using cycloid.Info;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Storage;
 
 namespace cycloid;
 
@@ -58,9 +57,9 @@ public partial class ViewModel : ObservableObject,
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TrackName))]
-    public partial IStorageFile File { get; set; }
+    public partial TrackListItem TrackItem { get; set; }
 
-    private bool _fileIsNew;
+    private bool _creteFile;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CompareSessionCommand))]
@@ -87,6 +86,7 @@ public partial class ViewModel : ObservableObject,
 
         StrongReferenceMessenger.Default.Register<TrackComplete>(this);
         StrongReferenceMessenger.Default.Register<CompareSessionChanged>(this);
+        StrongReferenceMessenger.Default.Register<TrackListItemPinnedChanged>(this);
     }
 
     partial void OnModeChanged(Modes oldValue, Modes newValue)
@@ -167,7 +167,7 @@ public partial class ViewModel : ObservableObject,
 
     public bool HasTrack => Track is not null;
 
-    public string TrackName => File is null ? string.Empty : Path.GetFileNameWithoutExtension(File.Name);
+    public string TrackName => TrackItem is null ? string.Empty : TrackItem.Name;
 
     public bool MapHoverPointVisible => HoverPoint.IsValid && (!IsEditMode || ProfileHoverPointValuesEnabled);
 

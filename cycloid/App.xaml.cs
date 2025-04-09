@@ -88,7 +88,7 @@ sealed partial class App : Application,
 
             if (args.Files is [StorageFile file, ..])
             {
-                ViewModel.File = file;
+                ViewModel.TrackItem = TrackListItem.Create(file);
                 Window.Current.Content = new MainPage();
                 Window.Current.Activate();
             }

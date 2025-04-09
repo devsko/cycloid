@@ -82,7 +82,7 @@ partial class ViewModel
     [RelayCommand(CanExecute = nameof(CanExport))]
     public async Task ExportAsync()
     {
-        ExportDetails exportDetails = await StrongReferenceMessenger.Default.Send(new RequestExportDetails { TrackFile = File });
+        ExportDetails exportDetails = await StrongReferenceMessenger.Default.Send(new RequestExportDetails { TrackFile = TrackItem?.File });
 
         if (exportDetails is null)
         {
@@ -231,6 +231,6 @@ partial class ViewModel
 
     private async Task ExportWahooAsync()
     {
-        await FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppWithArgumentsAsync(File.Path);
+        await FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppWithArgumentsAsync(TrackItem.File.Path);
     }
 }

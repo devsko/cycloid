@@ -10,8 +10,18 @@
     Loaded="UserControl_Loaded">
 
     <UserControl.Resources>
-        <x:Double x:Key="PopupWidth">650</x:Double>
+
+        <x:Double x:Key="PopupWidth">700</x:Double>
         <x:Double x:Key="PopupHeight">390</x:Double>
+
+        <Style
+            BasedOn="{StaticResource DefaultToggleButtonStyle}"
+            TargetType="ToggleButton">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
     </UserControl.Resources>
 
     <Grid Background="DarkSlateGray">
@@ -61,11 +71,19 @@
                             x:Name="Tracks"
                             Grid.Row="2"
                             DoubleTapped="Tracks_DoubleTapped"
-                            ItemsSource="{x:Bind Mode=OneTime, Path=FileEntries}"
+                            ItemsSource="{x:Bind Mode=OneTime, Path=local:App.Current.ViewModel.TrackListItems}"
                             PreviewKeyDown="Tracks_PreviewKeyDown">
                             <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="local:FileAccessEntry">
-                                    <StackPanel Padding="0,4,0,8">
+                                <DataTemplate x:DataType="local:TrackListItem">
+                                    <Grid Padding="0,6,0,6" ColumnSpacing="10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
                                         <Grid ColumnSpacing="4">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition />
@@ -75,24 +93,33 @@
                                             <TextBlock
                                                 Grid.Column="1"
                                                 FontSize="16"
-                                                Text="{x:Bind Mode=OneTime, Path=Distance}" />
+                                                Text="{x:Bind Mode=OneTime, Path=local:Format.Distance(TrackDistance)}" />
                                         </Grid>
-                                        <Grid ColumnSpacing="4">
+                                        <Grid Grid.Row="1" ColumnSpacing="4">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock
                                                 FontSize="12"
-                                                Text="{x:Bind Mode=OneTime, Path=Path}"
+                                                Text="{x:Bind Mode=OneTime, Path=FilePath}"
                                                 TextTrimming="CharacterEllipsis" />
                                             <TextBlock
                                                 Grid.Column="1"
                                                 FontSize="12"
                                                 HorizontalTextAlignment="Right"
-                                                Text="{x:Bind Mode=OneTime, Path=Date}" />
+                                                Text="{x:Bind Mode=OneTime, Path=local:Format.Date(LastAccessDate)}" />
                                         </Grid>
-                                    </StackPanel>
+                                        <ToggleButton
+                                            Grid.RowSpan="2"
+                                            Grid.Column="2"
+                                            IsChecked="{x:Bind Mode=TwoWay, Path=IsPinned}"
+                                            VerticalAlignment="Center">
+                                            <ToggleButton.Content>
+                                                <ic:SymbolIcon FontSize="14" Symbol="Pin" />
+                                            </ToggleButton.Content>
+                                        </ToggleButton>
+                                    </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
@@ -120,7 +147,7 @@
                                     </StackPanel>
                                 </Button.Content>
                             </Button>
-                            <Button Tapped="NewFile">
+                            <Button Tapped="CreateFile">
                                 <Button.Content>
                                     <StackPanel Style="{StaticResource ButtonStackPanel}">
                                         <ic:SymbolIcon Symbol="DocumentAdd" />

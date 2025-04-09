@@ -1,4 +1,7 @@
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Serialization;
 using Microsoft.VisualStudio.Threading;
@@ -14,11 +17,121 @@ public class TrackComplete(bool isNew)
     public bool IsNew => isNew;
 }
 
-partial class ViewModel
+public record class TrackListItemPinnedChanged(TrackListItem Item);
+
+public partial class TrackListItem : ObservableObject
+{
+    private string _token;
+    private bool _updateOnChange;
+
+    public StorageFile File { get; private set; }
+
+    public DateTime LastAccessDate { get; private set; }
+
+    [ObservableProperty]
+    public partial float TrackDistance { get; set; }
+
+    partial void OnTrackDistanceChanged(float value)
+    {
+        Update();
+    }
+
+    [ObservableProperty]
+    public partial bool IsPinned { get; set; }
+
+    partial void OnIsPinnedChanged(bool value)
+    {
+        Update(updateAccessDate: false);
+        StrongReferenceMessenger.Default.Send(new TrackListItemPinnedChanged(this));
+    }
+    
+    public string Name => Path.GetFileNameWithoutExtension(File.Name);
+
+    public string FilePath => Path.GetDirectoryName(File.Path);
+
+    public void Update(bool updateAccessDate = true)
+    {
+        if (!_updateOnChange)
+        {
+            return;
+        }
+
+        if (updateAccessDate)
+        {
+            LastAccessDate = DateTime.Now;
+        }
+
+        string metadata = Encode();
+
+        if (_token is null)
+        {
+            _token = StorageApplicationPermissions.MostRecentlyUsedList.Add(File, metadata);
+        }
+        else
+        {
+            StorageApplicationPermissions.MostRecentlyUsedList.AddOrReplace(_token, File, metadata);
+        }
+    }
+
+    public static async Task<TrackListItem> CreateAsync(AccessListEntry entry)
+    {
+        StorageFile file = await StorageApplicationPermissions.MostRecentlyUsedList.GetFileAsync(entry.Token);
+        (DateTime lastAccess, float trackDistance, bool isPinned) = Decode(entry.Metadata);
+
+        return new TrackListItem
+        {
+            _token = entry.Token,
+            File = file,
+            TrackDistance = trackDistance,
+            LastAccessDate = lastAccess,
+            IsPinned = isPinned,
+            _updateOnChange = true,
+        };
+    }
+
+    public static TrackListItem Create(StorageFile file)
+    {
+        return new TrackListItem 
+        { 
+            File = file, 
+            LastAccessDate = DateTime.Now 
+        };
+    }
+
+    private string Encode()
+    {
+        return string.Create(NumberFormatInfo.InvariantInfo, $"{LastAccessDate.Ticks}|{TrackDistance:F1}|{(IsPinned ? 1 : 0)}");
+    }
+
+    private static (DateTime LastAccess, float TrackDistance, bool IsPinned) Decode(ReadOnlySpan<char> metadata)
+    {
+        Span<Range> ranges = stackalloc Range[3];
+        metadata.Split(ranges, '|');
+
+        return (new DateTime(long.Parse(metadata[ranges[0]])), float.Parse(metadata[ranges[1]], NumberFormatInfo.InvariantInfo), metadata[ranges[2]].SequenceEqual("1"));
+    }
+}
+
+partial class ViewModel : IRecipient<TrackListItemPinnedChanged>
 {
     private readonly SemaphoreSlim _saveTrackSemaphore = new(1);
     private CancellationTokenSource _saveTrackCts = new();
     private int _saveCounter;
+
+    public ObservableCollection<TrackListItem> TrackListItems { get; } = [];
+
+    public async Task PopulateTrackListAsync()
+    {
+        TrackListItem[] items = await Task.WhenAll(
+            StorageApplicationPermissions.MostRecentlyUsedList
+                .Entries
+                .Select(TrackListItem.CreateAsync));
+
+        foreach (TrackListItem item in items.OrderByDescending(item => item.IsPinned).ThenByDescending(item => item.LastAccessDate))
+        {
+            TrackListItems.Add(item);
+        }
+    }
 
     public async Task<bool> OpenTrackAsync()
     {
@@ -35,26 +148,26 @@ partial class ViewModel
             return false;
         }
 
-        return await OpenTrackFileAsync(file);
+        return await OpenTrackFileAsync(TrackListItem.Create(file));
     }
 
-    public async Task<bool> OpenTrackFileAsync(IStorageFile file)
+    public async Task<bool> OpenTrackFileAsync(TrackListItem item)
     {
-        if (Program.RegisterForFile(file, out _))
+        if (Program.RegisterForFile(item.File, out _))
         {
-            File = file;
+            TrackItem = item;
 
             return true;
         }
         else
         {
-            await ShowFileAlreadyOpenAsync(file);
+            await ShowFileAlreadyOpenAsync(item.File);
             
             return false;
         }
     }
 
-    public async Task<bool> NewTrackAsync()
+    public async Task<bool> CreateTrackAsync()
     {
         FileSavePicker picker = new()
         {
@@ -72,12 +185,8 @@ partial class ViewModel
 
         if (Program.RegisterForFile(file, out _))
         {
-            if (StorageApplicationPermissions.FutureAccessList.ContainsItem("LastTrack"))
-            {
-                StorageApplicationPermissions.FutureAccessList.Remove("LastTrack");
-            }
-            File = file;
-            _fileIsNew = true;
+            TrackItem = TrackListItem.Create(file);
+            _creteFile = true;
 
             return true;
         }
@@ -91,7 +200,7 @@ partial class ViewModel
 
     public async Task LoadFileAsync()
     {
-        if (_fileIsNew)
+        if (_creteFile)
         {
             Track = new Track(true);
 
@@ -100,8 +209,7 @@ partial class ViewModel
             Status = $"{TrackName} created";
             StrongReferenceMessenger.Default.Send(new TrackComplete(true));
 
-            StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", File);
-            StorageApplicationPermissions.MostRecentlyUsedList.Add(File, "", RecentStorageItemVisibility.AppAndSystem);
+            TrackItem.Update();
 
             async Task SaveAsync()
             {
@@ -113,7 +221,7 @@ partial class ViewModel
                     await Serializer.SerializeAsync(stream, Track, default).ConfigureAwait(false);
                 }
 
-                await tempFile.CopyAndReplaceAsync(File);
+                await tempFile.CopyAndReplaceAsync(TrackItem.File);
             }
         }
         else
@@ -127,15 +235,14 @@ partial class ViewModel
             Status = $"{TrackName} opened ({watch.ElapsedMilliseconds} ms)";
             StrongReferenceMessenger.Default.Send(new TrackComplete(false));
 
-            StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", File);
-            StorageApplicationPermissions.MostRecentlyUsedList.Add(File, $"{Format.Distance(Track.Points.Total.Distance)}", RecentStorageItemVisibility.AppAndSystem);
+            TrackItem.TrackDistance = Track.Points.Total.Distance;
 
             async Task LoadAsync()
             {
                 SynchronizationContext ui = SynchronizationContext.Current;
                 await TaskScheduler.Default;
 
-                using Stream stream = await File.OpenStreamForReadAsync().ConfigureAwait(false);
+                using Stream stream = await TrackItem.File.OpenStreamForReadAsync().ConfigureAwait(false);
 
                 await Serializer.LoadAsync(stream, Track, ui).ConfigureAwait(false);
             }
@@ -159,8 +266,7 @@ partial class ViewModel
 
                 Status = $"{TrackName} saved ({watch.ElapsedMilliseconds} ms) {++_saveCounter}";
 
-                StorageApplicationPermissions.MostRecentlyUsedList.Add(File, $"{Format.Distance(Track.Points.Total.Distance)}", RecentStorageItemVisibility.AppAndSystem);
-                StorageApplicationPermissions.FutureAccessList.AddOrReplace("LastTrack", File);
+                TrackItem.TrackDistance = Track.Points.Total.Distance;
 
                 async Task SaveAsync()
                 {
@@ -172,7 +278,7 @@ partial class ViewModel
                         await Serializer.SerializeAsync(stream, Track, cancellationToken).ConfigureAwait(false);
                     }
                     cancellationToken.ThrowIfCancellationRequested();
-                    await tempFile.MoveAndReplaceAsync(File);
+                    await tempFile.MoveAndReplaceAsync(TrackItem.File);
                 }
             }
             catch (OperationCanceledException)
@@ -192,5 +298,35 @@ partial class ViewModel
             Content = $"{file.Name} is already open.",
             CloseButtonText = "Close",
         }.ShowAsync();
+    }
+
+    public void Receive(TrackListItemPinnedChanged message)
+    {
+        int oldIndex = TrackListItems.IndexOf(message.Item);
+        if (oldIndex == -1)
+        {
+            return;
+        }
+
+        IEnumerable<TrackListItem> relevantItems = TrackListItems.Where(item => item != message.Item && item.IsPinned == message.Item.IsPinned);
+        (int newIndex, TrackListItem nextItem) = relevantItems
+            .Index()
+            .FirstOrDefault(tuple => 
+                tuple.Item != message.Item && 
+                tuple.Item.LastAccessDate < message.Item.LastAccessDate);
+
+        if (nextItem is null)
+        {
+            newIndex = relevantItems.Count();
+        }
+        if (!message.Item.IsPinned)
+        {
+            newIndex += TrackListItems.Count(item => item.IsPinned);
+        }
+
+        if (oldIndex != newIndex)
+        {
+            TrackListItems.Move(oldIndex, newIndex);
+        }
     }
 }

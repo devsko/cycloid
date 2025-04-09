@@ -1,7 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.WinUI;
-using Windows.Storage;
-using Windows.Storage.AccessCache;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -9,37 +7,34 @@ using Windows.UI.Xaml.Input;
 
 namespace cycloid;
 
-public record class FileAccessEntry(string Token, string Name, string Distance, string Path, string Date);
 
 public sealed partial class StartPage : UserControl
 {
-    private readonly bool _newFile;
+    private readonly bool _createFile;
 
-    private ObservableCollection<FileAccessEntry> FileEntries { get; } = new();
-
-    public StartPage(bool newFile)
+    public StartPage(bool createFile)
     {
-        _newFile = newFile;
+        _createFile = createFile;
         InitializeComponent();
     }
 
-    private void NewFile(object _1 = null, TappedRoutedEventArgs _2 = null)
+    private void CreateFile(object _1 = null, TappedRoutedEventArgs _2 = null)
     {
-        NewFileAsync().FireAndForget();
+        CreateFileAsync().FireAndForget();
 
-        async Task NewFileAsync()
+        async Task CreateFileAsync()
         {
-            GotoMain(await App.Current.ViewModel.NewTrackAsync());
+            GotoMain(await App.Current.ViewModel.CreateTrackAsync());
         }
     }
 
-    private void OpenEntry(FileAccessEntry entry)
+    private void OpenEntry(TrackListItem entry)
     {
         OpenEntryAsync().FireAndForget();
 
         async Task OpenEntryAsync()
         {
-            GotoMain(await App.Current.ViewModel.OpenTrackFileAsync(await StorageApplicationPermissions.MostRecentlyUsedList.GetFileAsync(entry.Token)));
+            GotoMain(await App.Current.ViewModel.OpenTrackFileAsync(entry));
         }
     }
 
@@ -66,42 +61,18 @@ public sealed partial class StartPage : UserControl
     {
         PopulateMruListAsync().FireAndForget();
 
-        if (_newFile)
+        if (_createFile)
         {
-            NewFile();
+            CreateFile();
         }
 
         Popup.IsOpen = true;
 
         async Task PopulateMruListAsync()
         {
-            StorageFile lastTrack = null;
-            if (StorageApplicationPermissions.FutureAccessList.ContainsItem("LastTrack"))
-            {
-                lastTrack = await StorageApplicationPermissions.FutureAccessList.GetFileAsync("LastTrack");
-            }
+            await App.Current.ViewModel.PopulateTrackListAsync();
 
-            foreach (AccessListEntry item in StorageApplicationPermissions.MostRecentlyUsedList.Entries)
-            {
-                StorageFile file = await StorageApplicationPermissions.MostRecentlyUsedList.GetFileAsync(item.Token);
-                FileAccessEntry entry = new(
-                    item.Token,
-                    Path.GetFileNameWithoutExtension(file.Name),
-                    item.Metadata,
-                    Path.GetDirectoryName(file.Path),
-                    $"{(await file.GetBasicPropertiesAsync()).ItemDate:d}");
-
-                if (file.Path == lastTrack.Path)
-                {
-                    FileEntries.Insert(0, entry);
-                }
-                else
-                {
-                    FileEntries.Add(entry);
-                }
-            }
-
-            if (FileEntries.Count > 0)
+            if (App.Current.ViewModel.TrackListItems.Count > 0)
             {
                 await Task.Delay(100);
                 Tracks.SelectedIndex = 0;
@@ -112,7 +83,7 @@ public sealed partial class StartPage : UserControl
 
     private void Tracks_DoubleTapped(object _, DoubleTappedRoutedEventArgs e)
     {
-        if (Tracks.SelectedItem is FileAccessEntry access)
+        if (Tracks.SelectedItem is TrackListItem access)
         {
             OpenEntry(access);
         }
@@ -123,7 +94,7 @@ public sealed partial class StartPage : UserControl
         if (e.Key == VirtualKey.Enter &&
             FocusManager.GetFocusedElement() is ListViewItem item &&
             item.FindAscendant<ListView>() == Tracks &&
-            item.Content is FileAccessEntry access)
+            item.Content is TrackListItem access)
         {
             OpenEntry(access);
         }

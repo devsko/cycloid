@@ -23,7 +23,7 @@ public static class Format
         return $"{degrees:N0}°{minutes:N0}'{seconds:N0}\"";
     }
 
-    public static string Distance(float value) => $"{value / 1000:N1} km";
+    public static string Distance(float value) => value == 0 ? string.Empty : $"{value / 1000:N1} km";
 
     public static string ShortDistance(float value) => $"{Math.Abs(value):N0} m";
 
@@ -47,4 +47,6 @@ public static class Format
     public static string Speed(float? value) => value is null ? "" : $"{value.Value:N1} km/h";
 
     public static string Glyph(Symbol value) => new Rune((int)value).ToString();
+
+    public static string Date(DateTime date) => date.ToShortDateString();
 }
