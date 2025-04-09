@@ -55,7 +55,7 @@
                                 BackgroundSource="Backdrop"
                                 FallbackColor="#ff008000"
                                 TintColor="#ffFFFFFF"
-                                TintOpacity="0.2" />
+                                TintOpacity="0.3" />
                         </ResourceDictionary>
 
                     </ResourceDictionary.ThemeDictionaries>
