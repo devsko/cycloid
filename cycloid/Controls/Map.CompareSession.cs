@@ -19,7 +19,7 @@ partial class Map :
 
     private int GetDifferenceLineIndex(TrackDifference difference)
     {
-        (MapElement line, int index) result = _differenceLayer.MapElements.Select((line, index) => (line, index)).FirstOrDefault(tuple => (TrackDifference)tuple.line.Tag == difference);
+        (int index, MapElement line) result = _differenceLayer.MapElements.Index().FirstOrDefault(tuple => (TrackDifference)tuple.Item.Tag == difference);
         return result.line is null ? -1 : result.index;
     }
 

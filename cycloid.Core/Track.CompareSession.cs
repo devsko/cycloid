@@ -47,7 +47,7 @@ public partial class CompareSession : ObservableObject,
     {
         public float Distance => distance;
         public TrackPoint[] Points => points;
-        public Dictionary<MapPoint, int> Indices { get; } = points.Select((point, index) => (Point: (MapPoint)point, Index: index)).ToLookup(tuple => tuple.Point).ToDictionary(lookup => lookup.Key, lookup => lookup.First().Index);
+        public Dictionary<MapPoint, int> Indices { get; } = points.Select<TrackPoint, MapPoint>(point => point).Index().ToLookup(tuple => tuple.Item).ToDictionary(lookup => lookup.Key, lookup => lookup.First().Index);
     }
 
     private class NewSegment
@@ -93,7 +93,7 @@ public partial class CompareSession : ObservableObject,
         _originalProfile = track.RouteBuilder.Profile;
         _originalValues = track.Points.Total;
         _originalSegments = segments.TrackPoints.Select(points => new OriginalSegment(points.Distance, points.Points)).ToArray();
-        _originalSegmentIndices = segments.WayPoints.SkipLast(1).Select((point, index) => (Point: point, Index: index)).ToLookup(tuple => tuple.Point.Location).ToDictionary(lookup => lookup.Key, lookup => lookup.First().Index);
+        _originalSegmentIndices = segments.WayPoints.SkipLast(1).Index().ToLookup(tuple => tuple.Item.Location).ToDictionary(lookup => lookup.Key, lookup => lookup.First().Index);
         _originalWayPoints = segments.WayPoints;
         _newSegments = segments.WayPoints.SkipLast(1).Zip(segments.TrackPoints, (wayPoint, points) => new NewSegment { Start = wayPoint.Location, Points = points.Points }).ToList();
 
@@ -109,7 +109,7 @@ public partial class CompareSession : ObservableObject,
         _originalProfile = profile;
         _originalValues = values;
         _originalSegments = trackPoints.Select(segmentPoints => new OriginalSegment(segmentPoints.Distance, segmentPoints.Points)).ToArray();
-        _originalSegmentIndices = wayPoints.SkipLast(1).Select((point, index) => (Point: point, Index: index)).ToLookup(tuple => tuple.Point.Location).ToDictionary(lookup => lookup.Key, lookup => lookup.First().Index);
+        _originalSegmentIndices = wayPoints.SkipLast(1).Index().ToLookup(tuple => tuple.Item.Location).ToDictionary(lookup => lookup.Key, lookup => lookup.First().Index);
         _originalWayPoints = wayPoints;
         _newSegments = [];
     }
@@ -201,16 +201,16 @@ public partial class CompareSession : ObservableObject,
         }
         originalEnd--;
 
-        (TrackDifference Difference, int Index)[] removeDifferences = Differences
-            .Select((diff, index) => (diff, index))
-            .Where(tuple => tuple.diff.SectionIndex >= originalStart && tuple.diff.SectionIndex <= originalEnd)
+        (int Index, TrackDifference Difference)[] removeDifferences = Differences
+            .Index()
+            .Where(tuple => tuple.Item.SectionIndex >= originalStart && tuple.Item.SectionIndex <= originalEnd)
             .ToArray();
 
         TrackDifference? currentDifference = null;
 
         for (int i = removeDifferences.Length - 1; i >= 0; i--)
         {
-            (TrackDifference Difference, int Index) delete = removeDifferences[i];
+            (int Index, TrackDifference Difference) delete = removeDifferences[i];
             if (CurrentDifference is TrackDifference difference && difference == delete.Difference)
             {
                 currentDifference = CurrentDifference;
