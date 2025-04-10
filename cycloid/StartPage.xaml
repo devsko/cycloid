@@ -256,7 +256,7 @@
                                             Grid.Column="2"
                                             IsChecked="{x:Bind Mode=TwoWay, Path=IsPinned}">
                                             <ToggleButton.Content>
-                                                <ic:SymbolIcon FontSize="14" Symbol="Pin" />
+                                                <ic:SymbolIcon FontSize="14" Symbol="Pin" IconVariant="{x:Bind Mode=OneWay, Path=ToIconVariant(IsPinned)}" />
                                             </ToggleButton.Content>
                                         </ToggleButton>
                                     </Grid>

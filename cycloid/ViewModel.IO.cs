@@ -4,6 +4,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using cycloid.Serialization;
+using FluentIcons.Common;
 using Microsoft.VisualStudio.Threading;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
@@ -112,6 +113,11 @@ public partial class TrackListItem : ObservableObject
         metadata.Split(ranges, '|');
 
         return (new DateTime(long.Parse(metadata[ranges[0]])), float.Parse(metadata[ranges[1]], NumberFormatInfo.InvariantInfo), metadata[ranges[2]].SequenceEqual("1"));
+    }
+
+    public IconVariant ToIconVariant(bool isPinned)
+    {
+        return isPinned ? IconVariant.Filled : IconVariant.Regular;
     }
 }
 
