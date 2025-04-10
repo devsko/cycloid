@@ -96,7 +96,8 @@ public partial class TrackListItem : ObservableObject
         return new TrackListItem 
         { 
             File = file, 
-            LastAccessDate = DateTime.Now 
+            LastAccessDate = DateTime.Now,
+            _updateOnChange = true,
         };
     }
 

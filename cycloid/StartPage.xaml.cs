@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Windows.System;
 using Windows.UI.Xaml;
@@ -8,7 +8,8 @@ using Windows.UI.Xaml.Input;
 namespace cycloid;
 
 
-public sealed partial class StartPage : UserControl
+public sealed partial class StartPage : UserControl,
+    IRecipient<TrackListItemPinnedChanged>
 {
     private readonly bool _createFile;
 
@@ -16,6 +17,8 @@ public sealed partial class StartPage : UserControl
     {
         _createFile = createFile;
         InitializeComponent();
+
+        StrongReferenceMessenger.Default.Register<TrackListItemPinnedChanged>(this);
     }
 
     private void CreateFile(object _1 = null, TappedRoutedEventArgs _2 = null)
@@ -75,15 +78,15 @@ public sealed partial class StartPage : UserControl
             if (App.Current.ViewModel.TrackListItems.Count > 0)
             {
                 await Task.Delay(100);
-                Tracks.SelectedIndex = 0;
-                Tracks.Focus(FocusState.Programmatic);
+                TrackList.SelectedIndex = 0;
+                TrackList.Focus(FocusState.Programmatic);
             }
         }
     }
 
     private void Tracks_DoubleTapped(object _, DoubleTappedRoutedEventArgs e)
     {
-        if (Tracks.SelectedItem is TrackListItem access)
+        if (TrackList.SelectedItem is TrackListItem access)
         {
             OpenEntry(access);
         }
@@ -93,10 +96,15 @@ public sealed partial class StartPage : UserControl
     {
         if (e.Key == VirtualKey.Enter &&
             FocusManager.GetFocusedElement() is ListViewItem item &&
-            item.FindAscendant<ListView>() == Tracks &&
+            item.FindAscendant<ListView>() == TrackList &&
             item.Content is TrackListItem access)
         {
             OpenEntry(access);
         }
+    }
+
+    public void Receive(TrackListItemPinnedChanged message)
+    {
+        TrackList.SelectedItem = message.Item;
     }
 }
