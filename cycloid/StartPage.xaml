@@ -19,12 +19,12 @@
                 <Setter Property="Width" Value="28" />
                 <Setter Property="Height" Value="28" />
                 <Setter Property="Padding" Value="0" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
                 <Setter Property="Foreground" Value="Transparent" />
                 <Setter Property="BorderBrush" Value="Transparent" />
                 <Setter Property="BorderThickness" Value="{ThemeResource ToggleButtonBorderThemeThickness}" />
-                <Setter Property="HorizontalAlignment" Value="Left" />
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
                 <Setter Property="FontWeight" Value="Normal" />
@@ -136,6 +136,21 @@
                                             </Storyboard>
                                         </VisualState>
 
+                                        <VisualState x:Name="Visible">
+
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackground}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForeground}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrush}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+
                                     </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
                             </ContentPresenter>
@@ -194,10 +209,11 @@
                         <ListView
                             x:Name="TrackList"
                             Grid.Row="2"
-                            ContainerContentChanging="TrackList_ContainerContentChanging"
-                            DoubleTapped="Tracks_DoubleTapped"
+                            ChoosingItemContainer="TrackList_ChoosingItemContainer"
+                            DoubleTapped="TrackList_DoubleTapped"
+                            ItemContainerStyle="{StaticResource DefaultListViewItemStyle}"
                             ItemsSource="{x:Bind Mode=OneTime, Path=local:App.Current.ViewModel.TrackListItems}"
-                            PreviewKeyDown="Tracks_PreviewKeyDown">
+                            PreviewKeyDown="TrackList_PreviewKeyDown">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="local:TrackListItem">
                                     <Grid Padding="0,6,0,6" ColumnSpacing="10">
@@ -238,7 +254,6 @@
                                         <ToggleButton
                                             Grid.RowSpan="2"
                                             Grid.Column="2"
-                                            VerticalAlignment="Center"
                                             IsChecked="{x:Bind Mode=TwoWay, Path=IsPinned}">
                                             <ToggleButton.Content>
                                                 <ic:SymbolIcon FontSize="14" Symbol="Pin" />

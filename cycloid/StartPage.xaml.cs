@@ -85,7 +85,7 @@ public sealed partial class StartPage : UserControl,
         }
     }
 
-    private void Tracks_DoubleTapped(object _, DoubleTappedRoutedEventArgs e)
+    private void TrackList_DoubleTapped(object _, DoubleTappedRoutedEventArgs e)
     {
         if (TrackList.SelectedItem is TrackListItem access)
         {
@@ -93,7 +93,7 @@ public sealed partial class StartPage : UserControl,
         }
     }
 
-    private void Tracks_PreviewKeyDown(object _, KeyRoutedEventArgs e)
+    private void TrackList_PreviewKeyDown(object _, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Enter &&
             FocusManager.GetFocusedElement() is ListViewItem item &&
@@ -104,37 +104,67 @@ public sealed partial class StartPage : UserControl,
         }
     }
 
-    public void Receive(TrackListItemPinnedChanged message)
+    private void TrackList_ChoosingItemContainer(ListViewBase sender, ChoosingItemContainerEventArgs args)
     {
-        TrackList.SelectedItem = message.Item;
+        if (args.ItemContainer is null)
+        {
+            ListViewItem container = new()
+            {
+                Style = sender.ItemContainerStyle,
+                ContentTemplate = sender.ItemTemplate,
+            };
+            container.Loaded += ItemsContainer_Loaded;
+            container.ContextRequested += ItemsContainer_ContextRequested;
+            container.PointerEntered += ItemsContainer_PointerEntered;
+            container.PointerExited += ItemsContainer_PointerExited;
+
+            args.ItemContainer = container;
+            args.IsContainerPrepared = true;
+        }
+    }
+
+    private void ItemsContainer_Loaded(object sender, RoutedEventArgs e)
+    {
+        SelectorItem container = (SelectorItem)sender;
+        ToggleButton button = ((FrameworkElement)container.ContentTemplateRoot).FindChild<ToggleButton>();
+        button.PointerExited += Button_PointerExited;
+    }
+
+    private void ItemsContainer_ContextRequested(UIElement sender, ContextRequestedEventArgs args)
+    {
     }
 
     private void ItemsContainer_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
-        ToggleButton button = sender switch
+        SelectorItem container = (SelectorItem)sender;
+        ToggleButton button = ((FrameworkElement)container.ContentTemplateRoot).FindChild<ToggleButton>();
+        if (button.IsChecked is false)
         {
-            ToggleButton b => b,
-            SelectorItem container => ((FrameworkElement)container.ContentTemplateRoot).FindChild<ToggleButton>(),
-            _ => throw new NotImplementedException()
-        };
-        VisualStateManager.GoToState(button, button.IsChecked is true ? "CheckedPointerOver" : "PointerOver", false);
+            VisualStateManager.GoToState(button, "Visible", true);
+        }
     }
 
     private void ItemsContainer_PointerExited(object sender, PointerRoutedEventArgs e)
     {
-        ToggleButton button = ((FrameworkElement)((SelectorItem)sender).ContentTemplateRoot).FindChild<ToggleButton>();
-        VisualStateManager.GoToState(button, button.IsChecked is true ? "Checked" : "Normal", false);
+        SelectorItem container = (SelectorItem)sender;
+        ToggleButton button = ((FrameworkElement)container.ContentTemplateRoot).FindChild<ToggleButton>();
+        if (button.IsChecked is false)
+        {
+            VisualStateManager.GoToState(button, "Normal", true);
+        }
     }
 
-    private void TrackList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    private void Button_PointerExited(object sender, PointerRoutedEventArgs e)
     {
-        if (!args.InRecycleQueue)
+        ToggleButton button = (ToggleButton)sender;
+        if (button.IsChecked is false)
         {
-            SelectorItem container = args.ItemContainer;
-            container.PointerEntered += ItemsContainer_PointerEntered;
-            container.PointerExited += ItemsContainer_PointerExited;
-            ToggleButton button = ((FrameworkElement)container.ContentTemplateRoot).FindChild<ToggleButton>();
-            button.PointerExited += ItemsContainer_PointerEntered;
+            VisualStateManager.GoToState(button, "Visible", true);
         }
+    }
+
+    public void Receive(TrackListItemPinnedChanged message)
+    {
+        TrackList.SelectedItem = message.Item;
     }
 }
