@@ -5,7 +5,6 @@ using cycloid.Info;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Globalization.NumberFormatting;
 using Windows.Services.Maps;
-using Windows.Storage;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -172,7 +171,7 @@ public sealed partial class MainPage : UserControl,
     {
         if (args.Item is not null && args.Item == _lastAddedOnTrack)
         {
-            TextBox textBox = args.ItemContainer.FindDescendant<TextBox>();
+            TextBox textBox = ((FrameworkElement)args.ItemContainer.ContentTemplateRoot).FindChild<TextBox>();
             textBox.Focus(FocusState.Programmatic);
             textBox.Text = _lastAddedOnTrack.Name;
             textBox.SelectAll();

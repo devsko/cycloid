@@ -3,6 +3,7 @@ using CommunityToolkit.WinUI;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 
 namespace cycloid;
@@ -106,5 +107,34 @@ public sealed partial class StartPage : UserControl,
     public void Receive(TrackListItemPinnedChanged message)
     {
         TrackList.SelectedItem = message.Item;
+    }
+
+    private void ItemsContainer_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        ToggleButton button = sender switch
+        {
+            ToggleButton b => b,
+            SelectorItem container => ((FrameworkElement)container.ContentTemplateRoot).FindChild<ToggleButton>(),
+            _ => throw new NotImplementedException()
+        };
+        VisualStateManager.GoToState(button, button.IsChecked is true ? "CheckedPointerOver" : "PointerOver", false);
+    }
+
+    private void ItemsContainer_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        ToggleButton button = ((FrameworkElement)((SelectorItem)sender).ContentTemplateRoot).FindChild<ToggleButton>();
+        VisualStateManager.GoToState(button, button.IsChecked is true ? "Checked" : "Normal", false);
+    }
+
+    private void TrackList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (!args.InRecycleQueue)
+        {
+            SelectorItem container = args.ItemContainer;
+            container.PointerEntered += ItemsContainer_PointerEntered;
+            container.PointerExited += ItemsContainer_PointerExited;
+            ToggleButton button = ((FrameworkElement)container.ContentTemplateRoot).FindChild<ToggleButton>();
+            button.PointerExited += ItemsContainer_PointerEntered;
+        }
     }
 }

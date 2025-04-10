@@ -30,11 +30,8 @@ DesktopBridge setzt immer erstmal TargetPlatform UAP für den Restore
 	- CurrentPoint erzwingen (kann nicht durch Click in die Landschaft entfernt werden)
 	- HoverPoint auf dem Track zulassen wenn IsPlaying false
 	- 10Minute Skip immer erlauben (Weil immer CurrentPoint vorhanden)
-- Start-Screen (ersetzt Öffnen/Neu AppButton)
-  - Checkbox "in neuem Fenster"
-  - Neu
-  - Öffnen
-  - Zuletzt
+- Start Page
+	* ContextMenu Open/Open Copy (CopyTo)/Remove from List
 - Export Tab
 - (Höhenakkumulator zwischen Segmenten) Neuer WayPoint auf dadurch unveränderter Route -> warum ändern sich die Total Values
 - Serialisierte Points behalten wenn nicht ver ndert
