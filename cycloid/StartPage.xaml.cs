@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -52,18 +53,18 @@ public sealed partial class StartPage : UserControl,
         }
     }
 
-    private void GotoMain(bool result)
+    private void GotoMain(InitializeTrackOptions options)
     {
-        if (result)
+        if (options is not null)
         {
             Popup.IsOpen = false;
-            Window.Current.Content = new MainPage();
+            Window.Current.Content = new MainPage(options);
         }
     }
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
-        PopulateMruListAsync().FireAndForget();
+        SelectFirstTrackListItemAsync().FireAndForget();
 
         if (_createFile)
         {
@@ -72,7 +73,7 @@ public sealed partial class StartPage : UserControl,
 
         Popup.IsOpen = true;
 
-        async Task PopulateMruListAsync()
+        async Task SelectFirstTrackListItemAsync()
         {
             await App.Current.ViewModel.PopulateTrackListAsync();
 
@@ -97,8 +98,8 @@ public sealed partial class StartPage : UserControl,
     {
         if (e.Key == VirtualKey.Enter &&
             FocusManager.GetFocusedElement() is ListViewItem item &&
-            item.FindAscendant<ListView>() == TrackList &&
-            item.Content is TrackListItem access)
+            item is { Content: TrackListItem access } &&
+            item.FindAscendant<ListView>() == TrackList)
         {
             OpenEntry(access);
         }
@@ -114,7 +115,6 @@ public sealed partial class StartPage : UserControl,
                 ContentTemplate = sender.ItemTemplate,
             };
             container.Loaded += ItemsContainer_Loaded;
-            container.ContextRequested += ItemsContainer_ContextRequested;
             container.PointerEntered += ItemsContainer_PointerEntered;
             container.PointerExited += ItemsContainer_PointerExited;
 
@@ -128,10 +128,6 @@ public sealed partial class StartPage : UserControl,
         SelectorItem container = (SelectorItem)sender;
         ToggleButton button = ((FrameworkElement)container.ContentTemplateRoot).FindChild<ToggleButton>();
         button.PointerExited += Button_PointerExited;
-    }
-
-    private void ItemsContainer_ContextRequested(UIElement sender, ContextRequestedEventArgs args)
-    {
     }
 
     private void ItemsContainer_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -166,5 +162,37 @@ public sealed partial class StartPage : UserControl,
     public void Receive(TrackListItemPinnedChanged message)
     {
         TrackList.SelectedItem = message.Item;
+    }
+
+    private void Open_Click(object sender, RoutedEventArgs e)
+    {
+        if (((MenuFlyoutItem)sender).DataContext is TrackListItem access)
+        {
+            OpenEntry(access);
+        }
+    }
+
+    private void CreateCopy_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void CopyPath_Click(object sender, RoutedEventArgs e)
+    {
+        if (((MenuFlyoutItem)sender).DataContext is TrackListItem access)
+        {
+            DataPackage data = new();
+            data.SetText(access.File.Path);
+            Clipboard.SetContent(data);
+        }
+    }
+
+    private void Remove_Click(object sender, RoutedEventArgs e)
+    {
+        if (((MenuFlyoutItem)sender).DataContext is TrackListItem access)
+        {
+            App.Current.ViewModel.TrackListItems.Remove(access);
+            access.Delete();
+        }
     }
 }

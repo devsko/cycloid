@@ -15,6 +15,7 @@ using Windows.UI.Core;
 using Windows.UI.StartScreen;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 namespace cycloid;
 
@@ -44,8 +45,6 @@ sealed partial class App : Application,
 
         RouteBuilder.ExceptionHandler = Current.ShowExceptionAsync;
 
-        InitJumpListAsync().FireAndForget();
-
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         using Stream secretsJson = typeof(App).Assembly.GetManifestResourceStream("cycloid.secrets.json");
@@ -56,15 +55,6 @@ sealed partial class App : Application,
         InitializeComponent();
 
         StrongReferenceMessenger.Default.Register<PlayerStatusChanged>(this);
-
-        static async Task InitJumpListAsync()
-        {
-            JumpList list = await JumpList.LoadCurrentAsync();
-            list.SystemGroupKind = JumpListSystemGroupKind.Recent;
-            list.Items.Clear();
-            list.Items.Add(JumpListItem.CreateWithArguments(NewTrackArgument, "New track"));
-            await list.SaveAsync();
-        }
     }
 
     public static new App Current => (App)Application.Current;
@@ -75,7 +65,16 @@ sealed partial class App : Application,
         {
             Initialize();
 
-            Window.Current.Content = new StartPage(e.Arguments == NewTrackArgument);
+            UserControl page;
+            if (e.Arguments is { Length: > 0 } and not ['-', ..])
+            {
+                page = new MainPage(new InitializeTrackOptions { FilePath = e.Arguments });
+            }
+            else
+            {
+                page = new StartPage(e.Arguments == NewTrackArgument);
+            }
+            Window.Current.Content = page;
             Window.Current.Activate();
         }
     }
@@ -88,8 +87,7 @@ sealed partial class App : Application,
 
             if (args.Files is [StorageFile file, ..])
             {
-                ViewModel.TrackItem = TrackListItem.Create(file);
-                Window.Current.Content = new MainPage();
+                Window.Current.Content = new MainPage(new InitializeTrackOptions { File = file });
                 Window.Current.Activate();
             }
         }
@@ -97,9 +95,9 @@ sealed partial class App : Application,
 
     private void Initialize()
     {
-        ViewModel = new ViewModel();
-
         _dispatcher = Window.Current.Dispatcher;
+
+        ViewModel = new ViewModel();
 
         ApplicationView.GetForCurrentView().TitleBar.ButtonBackgroundColor = Colors.Transparent;
         ApplicationView.GetForCurrentView().TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
@@ -116,6 +114,29 @@ sealed partial class App : Application,
         StrongReferenceMessenger.Default.Send(new TitleBarLayoutChanged());
     }
 
+    public async Task UpdateJumpListAsync(IList<TrackListItem> items)
+    {
+        JumpList jumpList = await JumpList.LoadCurrentAsync();
+        jumpList.SystemGroupKind = JumpListSystemGroupKind.None;
+        jumpList.Items.Clear();
+        jumpList.Items.Add(JumpListItem.CreateWithArguments(NewTrackArgument, "New track"));
+
+        bool first = true;
+        foreach (TrackListItem item in items.Where(item => item.IsPinned).Take(4))
+        {
+            if (first)
+            {
+                jumpList.Items.Add(JumpListItem.CreateSeparator());
+                first = false;
+            }
+            JumpListItem jumpListItem = JumpListItem.CreateWithArguments(item.File.Path, item.Name);
+            jumpListItem.Description = $"{Format.Distance(item.TrackDistance)}\r\n{item.DirectoryPath}";
+            jumpList.Items.Add(jumpListItem);
+        }
+
+        await jumpList.SaveAsync();
+    }
+
     public Task ShowExceptionAsync(Exception ex) => ShowExceptionAsync(ex.ToString());
 
     public async Task ShowExceptionAsync(string message)
@@ -124,18 +145,21 @@ sealed partial class App : Application,
         {
             Debug.WriteLine(message);
 #pragma warning disable VSTHRD101 // Avoid unsupported async delegates
-            await _dispatcher.RunAsync(CoreDispatcherPriority.High, async () =>
+            if (_dispatcher is not null)
             {
-                try
+                await _dispatcher.RunAsync(CoreDispatcherPriority.High, async () =>
                 {
-                    ErrorDialog dialog = new(message);
-                    await dialog.ShowAsync();
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Cannot show error dialog. {ex.Message}");
-                }
-            });
+                    try
+                    {
+                        ErrorDialog dialog = new(message);
+                        await dialog.ShowAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Cannot show error dialog. {ex.Message}");
+                    }
+                });
+            }
 #pragma warning restore VSTHRD101 // Avoid unsupported async delegates
         }
         catch (Exception ex)

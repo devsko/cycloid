@@ -22,12 +22,15 @@ public sealed partial class MainPage : UserControl,
     IRecipient<DragWayPointEnded>,
     IRecipient<TitleBarLayoutChanged>
 {
+    private readonly InitializeTrackOptions _initializeTrackOptions;
     private bool _ignoreTextChange;
     private OnTrack _lastAddedOnTrack;
     private bool _delayZoomCurrentTrackDifference;
 
-    public MainPage()
+    public MainPage(InitializeTrackOptions options)
     {
+        _initializeTrackOptions = options;
+
         InitializeComponent();
 
         Window.Current.SetTitleBar(TitleBar);
@@ -85,7 +88,7 @@ public sealed partial class MainPage : UserControl,
     {
         ViewModel.ToggleHeatmapVisibleCommand.Execute(null);
 
-        ViewModel.LoadFileAsync().FireAndForget();
+        ViewModel.LoadFileAsync(_initializeTrackOptions).FireAndForget();
     }
 
     [GeneratedBindableCustomProperty([nameof(DisplayName)], null)]

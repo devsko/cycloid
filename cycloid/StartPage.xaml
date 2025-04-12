@@ -217,6 +217,14 @@
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="local:TrackListItem">
                                     <Grid Padding="0,6,0,6" ColumnSpacing="10">
+                                        <Grid.ContextFlyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem Text="Open" Icon="{ic:SymbolIcon Symbol=Open}" Click="Open_Click" />
+                                                <MenuFlyoutItem Text="Create copy" Icon="{ic:SymbolIcon Symbol=SaveCopy}" Click="CreateCopy_Click" />
+                                                <MenuFlyoutItem Text="Copy path" Icon="{ic:SymbolIcon Symbol=Copy}" Click="CopyPath_Click" />
+                                                <MenuFlyoutItem Text="Remove from list" Icon="{ic:SymbolIcon Symbol=AppsList}" Click="Remove_Click" />
+                                            </MenuFlyout>
+                                        </Grid.ContextFlyout>
                                         <Grid.RowDefinitions>
                                             <RowDefinition />
                                             <RowDefinition />
@@ -243,7 +251,7 @@
                                             </Grid.ColumnDefinitions>
                                             <TextBlock
                                                 FontSize="12"
-                                                Text="{x:Bind Mode=OneTime, Path=FilePath}"
+                                                Text="{x:Bind Mode=OneTime, Path=DirectoryPath}"
                                                 TextTrimming="CharacterEllipsis" />
                                             <TextBlock
                                                 Grid.Column="1"
@@ -256,7 +264,10 @@
                                             Grid.Column="2"
                                             IsChecked="{x:Bind Mode=TwoWay, Path=IsPinned}">
                                             <ToggleButton.Content>
-                                                <ic:SymbolIcon FontSize="14" Symbol="Pin" IconVariant="{x:Bind Mode=OneWay, Path=ToIconVariant(IsPinned)}" />
+                                                <ic:SymbolIcon
+                                                    FontSize="14"
+                                                    IconVariant="{x:Bind Mode=OneWay, Path=ToIconVariant(IsPinned)}"
+                                                    Symbol="Pin" />
                                             </ToggleButton.Content>
                                         </ToggleButton>
                                     </Grid>

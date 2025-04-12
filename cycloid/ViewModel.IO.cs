@@ -50,7 +50,7 @@ public partial class TrackListItem : ObservableObject
     
     public string Name => Path.GetFileNameWithoutExtension(File.Name);
 
-    public string FilePath => Path.GetDirectoryName(File.Path);
+    public string DirectoryPath => Path.GetDirectoryName(File.Path);
 
     public void Update(bool updateAccessDate = true)
     {
@@ -74,6 +74,16 @@ public partial class TrackListItem : ObservableObject
         {
             StorageApplicationPermissions.MostRecentlyUsedList.AddOrReplace(_token, File, metadata);
         }
+    }
+
+    public void Delete()
+    {
+        if (_token is not null)
+        {
+            StorageApplicationPermissions.MostRecentlyUsedList.Remove(_token);
+            _token = null;
+        }
+        File = null;
     }
 
     public static async Task<TrackListItem> CreateAsync(AccessListEntry entry)
@@ -121,6 +131,14 @@ public partial class TrackListItem : ObservableObject
     }
 }
 
+public class InitializeTrackOptions
+{
+    public TrackListItem TrackItem { get; init; }
+    public StorageFile File { get; init; }
+    public string FilePath { get; init; }
+    public bool CreateFile { get; init; }
+}
+
 partial class ViewModel : IRecipient<TrackListItemPinnedChanged>
 {
     private readonly SemaphoreSlim _saveTrackSemaphore = new(1);
@@ -138,11 +156,30 @@ partial class ViewModel : IRecipient<TrackListItemPinnedChanged>
 
         foreach (TrackListItem item in items.OrderByDescending(item => item.IsPinned).ThenByDescending(item => item.LastAccessDate))
         {
+            if (item.IsPinned)
+            {
+                // Touch all pinned items to prevent them from disapearing
+                item.Update(updateAccessDate: false);
+            }
             TrackListItems.Add(item);
         }
+
+        await App.Current.UpdateJumpListAsync(TrackListItems);
+        TrackListItems.CollectionChanged += (_, _) => App.Current.UpdateJumpListAsync(TrackListItems).FireAndForget();
     }
 
-    public async Task<bool> OpenTrackAsync()
+    public TrackListItem GetTrackListItem(StorageFile file)
+    {
+        TrackListItem trackListItem = TrackListItems.FirstOrDefault(item => item.File.Path == file.Path);
+        if (trackListItem is null)
+        {
+            trackListItem = TrackListItem.Create(file);
+        }
+
+        return trackListItem;
+    }
+
+    public async Task<InitializeTrackOptions> OpenTrackAsync()
     {
         FileOpenPicker picker = new()
         {
@@ -154,29 +191,36 @@ partial class ViewModel : IRecipient<TrackListItemPinnedChanged>
 
         if (file is null)
         {
-            return false;
+            return null;
         }
 
-        return await OpenTrackFileAsync(TrackListItem.Create(file));
-    }
-
-    public async Task<bool> OpenTrackFileAsync(TrackListItem item)
-    {
-        if (Program.RegisterForFile(item.File, out _))
+        if (Program.RegisterForFile(file.Path, out _))
         {
-            TrackItem = item;
-
-            return true;
+            return new InitializeTrackOptions { File = file };
         }
         else
         {
-            await ShowFileAlreadyOpenAsync(item.File);
-            
-            return false;
+            await ShowFileAlreadyOpenAsync(file.Name);
+
+            return null;
         }
     }
 
-    public async Task<bool> CreateTrackAsync()
+    public async Task<InitializeTrackOptions> OpenTrackFileAsync(TrackListItem trackItem)
+    {
+        if (Program.RegisterForFile(trackItem.File.Path, out _))
+        {
+            return new InitializeTrackOptions { TrackItem = trackItem };
+        }
+        else
+        {
+            await ShowFileAlreadyOpenAsync(trackItem.File.Name);
+            
+            return null;
+        }
+    }
+
+    public async Task<InitializeTrackOptions> CreateTrackAsync()
     {
         FileSavePicker picker = new()
         {
@@ -189,72 +233,63 @@ partial class ViewModel : IRecipient<TrackListItemPinnedChanged>
 
         if (file is null)
         {
-            return false;
+            return null;
         }
 
-        if (Program.RegisterForFile(file, out _))
+        if (Program.RegisterForFile(file.Path, out _))
         {
-            TrackItem = TrackListItem.Create(file);
-            _creteFile = true;
-
-            return true;
+            return new InitializeTrackOptions { File = file, CreateFile = true };
         }
         else
         {
-            await ShowFileAlreadyOpenAsync(file);
+            await ShowFileAlreadyOpenAsync(file.Name);
 
-            return false;
+            return null;
         }
     }
 
-    public async Task LoadFileAsync()
+    public async Task LoadFileAsync(InitializeTrackOptions options)
     {
-        if (_creteFile)
+        await PopulateTrackListAsync();
+
+        TrackItem = 
+            options.TrackItem
+            ?? GetTrackListItem(
+                options.File
+                ?? await StorageFile.GetFileFromPathAsync(options.FilePath));
+
+        Track = new Track(options.CreateFile);
+
+        Stopwatch watch = Stopwatch.StartNew();
+
+        await (options.CreateFile ? CreateAsync() : LoadAsync());
+
+        Status = $"{TrackName} {(options.CreateFile ? "created" : "opened")} ({watch.ElapsedMilliseconds} ms)";
+        StrongReferenceMessenger.Default.Send(new TrackComplete(false));
+
+        TrackItem.TrackDistance = Track.Points.Total.Distance;
+
+        async Task CreateAsync()
         {
-            Track = new Track(true);
+            await TaskScheduler.Default;
 
-            await SaveAsync();
-
-            Status = $"{TrackName} created";
-            StrongReferenceMessenger.Default.Send(new TrackComplete(true));
-
-            TrackItem.Update();
-
-            async Task SaveAsync()
+            StorageFile tempFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("current", CreationCollisionOption.ReplaceExisting);
+            using (Stream stream = await tempFile.OpenStreamForWriteAsync().ConfigureAwait(false))
             {
-                await TaskScheduler.Default;
-
-                StorageFile tempFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("current", CreationCollisionOption.ReplaceExisting);
-                using (Stream stream = await tempFile.OpenStreamForWriteAsync().ConfigureAwait(false))
-                {
-                    await Serializer.SerializeAsync(stream, Track, default).ConfigureAwait(false);
-                }
-
-                await tempFile.CopyAndReplaceAsync(TrackItem.File);
+                await Serializer.SerializeAsync(stream, Track, default).ConfigureAwait(false);
             }
+
+            await tempFile.CopyAndReplaceAsync(TrackItem.File);
         }
-        else
+
+        async Task LoadAsync()
         {
-            Track = new Track(false);
+            SynchronizationContext ui = SynchronizationContext.Current;
+            await TaskScheduler.Default;
 
-            Stopwatch watch = Stopwatch.StartNew();
+            using Stream stream = await TrackItem.File.OpenStreamForReadAsync().ConfigureAwait(false);
 
-            await LoadAsync();
-
-            Status = $"{TrackName} opened ({watch.ElapsedMilliseconds} ms)";
-            StrongReferenceMessenger.Default.Send(new TrackComplete(false));
-
-            TrackItem.TrackDistance = Track.Points.Total.Distance;
-
-            async Task LoadAsync()
-            {
-                SynchronizationContext ui = SynchronizationContext.Current;
-                await TaskScheduler.Default;
-
-                using Stream stream = await TrackItem.File.OpenStreamForReadAsync().ConfigureAwait(false);
-
-                await Serializer.LoadAsync(stream, Track, ui).ConfigureAwait(false);
-            }
+            await Serializer.LoadAsync(stream, Track, ui).ConfigureAwait(false);
         }
     }
 
@@ -299,12 +334,12 @@ partial class ViewModel : IRecipient<TrackListItemPinnedChanged>
         }
     }
 
-    private static async Task ShowFileAlreadyOpenAsync(IStorageFile file)
+    private static async Task ShowFileAlreadyOpenAsync(string fileName)
     {
         await new ContentDialog
         {
             Title = "Cannot open file",
-            Content = $"{file.Name} is already open.",
+            Content = $"{fileName} is already open.",
             CloseButtonText = "Close",
         }.ShowAsync();
     }

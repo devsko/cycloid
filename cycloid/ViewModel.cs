@@ -59,8 +59,6 @@ public partial class ViewModel : ObservableObject,
     [NotifyPropertyChangedFor(nameof(TrackName))]
     public partial TrackListItem TrackItem { get; set; }
 
-    private bool _creteFile;
-
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CompareSessionCommand))]
     public partial bool TrackIsInitialized { get; set; }
