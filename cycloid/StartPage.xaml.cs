@@ -23,23 +23,23 @@ public sealed partial class StartPage : UserControl,
         StrongReferenceMessenger.Default.Register<TrackListItemPinnedChanged>(this);
     }
 
-    private void CreateFile(object _1 = null, TappedRoutedEventArgs _2 = null)
-    {
-        CreateFileAsync().FireAndForget();
-
-        async Task CreateFileAsync()
-        {
-            GotoMain(await App.Current.ViewModel.CreateTrackAsync());
-        }
-    }
-
     private void OpenEntry(TrackListItem entry)
     {
         OpenEntryAsync().FireAndForget();
 
         async Task OpenEntryAsync()
         {
-            GotoMain(await App.Current.ViewModel.OpenTrackFileAsync(entry));
+            GotoMain(await App.Current.ViewModel.OpenTrackAsync(entry));
+        }
+    }
+
+    private void CreateFile(object _1 = null, TappedRoutedEventArgs _2 = null)
+    {
+        CreateFileAsync().FireAndForget();
+
+        async Task CreateFileAsync()
+        {
+            GotoMain(await App.Current.ViewModel.CreateTrackAsync("New Track"));
         }
     }
 
@@ -174,7 +174,15 @@ public sealed partial class StartPage : UserControl,
 
     private void CreateCopy_Click(object sender, RoutedEventArgs e)
     {
+        if (((MenuFlyoutItem)sender).DataContext is TrackListItem access)
+        {
+            CopyEntryAsync().FireAndForget();
 
+            async Task CopyEntryAsync()
+            {
+                GotoMain(await App.Current.ViewModel.CopyTrackAsync(access));
+            }
+        }
     }
 
     private void CopyPath_Click(object sender, RoutedEventArgs e)

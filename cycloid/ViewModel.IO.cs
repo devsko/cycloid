@@ -144,11 +144,19 @@ partial class ViewModel : IRecipient<TrackListItemPinnedChanged>
     private readonly SemaphoreSlim _saveTrackSemaphore = new(1);
     private CancellationTokenSource _saveTrackCts = new();
     private int _saveCounter;
+    private bool _trackListPopulated;
 
     public ObservableCollection<TrackListItem> TrackListItems { get; } = [];
 
     public async Task PopulateTrackListAsync()
     {
+        if (_trackListPopulated)
+        {
+            return;
+        }
+
+        _trackListPopulated = true;
+
         TrackListItem[] items = await Task.WhenAll(
             StorageApplicationPermissions.MostRecentlyUsedList
                 .Entries
@@ -206,7 +214,7 @@ partial class ViewModel : IRecipient<TrackListItemPinnedChanged>
         }
     }
 
-    public async Task<InitializeTrackOptions> OpenTrackFileAsync(TrackListItem trackItem)
+    public async Task<InitializeTrackOptions> OpenTrackAsync(TrackListItem trackItem)
     {
         if (Program.RegisterForFile(trackItem.File.Path, out _))
         {
@@ -220,11 +228,11 @@ partial class ViewModel : IRecipient<TrackListItemPinnedChanged>
         }
     }
 
-    public async Task<InitializeTrackOptions> CreateTrackAsync()
+    public async Task<InitializeTrackOptions> CreateTrackAsync(string trackName)
     {
         FileSavePicker picker = new()
         {
-            SuggestedFileName = "New Track",
+            SuggestedFileName = trackName,
             SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
         };
         // TODO CsWinRT 2.3
@@ -246,6 +254,20 @@ partial class ViewModel : IRecipient<TrackListItemPinnedChanged>
 
             return null;
         }
+    }
+
+    public async Task<InitializeTrackOptions> CopyTrackAsync(TrackListItem trackItem)
+    {
+        InitializeTrackOptions createOptions = await CreateTrackAsync($"Copy of {trackItem.Name}");
+
+        if (createOptions is null)
+        {
+            return null;
+        }
+
+        await trackItem.File.CopyAndReplaceAsync(createOptions.File);
+
+        return new InitializeTrackOptions { File = createOptions.File };
     }
 
     public async Task LoadFileAsync(InitializeTrackOptions options)
