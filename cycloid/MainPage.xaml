@@ -154,7 +154,7 @@
                         </ToggleButton.KeyboardAccelerators>
                         <ToggleButton.Content>
                             <Grid>
-                                <SymbolIcon Symbol="Directions" />
+                                <ic:SymbolIcon Symbol="Directions" />
                                 <mux:ProgressBar
                                     Margin="-8,0,-8,-4"
                                     VerticalAlignment="Bottom"
@@ -169,7 +169,7 @@
                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.PoisVisible}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.PoisEnabled}"
                         IsLoading="{x:Bind Mode=OneWay, Path=ViewModel.PoisAreLoading}"
-                        Symbol="MapPin"
+                        Symbol="Location"
                         TotalCount="{x:Bind Mode=OneWay, Path=ViewModel.OnTrackCount}"
                         VisibleCount="{x:Bind Mode=OneWay, Path=ViewModel.OnTrackCount}">
                         <controls:InfoToggleButton.KeyboardAccelerators>
@@ -181,7 +181,7 @@
                         IsChecked="{x:Bind Mode=TwoWay, Path=ViewModel.InfoVisible}"
                         IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.InfoEnabled}"
                         IsLoading="{x:Bind Mode=OneWay, Path=ViewModel.InfosAreLoading}"
-                        Symbol="OutlineStar"
+                        Symbol="Info"
                         TotalCount="{x:Bind Mode=OneWay, Path=ViewModel.Infos.CachedCount}"
                         VisibleCount="{x:Bind Mode=OneWay, Path=ViewModel.Infos.ActivatedCount}">
                         <controls:InfoToggleButton.KeyboardAccelerators>
