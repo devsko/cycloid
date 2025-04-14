@@ -18,7 +18,7 @@ public sealed partial class InfoToggleButton : UserControl
     public partial bool IsLoading { get; set; }
 
     [GeneratedDependencyProperty]
-    public partial Symbol Symbol { get; set; }
+    public partial FluentIcons.Common.Symbol Symbol { get; set; }
 
     [GeneratedDependencyProperty]
     public partial int VisibleCount { get; set; }

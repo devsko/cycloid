@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cycloid="using:cycloid"
     xmlns:info="using:cycloid.Info"
+    xmlns:ic="using:FluentIcons.Uwp"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls">
 
     <UserControl.Resources>
@@ -57,7 +58,7 @@
         </mux:ToggleSplitButton.Flyout>
         <mux:ToggleSplitButton.Content>
             <Grid>
-                <SymbolIcon Symbol="{x:Bind Mode=OneWay, Path=Symbol}" />
+                <ic:SymbolIcon Symbol="{x:Bind Mode=OneWay, Path=Symbol}" />
                 <mux:ProgressBar
                     Margin="-8,0,-8,-4"
                     VerticalAlignment="Bottom"

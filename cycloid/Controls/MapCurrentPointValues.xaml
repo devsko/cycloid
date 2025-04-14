@@ -5,6 +5,7 @@
     xmlns:controls="using:cycloid.Controls"
     xmlns:cycloid="using:cycloid"
     xmlns:ic="using:FluentIcons.Uwp"
+    xmlns:icc="using:FluentIcons.Common"
     Visibility="{x:Bind Mode=OneWay, Path=cycloid:Convert.VisibleIfValid(Point)}">
 
     <controls:MapControlBorder>
@@ -42,6 +43,7 @@
                 Grid.Row="1"
                 Grid.Column="0"
                 FontSize="12"
+                IconVariant="{x:Bind Mode=OneTime, Path=icc:IconVariant.Filled}"
                 Symbol="CaretLeft" />
             <TextBlock
                 Grid.Row="1"
@@ -64,6 +66,7 @@
                 Grid.Row="1"
                 Grid.Column="3"
                 FontSize="12"
+                IconVariant="{x:Bind Mode=OneTime, Path=icc:IconVariant.Filled}"
                 Symbol="CaretRight" />
 
             <Path
