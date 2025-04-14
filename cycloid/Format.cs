@@ -7,6 +7,8 @@ public static class Format
 {
     public static string Numeric(int value) => $"{value:N0}";
 
+    public static string Numeric(float value) => $"{value:N0}";
+
     public static string Latitude(double value) => $"{Coordinate(value)}{(value > 0 ? "N" : "S")}";
 
     public static string Longitude(double value) => $"{Coordinate(value)}{(value > 0 ? "E" : "W")}";

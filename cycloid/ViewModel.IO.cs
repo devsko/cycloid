@@ -285,6 +285,7 @@ partial class ViewModel : IRecipient<TrackListItemPinnedChanged>
         Stopwatch watch = Stopwatch.StartNew();
 
         await (options.CreateFile ? CreateAsync() : LoadAsync());
+        Track.Splits.Initialize();
 
         Status = $"{TrackName} {(options.CreateFile ? "created" : "opened")} ({watch.ElapsedMilliseconds} ms)";
         StrongReferenceMessenger.Default.Send(new TrackComplete(false));

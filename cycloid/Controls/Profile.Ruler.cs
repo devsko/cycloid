@@ -78,12 +78,12 @@ partial class Profile
     private void DrawVerticalRuler()
     {
         double sizeY = (_maxElevation - _minElevation) * (1 + GraphBottomMarginRatio + GraphTopMarginRatio);
-        double scaleY = ActualHeight / sizeY;
-        int gap = CalculateTickGap(sizeY, ActualHeight, VerticalRulerTickMinimumGap);
+        double scaleY = (ActualHeight - GraphBottomMargin) / sizeY;
+        int gap = CalculateTickGap(sizeY, ActualHeight - GraphBottomMargin, VerticalRulerTickMinimumGap);
 
         for (int tick = ((int)(_minElevation / gap) + 1) * gap; tick < _maxElevation; tick += gap)
         {
-            double top = (tick - _minElevation) * -scaleY + ActualHeight * (1 - GraphBottomMarginRatio);
+            double top = (tick - _minElevation) * -scaleY + ActualHeight * (1 - GraphBottomMarginRatio) - GraphBottomMargin;
             VerticalRuler.Children.Add(new Line
             {
                 X1 = 0,

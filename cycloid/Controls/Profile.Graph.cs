@@ -131,7 +131,7 @@ partial class Profile
         _visual.IsPixelSnappingEnabled = true;
         _visual.Shapes.Add(_container);
 
-        ElementCompositionPreview.SetElementChildVisual(Root, _visual);
+        ElementCompositionPreview.SetElementChildVisual(Graph, _visual);
 
         UpdateTheme();
 

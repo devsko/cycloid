@@ -22,7 +22,7 @@
                             <StaticResource x:Key="SelectionGraphFill" ResourceKey="SystemAccentColor" />
                             <x:Double x:Key="SelectionGraphOpacity">.4</x:Double>
 
-                            <StaticResource x:Key="TrackCurrentPointGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
+                            <StaticResource x:Key="TrackCurrentPointGraphOutline" ResourceKey="SystemAccentColorDark1" />
                             <SolidColorBrush
                                 x:Key="TrackHoverPointGraphOutline"
                                 Opacity="0.7"
@@ -45,7 +45,7 @@
                             <StaticResource x:Key="SelectionGraphFill" ResourceKey="SystemAccentColor" />
                             <x:Double x:Key="SelectionGraphOpacity">.3</x:Double>
 
-                            <StaticResource x:Key="TrackCurrentPointGraphOutline" ResourceKey="AccentTextFillColorTertiaryBrush" />
+                            <StaticResource x:Key="TrackCurrentPointGraphOutline" ResourceKey="SystemAccentColorLight1" />
                             <SolidColorBrush
                                 x:Key="TrackHoverPointGraphOutline"
                                 Opacity="0.7"

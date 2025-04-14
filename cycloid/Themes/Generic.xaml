@@ -56,6 +56,8 @@
 
     <Style TargetType="controls:MapControlBorder">
         <Setter Property="Background" Value="{ThemeResource MapOverlayBackgroundBrush}" />
+        <Setter Property="Padding" Value="5" />
+        <Setter Property="CornerRadius" Value="5" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:MapControlBorder">
@@ -65,9 +67,9 @@
                         </ui:Effects.Shadow>
 
                         <Border
-                            Padding="5"
+                            Padding="{TemplateBinding Padding}"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="5"
+                            CornerRadius="{TemplateBinding CornerRadius}"
                             UseLayoutRounding="False">
                             <ContentPresenter
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"

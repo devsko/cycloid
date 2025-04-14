@@ -13,6 +13,8 @@ public partial class Track : ObservableObject
 
     public List<PointOfInterest> PointsOfInterest { get; }
 
+    public SplitCollection Splits { get; }
+
     public Track(bool isNew)
     {
         RouteBuilder = new RouteBuilder();
@@ -29,6 +31,7 @@ public partial class Track : ObservableObject
             goal.InitOnTrackCount(1);
             PointsOfInterest.Add(goal);
         }
+        Splits = new SplitCollection(this);
     }
 
     public void ClearViewState()

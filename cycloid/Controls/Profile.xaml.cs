@@ -37,6 +37,7 @@ public sealed partial class Profile : ViewModelControl,
         ElevationDiff = _VerticalRuler | _Marker,
     }
 
+    private const float GraphBottomMargin = 13;
     private const float GraphBottomMarginRatio = .02f;
     private const float GraphTopMarginRatio = .05f;
     private const float HorizontalRulerTickMinimumGap = 50;
@@ -51,6 +52,7 @@ public sealed partial class Profile : ViewModelControl,
 
     partial void OnHorizontalZoomChanged(double newValue)
     {
+        UpdateSplitterMargin();
         if (ViewModel.HasTrack)
         {
             ProcessChangeAsync(Change.Zoom).FireAndForget();
@@ -71,7 +73,6 @@ public sealed partial class Profile : ViewModelControl,
 
     private bool _isOuterSizeChange;
 
-    private Point _windowOrigin;
     private GeneralTransform _windowToControl;
 
     public Profile()
@@ -110,6 +111,7 @@ public sealed partial class Profile : ViewModelControl,
                     double oldHorizontalSize = _horizontalSize;
 
                     Root.Width = horizontalSize;
+                    Splitter.Width = horizontalSize;
                     Scroller.UpdateLayout();
                     if (Root.ActualWidth < ActualWidth)
                     {
@@ -193,7 +195,7 @@ public sealed partial class Profile : ViewModelControl,
 
                 if (_maxElevation != _minElevation)
                 {
-                    _verticalScale = (float)ActualHeight / (1 + GraphBottomMarginRatio + GraphTopMarginRatio) / (_maxElevation - _minElevation);
+                    _verticalScale = ((float)ActualHeight - GraphBottomMargin) / (1 + GraphBottomMarginRatio + GraphTopMarginRatio) / (_maxElevation - _minElevation);
                     _container.Scale = new Vector2(_container.Scale.X, -(float)_verticalScale);
                     _container.Offset = new Vector2(0, ElevationToY(_minElevation));
 
@@ -226,7 +228,7 @@ public sealed partial class Profile : ViewModelControl,
             {
                 x -= Scroller.HorizontalOffset;
             }
-            double y = (point.Altitude - _minElevation) * -ActualHeight / (_maxElevation - _minElevation) / (1 + GraphBottomMarginRatio + GraphTopMarginRatio) + ActualHeight * (1 - GraphBottomMarginRatio);
+            double y = ActualHeight * (1 - GraphBottomMarginRatio) - (ActualHeight - GraphBottomMargin) * (point.Altitude - _minElevation) / (_maxElevation - _minElevation) / (1 + GraphBottomMarginRatio + GraphTopMarginRatio) - GraphBottomMargin;
 
             line1.StartPoint = new Point(x, 14);
             line1.EndPoint = new Point(x, y - 2);
@@ -240,32 +242,23 @@ public sealed partial class Profile : ViewModelControl,
 
     private float DistanceToX(float distance) => distance * (float)_horizontalScale;
 
-    private float ElevationToY(float elevation) => (float)ActualHeight * (1 - GraphBottomMarginRatio) + (elevation - TrackPoint.MinAltitudeValue) * (float)_verticalScale;
+    private float ElevationToY(float elevation) => (float)ActualHeight * (1 - GraphBottomMarginRatio) + (elevation - TrackPoint.MinAltitudeValue) * (float)_verticalScale - GraphBottomMargin;
 
     //private float YToElevation(float y) => y / (float)_verticalScale + TrackPoint.MinAltitudeValue;
 
     private void ViewModelControl_SizeChanged(object _1, SizeChangedEventArgs _2)
     {
-        Rect windowBounds = Window.Current.Bounds;
-        _windowOrigin = new Point(windowBounds.X, windowBounds.Y);
-        _windowToControl = Window.Current.Content.TransformToVisual(this);
-
         Scroller.MaxWidth = ActualWidth;
         Root.Width = ActualWidth * HorizontalZoom;
+        Splitter.Width = ActualWidth * HorizontalZoom;
+        _windowToControl = Window.Current.Content.TransformToVisual(this);
         _isOuterSizeChange = true;
     }
 
     private void Scroller_ViewChanged(object _1, ScrollViewerViewChangedEventArgs _2)
     {
         _scrollerOffset = Scroller.HorizontalOffset;
-
-        Point position = Window.Current.CoreWindow.PointerPosition;
-        position = new(position.X - _windowOrigin.X, position.Y - _windowOrigin.Y);
-        position = _windowToControl.TransformPoint(position);
-        if (RectHelper.Contains(new Rect(0, 0, ActualWidth, ActualHeight), position))
-        {
-            SetHoverPoint(position.X + Scroller.HorizontalOffset);
-        }
+        SetHoverPoint(_windowToControl.TransformPoint(new(Window.Current.CoreWindow.PointerPosition.X - Window.Current.Bounds.X, 0)).X + _scrollerOffset);
 
         ProcessChangeAsync(Change.Scroll).FireAndForget();
     }
@@ -294,14 +287,36 @@ public sealed partial class Profile : ViewModelControl,
         Root.ReleasePointerCapture(e.Pointer);
     }
 
+    private TrackSplit _split;
+
     private void Root_PointerMoved(object _, PointerRoutedEventArgs e)
     {
         if (ViewModel.HasTrack)
         {
-            Window.Current.CoreWindow.PointerCursor =
-                ViewModel.GetHoveredSelectionBorder(5 / _horizontalScale) == null
-                ? new CoreCursor(CoreCursorType.Arrow, 0)
-                : new CoreCursor(CoreCursorType.SizeWestEast, 10);
+
+
+            if (_split is null)
+            {
+                Track track = ViewModel.Track;
+                track.Splits.Add(new TrackSplit(120));
+                track.Splits.Add(new TrackSplit(280));
+                track.Splits.Add(new TrackSplit(420));
+                track.Splits.Add(new TrackSplit(600));
+                track.Splits.Add(new TrackSplit(720));
+                track.Splits.Add(new TrackSplit(860));
+                _split = ViewModel.Track.Splits[3];
+            }
+            _split.Position++;
+
+
+
+            if (!Splitter.IsPointerOver)
+            {
+                Window.Current.CoreWindow.PointerCursor =
+                    ViewModel.GetHoveredSelectionBorder(5 / _horizontalScale) == null
+                    ? new CoreCursor(CoreCursorType.Arrow, 0)
+                    : new CoreCursor(CoreCursorType.SizeWestEast, 10);
+            }
 
             double x = e.GetCurrentPoint(Root).Position.X;
 
@@ -343,10 +358,17 @@ public sealed partial class Profile : ViewModelControl,
 
     private void SetHoverPoint(double x)
     {
-        HoverPointValues.Enabled = true;
-        float distance = Math.Clamp(XToDistance(x), 0, ViewModel.Track.Points.Total.Distance);
-        ViewModel.HoverPoint = ViewModel.Track.Points.Search(distance).Point;
-        ViewModel.ContinueSelection();
+        if (Splitter.IsPointerOver)
+        {
+            ViewModel.HoverPoint = TrackPoint.Invalid;
+        }
+        else
+        {
+            HoverPointValues.Enabled = true;
+            float distance = Math.Clamp(XToDistance(x), 0, ViewModel.Track.Points.Total.Distance);
+            ViewModel.HoverPoint = ViewModel.Track.Points.Search(distance).Point;
+            ViewModel.ContinueSelection();
+        }
     }
 
     private void Root_PointerEntered(object _1, PointerRoutedEventArgs _2)
@@ -419,10 +441,18 @@ public sealed partial class Profile : ViewModelControl,
         HorizontalZoom *= 1.5f;
     }
 
+    private void UpdateSplitterMargin()
+    {
+        bool marginForScroller = HorizontalZoom > 1.0;
+        Splitter.Height = marginForScroller ? 12 : 12 + 13;
+        Splitter.Margin = marginForScroller ? new(0, 0, 0, 13) : default;
+    }
+
     void IRecipient<TrackChanged>.Receive(TrackChanged message)
     {
         HorizontalZoom = 1;
         Root.Width = double.NaN;
+        Splitter.Width = double.NaN;
         _horizontalSize = 0;
         _maxElevation = 0;
         _minElevation = 0;

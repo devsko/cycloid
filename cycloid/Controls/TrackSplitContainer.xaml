@@ -1,0 +1,12 @@
+﻿<ContentPresenter
+    x:Class="cycloid.Controls.TrackSplitContainer"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:cycloid.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Canvas.Left="{x:Bind Mode=OneWay, Path=LeftOfMarker}"
+    Width="12"
+    Height="12"
+    Margin="-6,0,0,0"
+    Unloaded="ContentPresenter_Unloaded" />

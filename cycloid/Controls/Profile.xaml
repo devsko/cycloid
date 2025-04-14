@@ -17,7 +17,7 @@
             VerticalScrollBarVisibility="Hidden"
             VerticalScrollMode="Disabled"
             ViewChanged="Scroller_ViewChanged">
-            <Canvas
+            <Grid
                 x:Name="Root"
                 Background="{ThemeResource ControlFillColorDefaultBrush}"
                 DoubleTapped="Root_DoubleTapped"
@@ -28,13 +28,11 @@
                 PointerPressed="Root_PointerPressed"
                 PointerReleased="Root_PointerReleased"
                 SizeChanged="Root_SizeChanged"
-                Tapped="Root_Tapped">
-                <Canvas.Resources>
-                    <CompositeTransform x:Name="GraphTransform" />
-                    <CompositeTransform x:Name="GraphBottomTransform" />
-                </Canvas.Resources>
-                <Canvas x:Name="HorizontalRuler" IsHitTestVisible="False" />
+                Tapped="Root_Tapped"
+                VerticalAlignment="Stretch">
+                <Canvas x:Name="Graph" IsHitTestVisible="False" />
                 <Path
+                    Fill="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(ViewModel.CurrentPoint.Gradient)}"
                     IsHitTestVisible="False"
                     Stroke="{ThemeResource TrackCurrentPointGraphOutline}"
                     StrokeThickness="1.5"
@@ -50,10 +48,16 @@
                         </GeometryGroup>
                     </Path.Data>
                 </Path>
-            </Canvas>
+                <controls:TrackSplitter
+                    x:Name="Splitter"
+                    VerticalAlignment="Bottom"
+                    ItemsSource="{x:Bind Mode=OneWay, Path=ViewModel.Track.Splits}" />
+                <Canvas x:Name="HorizontalRuler" IsHitTestVisible="False" />
+            </Grid>
         </ScrollViewer>
 
         <Path
+            Fill="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(ViewModel.HoverPoint.Gradient)}"
             IsHitTestVisible="False"
             Stroke="{ThemeResource TrackHoverPointGraphOutline}"
             StrokeThickness="1.5"
@@ -72,7 +76,7 @@
 
         <Canvas x:Name="VerticalRuler" IsHitTestVisible="False" />
 
-        <Grid Padding="5,5,5,5" HorizontalAlignment="Right">
+        <Grid Padding="5,5,5,10" HorizontalAlignment="Right">
             <Grid.RowDefinitions>
                 <RowDefinition Height="9" />
                 <RowDefinition Height="Auto" />
