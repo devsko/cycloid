@@ -17,10 +17,23 @@
     <ItemsControl.ItemTemplate>
         <DataTemplate x:DataType="cycloid:TrackSplit">
             <Canvas>
+                <Canvas.Resources>
+                    <SolidColorBrush x:Key="NormalBrush" Color="CadetBlue" />
+                    <SolidColorBrush x:Key="PointerOverBrush" Color="CadetBlue" />
+                    <StaticResource x:Key="CapturedBrush" ResourceKey="SystemAccentColorLight1" />
+                </Canvas.Resources>
+
                 <Path
+                    x:Name="Triangle"
                     Data="M 0,12 L 6,1 L12,12 Z"
-                    Fill="CadetBlue"
-                    Visibility="{x:Bind Mode=OneTime, Path=cycloid:Convert.VisibleIfNot(CanNotMove)}" />
+                    Fill="{StaticResource NormalBrush}"
+                    Stroke="Black"
+                    StrokeThickness="1"
+                    Visibility="{x:Bind Mode=OneTime, Path=cycloid:Convert.VisibleIfNot(CanNotMove)}">
+                    <Path.RenderTransform>
+                        <ScaleTransform CenterX="6" CenterY="12" />
+                    </Path.RenderTransform>
+                </Path>
                 <local:MapControlBorder
                     Canvas.Left="{Binding Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}, Path=LeftOfGapText}"
                     Canvas.Top="-8"
@@ -38,6 +51,60 @@
                         <TextBlock FontSize="10" Text="{x:Bind Mode=OneWay, Path=cycloid:Format.Numeric(DistanceToNext)}" />
                     </Border>
                 </local:MapControlBorder>
+
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup>
+
+                        <VisualState x:Name="Normal">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Triangle" Storyboard.TargetProperty="Fill">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource NormalBrush}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Triangle" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
+                                    <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Triangle" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
+                                    <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+
+                        <VisualState x:Name="PointerOver">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Triangle" Storyboard.TargetProperty="Fill">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource PointerOverBrush}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Triangle" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0.0, 0.0, 0.0, 1.0"
+                                        KeyTime="0:0:0.35"
+                                        Value="1.35" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Triangle" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
+                                    <SplineDoubleKeyFrame
+                                        KeySpline="0.0, 0.0, 0.0, 1.0"
+                                        KeyTime="0:0:0.35"
+                                        Value="1.35" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+
+                        <VisualState x:Name="PointerCaptured">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Triangle" Storyboard.TargetProperty="Fill">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource CapturedBrush}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Triangle" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
+                                    <DiscreteDoubleKeyFrame KeyTime="0" Value="1.35" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Triangle" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
+                                    <DiscreteDoubleKeyFrame KeyTime="0" Value="1.35" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
             </Canvas>
         </DataTemplate>
     </ItemsControl.ItemTemplate>

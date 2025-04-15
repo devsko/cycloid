@@ -75,7 +75,7 @@
 
         <Canvas x:Name="VerticalRuler" IsHitTestVisible="False" />
 
-        <Grid Padding="5,5,5,10" HorizontalAlignment="Right">
+        <Grid Padding="5,5,5,16" HorizontalAlignment="Right">
             <Grid.RowDefinitions>
                 <RowDefinition Height="9" />
                 <RowDefinition Height="Auto" />

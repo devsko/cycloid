@@ -74,9 +74,15 @@ partial class Track
 
         private void Item_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (sender is TrackSplit item && e.PropertyName == nameof(TrackSplit.Position))
+            if (sender is TrackSplit item && e.PropertyName == nameof(TrackSplit.Position) && !item.CanNotMove)
             {
                 int index = IndexOf(item);
+
+                if (index == 0 || index == Count - 1 || item.Position < 0 || item.Position > this[Count - 1].Position)
+                {
+                    throw new InvalidOperationException();
+                }
+
                 int i = index;
                 while (i >= 1 && this[i - 1].Position > item.Position)
                 {
@@ -94,14 +100,15 @@ partial class Track
                 if (i != index)
                 {
                     MoveItem(index, i);
+                    item = this[index];
                 }
-                if (i > 0)
+                if (index > 0)
                 {
-                    this[i - 1].DistanceToNext = item.Position - this[i - 1].Position;
+                    this[index - 1].DistanceToNext = item.Position - this[index - 1].Position;
                 }
-                if (i < Count - 1)
+                if (index < Count - 1)
                 {
-                    item.DistanceToNext = this[i + 1].Position - item.Position;
+                    item.DistanceToNext = this[index + 1].Position - item.Position;
                 }
             }
         }

@@ -18,6 +18,9 @@ public sealed partial class TrackSplitter : ItemsControl
 
     private Profile _profile;
     private bool _isPointerOverContainer;
+    private bool _isPointerPressed;
+    private double _capturePointerDiff;
+    private (TrackSplit Split, Pointer Pointer) _lostCapture;
 
     [GeneratedDependencyProperty]
     public partial bool IsPointerOver { get; private set; }
@@ -64,6 +67,14 @@ public sealed partial class TrackSplitter : ItemsControl
     protected override DependencyObject GetContainerForItemOverride()
     {
         TrackSplitContainer container = new(this);
+        container.RegisterPropertyChangedCallback(ContentPresenter.ContentProperty, (sender, args) => 
+        {
+            if (_isPointerPressed && _lostCapture.Split is not null && _lostCapture.Split == (TrackSplit)container.Content)
+            {
+                _isPointerPressed = IsPointerCaptured = ((TrackSplitContainer)sender).CapturePointer(_lostCapture.Pointer);
+                _lostCapture = default;
+            }
+        });
         container.PointerEntered += Container_PointerEntered;
         container.PointerExited += Container_PointerExited;
         container.PointerMoved += Container_PointerMoved;
@@ -111,6 +122,7 @@ public sealed partial class TrackSplitter : ItemsControl
     {
         Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeWestEast, 10);
         _isPointerOverContainer = true;
+        ((TrackSplitContainer)sender).GotoVisualState(IsPointerCaptured ? TrackSplitTriangleState.Captured : TrackSplitTriangleState.PointerOver);
     }
 
     private void Container_PointerExited(object sender, PointerRoutedEventArgs e)
@@ -119,6 +131,7 @@ public sealed partial class TrackSplitter : ItemsControl
         if (!IsPointerCaptured)
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Cross, 1);
+            ((TrackSplitContainer)sender).GotoVisualState(TrackSplitTriangleState.Normal);
         }
     }
 
@@ -126,33 +139,54 @@ public sealed partial class TrackSplitter : ItemsControl
     {
         if (IsPointerCaptured)
         {
-            _profile.ScrollIfNeeded(e, true,
-                static (profile, state, x) => state.Position = profile.XToDistance(x) / 1_000,
-                (TrackSplit)ItemFromContainer((TrackSplitContainer)sender));
+            TrackSplitContainer container = (TrackSplitContainer)sender;
+            _profile.ScrollIfNeeded<(TrackSplitter This, TrackSplit Split)>(e, true,
+                static (profile, state, x) => state.Split.Position = profile.XToDistance(x - state.This._capturePointerDiff) / 1_000,
+                (this, (TrackSplit)ItemFromContainer(container)));
+            
+            container.GotoVisualState(TrackSplitTriangleState.Captured);
         }
     }
 
     private void Container_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
-        IsPointerCaptured = ((TrackSplitContainer)sender).CapturePointer(e.Pointer);
+        if (_isPointerPressed = IsPointerCaptured = ((TrackSplitContainer)sender).CapturePointer(e.Pointer))
+        {
+            TrackSplitContainer container = (TrackSplitContainer)sender;
+            _capturePointerDiff = e.GetCurrentPoint(container).Position.X - container.ActualWidth / 2;
+            _lostCapture = default;
+            container.GotoVisualState(TrackSplitTriangleState.Captured);
+        }
     }
 
     private void Container_PointerReleased(object sender, PointerRoutedEventArgs e)
     {
+        _isPointerPressed = false;
+        _lostCapture = default;
         ReleasePointerCapture(e.Pointer);
     }
 
     private void Container_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
     {
-        IsPointerCaptured = false;
-        _profile.StopScroll();
-
-        if (!_isPointerOverContainer)
+        if (_isPointerPressed)
         {
-            IsPointerOver =
-                new Rect(default, ActualSize.ToPoint()).Contains(e.GetCurrentPoint(this).Position) &&
-                new Rect(default, _profile.ActualSize.ToPoint()).Contains(e.GetCurrentPoint(_profile).Position);
-            Window.Current.CoreWindow.PointerCursor = IsPointerOver ? new CoreCursor(CoreCursorType.Cross, 1) : new CoreCursor(CoreCursorType.Arrow, 0);
+            _lostCapture = ((TrackSplit)ItemFromContainer((TrackSplitContainer)sender), e.Pointer);
+        }
+        else
+        {
+            IsPointerCaptured = false;
+            _profile.StopScroll();
+
+            if (!_isPointerOverContainer)
+            {
+                IsPointerOver =
+                    new Rect(default, ActualSize.ToPoint()).Contains(e.GetCurrentPoint(this).Position) &&
+                    new Rect(default, _profile.ActualSize.ToPoint()).Contains(e.GetCurrentPoint(_profile).Position);
+
+                Window.Current.CoreWindow.PointerCursor = IsPointerOver ? new CoreCursor(CoreCursorType.Cross, 1) : new CoreCursor(CoreCursorType.Arrow, 0);
+            }
+
+            ((TrackSplitContainer)sender).GotoVisualState(_isPointerOverContainer ? TrackSplitTriangleState.PointerOver : TrackSplitTriangleState.Normal);
         }
     }
 

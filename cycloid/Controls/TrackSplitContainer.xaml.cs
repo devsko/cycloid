@@ -1,9 +1,17 @@
 ﻿using System.ComponentModel;
+using CommunityToolkit.WinUI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using WinRT;
 
 namespace cycloid.Controls;
+
+public enum TrackSplitTriangleState
+{
+    Normal,
+    PointerOver,
+    Captured,
+}
 
 [GeneratedBindableCustomProperty([nameof(LeftOfMarker), nameof(LeftOfGapText), nameof(GapTextOpacity), nameof(GapTextVisibility)], null)]
 public sealed partial class TrackSplitContainer : ContentPresenter, INotifyPropertyChanged
@@ -48,6 +56,12 @@ public sealed partial class TrackSplitContainer : ContentPresenter, INotifyPrope
             PropertyChanged?.Invoke(this, _leftOfGapTextArgs);
             PropertyChanged?.Invoke(this, _gapTextVisibilityArgs);
         }
+    }
+
+    public void GotoVisualState(TrackSplitTriangleState state)
+    {
+        FrameworkElement root = this.FindDescendant<FrameworkElement>();
+        VisualStateManager.GetVisualStateGroups(root)[0].States[(int)state].Storyboard.Begin();
     }
 
     private double DistanceToX(float distance)
