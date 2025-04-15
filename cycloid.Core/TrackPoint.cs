@@ -49,7 +49,7 @@ public readonly partial struct TrackPoint(float latitude, float longitude, float
     private readonly float _longitude = longitude;
     private readonly CommonValues _values = new(distance, time, ascent, descent);
     private readonly ushort _altitude = (ushort)((altitude - MinAltitudeValue) * 10); // 0.1 meters above -50 meters msl
-    private readonly short _heading = (short)(heading * 10); // 0.1 °
+    private readonly short _heading = (short)(heading * 10); // 0.1 Â°
     private readonly short _gradient = (short)(gradient * 10); // 0.1 %
     private readonly short _speed = (short)(speed * 10); // 0.1 km/h
     private readonly Surface _surface = surface;
