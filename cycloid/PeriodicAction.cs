@@ -1,12 +1,12 @@
 namespace cycloid;
 
-public class PeriodicAction<TSender, TParameter>(Action<TSender, TParameter> action, TimeSpan interval)
+public class PeriodicAction<TSender, TAmount, TParameter>(Action<TSender, TAmount> scroll, Func<TSender, TAmount, TParameter> convertAmount, TimeSpan interval)
 {
     private CancellationTokenSource _cts;
 
     public bool IsRunning => _cts is not null;
 
-    public void Start(TSender sender, TParameter parameter)
+    public void Start<TState>(TSender sender, TAmount amount, Action<TSender, TState, TParameter> payload, TState state)
     {
         if (!IsRunning)
         {
@@ -20,7 +20,8 @@ public class PeriodicAction<TSender, TParameter>(Action<TSender, TParameter> act
             {
                 while (true)
                 {
-                    action(sender, parameter);
+                    scroll(sender, amount);
+                    payload(sender, state, convertAmount(sender, amount));
                     await Task.Delay(interval, _cts.Token);
                 }
             }

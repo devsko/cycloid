@@ -5,8 +5,10 @@
     xmlns:cycloid="using:cycloid"
     xmlns:local="using:cycloid.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="ItemsControl_Loaded"
     PointerEntered="ItemsControl_PointerEntered"
-    PointerExited="ItemsControl_PointerExited">
+    PointerExited="ItemsControl_PointerExited"
+    Tapped="ItemsControl_Tapped">
     <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
             <Canvas Background="#00000000" />

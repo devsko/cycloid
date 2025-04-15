@@ -28,8 +28,7 @@
                 PointerPressed="Root_PointerPressed"
                 PointerReleased="Root_PointerReleased"
                 SizeChanged="Root_SizeChanged"
-                Tapped="Root_Tapped"
-                VerticalAlignment="Stretch">
+                Tapped="Root_Tapped">
                 <Canvas x:Name="Graph" IsHitTestVisible="False" />
                 <Path
                     Fill="{x:Bind Mode=OneWay, Path=cycloid:Convert.GradientToBrush(ViewModel.CurrentPoint.Gradient)}"

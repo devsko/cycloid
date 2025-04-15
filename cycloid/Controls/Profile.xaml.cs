@@ -43,8 +43,13 @@ public sealed partial class Profile : ViewModelControl,
     private const float HorizontalRulerTickMinimumGap = 50;
     private const float VerticalRulerTickMinimumGap = 25;
 
-    private readonly PeriodicAction<Profile, int> _periodicScroll = new(
-        static (@this, amount) => @this.ScrollToRelative(amount), 
+    private readonly PeriodicAction<Profile, int, double> _periodicScroll = new(
+        static (@this, amount) =>
+        {
+            @this.Scroller.ChangeView(@this._scrollerOffset + amount, null, null, true);
+            @this.Scroller.UpdateLayout();
+        },
+        static (@this, amount) => @this.Scroller.HorizontalOffset + (amount < 0 ? 0 : @this.ActualWidth),
         TimeSpan.FromMilliseconds(50));
 
     [GeneratedDependencyProperty(DefaultValue = 1.0)]
@@ -238,7 +243,7 @@ public sealed partial class Profile : ViewModelControl,
         }
     }
 
-    private float XToDistance(double x) => (float)(x / _horizontalScale);
+    public float XToDistance(double x) => Math.Clamp((float)(x / _horizontalScale), 0, ViewModel.Track.Points.Total.Distance);
 
     private float DistanceToX(float distance) => distance * (float)_horizontalScale;
 
@@ -287,29 +292,10 @@ public sealed partial class Profile : ViewModelControl,
         Root.ReleasePointerCapture(e.Pointer);
     }
 
-    private TrackSplit _split;
-
     private void Root_PointerMoved(object _, PointerRoutedEventArgs e)
     {
         if (ViewModel.HasTrack)
         {
-
-
-            if (_split is null)
-            {
-                Track track = ViewModel.Track;
-                track.Splits.Add(new TrackSplit(120));
-                track.Splits.Add(new TrackSplit(280));
-                track.Splits.Add(new TrackSplit(420));
-                track.Splits.Add(new TrackSplit(600));
-                track.Splits.Add(new TrackSplit(720));
-                track.Splits.Add(new TrackSplit(860));
-                _split = ViewModel.Track.Splits[3];
-            }
-            _split.Position++;
-
-
-
             if (!Splitter.IsPointerOver)
             {
                 Window.Current.CoreWindow.PointerCursor =
@@ -318,42 +304,47 @@ public sealed partial class Profile : ViewModelControl,
                     : new CoreCursor(CoreCursorType.SizeWestEast, 10);
             }
 
-            double x = e.GetCurrentPoint(Root).Position.X;
-
-            double subPixel = ActualWidth - e.GetCurrentPoint(this).Position.X;
-            if (subPixel > 0 && subPixel < 1)
-            {
-                x += subPixel;
-            }
-
-            if (_isCaptured)
-            {
-                if (x >= _scrollerOffset + ActualWidth - 3)
-                {
-                    _periodicScroll.Start(this, 20);
-                }
-                else if (x <= _scrollerOffset + 3)
-                {
-                    _periodicScroll.Start(this, -20);
-                }
-                else
-                {
-                    _periodicScroll.Stop();
-                }
-            }
-
-            if (!_periodicScroll.IsRunning)
-            {
-                SetHoverPoint(x);
-            }
+            ScrollIfNeeded(e, _isCaptured,
+                static (@this, _, x) => @this.SetHoverPoint(x), 
+                0);
         }
     }
 
-    private void ScrollToRelative(int amount)
+    public void ScrollIfNeeded<TState>(PointerRoutedEventArgs e, bool isCaptured, Action<Profile, TState, double> payload, TState state)
     {
-        Scroller.ChangeView(_scrollerOffset + amount, null, null, true);
-        Scroller.UpdateLayout();
-        SetHoverPoint(Scroller.HorizontalOffset + (amount < 0 ? 0 : ActualWidth));
+        double x = e.GetCurrentPoint(Root).Position.X;
+
+        double subPixel = ActualWidth - e.GetCurrentPoint(this).Position.X;
+        if (subPixel is > 0 and < 1)
+        {
+            x += subPixel;
+        }
+
+        if (isCaptured)
+        {
+            if (x >= _scrollerOffset + ActualWidth - 3)
+            {
+                _periodicScroll.Start(this, 20, payload, state);
+            }
+            else if (x <= _scrollerOffset + 3)
+            {
+                _periodicScroll.Start(this, -20, payload, state);
+            }
+            else
+            {
+                _periodicScroll.Stop();
+            }
+        }
+
+        if (!_periodicScroll.IsRunning)
+        {
+            payload(this, state, x);
+        }
+    }
+
+    public void StopScroll()
+    {
+        _periodicScroll.Stop();
     }
 
     private void SetHoverPoint(double x)
@@ -362,11 +353,10 @@ public sealed partial class Profile : ViewModelControl,
         {
             ViewModel.HoverPoint = TrackPoint.Invalid;
         }
-        else
+        else if (_isEntered)
         {
             HoverPointValues.Enabled = true;
-            float distance = Math.Clamp(XToDistance(x), 0, ViewModel.Track.Points.Total.Distance);
-            ViewModel.HoverPoint = ViewModel.Track.Points.Search(distance).Point;
+            ViewModel.HoverPoint = ViewModel.Track.Points.Search(XToDistance(x)).Point;
             ViewModel.ContinueSelection();
         }
     }
@@ -379,7 +369,7 @@ public sealed partial class Profile : ViewModelControl,
     private void Root_PointerExited(object _1, PointerRoutedEventArgs _2)
     {
         _isEntered = false;
-        if (!_isCaptured)
+        if (!_isCaptured && !Splitter.IsPointerCaptured)
         {
             PointerExit();
         }
@@ -395,7 +385,7 @@ public sealed partial class Profile : ViewModelControl,
     private void Root_PointerCaptureLost(object _1, PointerRoutedEventArgs _2)
     {
         _isCaptured = false;
-        _periodicScroll.Stop();
+        StopScroll();
         ViewModel.EndSelection();
         if (!_isEntered)
         {
