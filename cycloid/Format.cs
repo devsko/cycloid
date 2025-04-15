@@ -31,7 +31,7 @@ public static class Format
 
     public static string FlexDistance(float value) => Math.Abs(value) >= 10_000 ? Distance(Math.Abs(value)) : ShortDistance(value);
 
-    public static string Duration(TimeSpan value) => $"{(int)value.TotalHours:0}:{value:mm}";
+    public static string Duration(TimeSpan value) => $"{(int)value.TotalHours:0}:{value:mm} h";
 
     public static string Altitude(float value) => $"{value:N0} m";
 
@@ -42,11 +42,12 @@ public static class Format
 
     public static string Distance(float? value) => value is null ? "" : $"{value.Value / 1000:N1} km";
 
-    public static string Duration(TimeSpan? value) => value is null ? "" : $"{(int)value.Value.TotalHours:0}:{value:mm}";
+    public static string Duration(TimeSpan? value) => value is null ? "" : $"{(int)value.Value.TotalHours:0}:{value:mm} h";
 
-    public static string Altitude(float? value) => value is null ? "" : $"{value.Value:N0}";
+    public static string Altitude(float? value) => value is null ? "" : $"{value.Value:N0} m";
 
     public static string Speed(float? value) => value is null ? "" : $"{value.Value:N1} km/h";
+
 
     public static string Glyph(Symbol value) => new Rune((int)value).ToString();
 
