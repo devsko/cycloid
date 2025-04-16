@@ -19,8 +19,10 @@ DesktopBridge setzt immer erstmal TargetPlatform UAP für den Restore
 - Profile MaxElevation in EnsureTrack oder aus den MaxAltitudes der Segments in PointColection - auf jeden Fall nicht nochmal Enumerate()
 ## Feature
 - Splits im Profile
-	- Am unteren Rand
-	- Ähnlich wie Tabstops in Word
+	- Zu kleine Gaps automatisch löschen
+	- Nicht im Edit-Mode
+	- Anzeigen auf der Map
+	- Serialisieren
 - Train Mode
 	- Tempo einstellbar
 	- Aktuelle Werte/Section anzeigen
@@ -30,12 +32,9 @@ DesktopBridge setzt immer erstmal TargetPlatform UAP für den Restore
 	- CurrentPoint erzwingen (kann nicht durch Click in die Landschaft entfernt werden)
 	- HoverPoint auf dem Track zulassen wenn IsPlaying false
 	- 10Minute Skip immer erlauben (Weil immer CurrentPoint vorhanden)
-- Start Page
-	* ContextMenu Open/Open Copy (CopyTo)/Remove from List
 - Export Tab
 - (Höhenakkumulator zwischen Segmenten) Neuer WayPoint auf dadurch unveränderter Route -> warum ändern sich die Total Values
 - Serialisierte Points behalten wenn nicht ver ndert
 - WayPoints müssen eindeutig sein?
 - Undo (Historie auch speichern) https://github.com/Doraku/DefaultUnDo
-- Splash-Screen
 - Sections u Splits im ProfileControl anzeigen
