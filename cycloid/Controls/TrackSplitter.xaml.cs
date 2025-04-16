@@ -13,6 +13,10 @@ namespace cycloid.Controls;
 
 public sealed partial class TrackSplitter : ItemsControl
 {
+    public const double MarginForScrollBar = 13;
+    public const double SplitHeight = 12;
+    public const double SplitWidth = 12;
+
     private static readonly SolidColorBrush _transparent = new(Colors.Transparent);
     private static readonly SolidColorBrush _red = new(Colors.Red);
 
@@ -153,7 +157,7 @@ public sealed partial class TrackSplitter : ItemsControl
         if (_isPointerPressed = IsPointerCaptured = ((TrackSplitContainer)sender).CapturePointer(e.Pointer))
         {
             TrackSplitContainer container = (TrackSplitContainer)sender;
-            _capturePointerDiff = e.GetCurrentPoint(container).Position.X - container.ActualWidth / 2;
+            _capturePointerDiff = e.GetCurrentPoint(container).Position.X - SplitWidth / 2;
             _lostCapture = default;
             container.GotoVisualState(TrackSplitTriangleState.Captured);
         }

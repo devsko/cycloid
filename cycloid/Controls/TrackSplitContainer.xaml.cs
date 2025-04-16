@@ -13,11 +13,11 @@ public enum TrackSplitTriangleState
     Captured,
 }
 
-[GeneratedBindableCustomProperty([nameof(LeftOfMarker), nameof(LeftOfGapText), nameof(GapTextOpacity), nameof(GapTextVisibility)], null)]
+[GeneratedBindableCustomProperty([nameof(MarkerLeft), nameof(GapTextLeft), nameof(GapTextOpacity), nameof(GapTextVisibility)], null)]
 public sealed partial class TrackSplitContainer : ContentPresenter, INotifyPropertyChanged
 {
-    private static readonly PropertyChangedEventArgs _leftOfMarkerArgs = new(nameof(LeftOfMarker));
-    private static readonly PropertyChangedEventArgs _leftOfGapTextArgs = new(nameof(LeftOfGapText));
+    private static readonly PropertyChangedEventArgs _markerLeftArgs = new(nameof(MarkerLeft));
+    private static readonly PropertyChangedEventArgs _gapTextLeftArgs = new(nameof(GapTextLeft));
     private static readonly PropertyChangedEventArgs _gapTextOpacityArgs = new(nameof(GapTextOpacity));
     private static readonly PropertyChangedEventArgs _gapTextVisibilityArgs = new(nameof(GapTextVisibility));
 
@@ -35,9 +35,9 @@ public sealed partial class TrackSplitContainer : ContentPresenter, INotifyPrope
         parent.SizeChanged += Parent_SizeChanged;
     }
 
-    public double LeftOfMarker => DistanceToX(Split.Position);
+    public double MarkerLeft => DistanceToX(Split.Position);
 
-    public double LeftOfGapText => DistanceToX(Split.DistanceToNext) / 2;
+    public double GapTextLeft => DistanceToX(Split.DistanceToNext) / 2;
 
     public double GapTextOpacity => _parent.IsPointerOver ? 1.0 : 0.0;
 
@@ -49,11 +49,11 @@ public sealed partial class TrackSplitContainer : ContentPresenter, INotifyPrope
     {
         if (e.PropertyName == nameof(TrackSplit.Position))
         {
-            PropertyChanged?.Invoke(this, _leftOfMarkerArgs);
+            PropertyChanged?.Invoke(this, _markerLeftArgs);
         }
         else if (e.PropertyName == nameof(TrackSplit.DistanceToNext))
         {
-            PropertyChanged?.Invoke(this, _leftOfGapTextArgs);
+            PropertyChanged?.Invoke(this, _gapTextLeftArgs);
             PropertyChanged?.Invoke(this, _gapTextVisibilityArgs);
         }
     }
@@ -76,8 +76,8 @@ public sealed partial class TrackSplitContainer : ContentPresenter, INotifyPrope
 
     private void Parent_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        PropertyChanged?.Invoke(this, _leftOfMarkerArgs);
-        PropertyChanged?.Invoke(this, _leftOfGapTextArgs);
+        PropertyChanged?.Invoke(this, _markerLeftArgs);
+        PropertyChanged?.Invoke(this, _gapTextLeftArgs);
         PropertyChanged?.Invoke(this, _gapTextVisibilityArgs);
     }
 

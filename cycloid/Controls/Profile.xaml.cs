@@ -434,8 +434,8 @@ public sealed partial class Profile : ViewModelControl,
     private void UpdateSplitterMargin()
     {
         bool marginForScroller = HorizontalZoom > 1.0;
-        Splitter.Height = marginForScroller ? 12 : 12 + 13;
-        Splitter.Margin = marginForScroller ? new(0, 0, 0, 13) : default;
+        Splitter.Height = TrackSplitter.SplitHeight + (marginForScroller ? 0 : TrackSplitter.MarginForScrollBar);
+        Splitter.Margin = marginForScroller ? new(0, 0, 0, TrackSplitter.MarginForScrollBar) : default;
     }
 
     void IRecipient<TrackChanged>.Receive(TrackChanged message)

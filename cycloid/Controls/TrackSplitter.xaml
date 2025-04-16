@@ -35,7 +35,7 @@
                     </Path.RenderTransform>
                 </Path>
                 <local:MapControlBorder
-                    Canvas.Left="{Binding Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}, Path=LeftOfGapText}"
+                    Canvas.Left="{Binding Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}, Path=GapTextLeft}"
                     Canvas.Top="-8"
                     Margin="-5,0,0,0"
                     Padding="1"
